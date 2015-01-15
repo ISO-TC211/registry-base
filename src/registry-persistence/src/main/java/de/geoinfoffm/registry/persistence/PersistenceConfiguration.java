@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.geoinfoffm.registry.persistence;
 
 import javax.persistence.EntityManager;

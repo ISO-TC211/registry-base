@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.geoinfoffm.registry.persistence.jpa;
 
 import java.io.File;

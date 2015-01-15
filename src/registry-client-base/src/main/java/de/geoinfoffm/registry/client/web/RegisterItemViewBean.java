@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.geoinfoffm.registry.client.web;
 
 import static de.geoinfoffm.registry.core.model.Proposal.*;

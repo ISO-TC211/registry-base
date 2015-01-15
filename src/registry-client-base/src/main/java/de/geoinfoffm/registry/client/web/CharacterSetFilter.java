@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.geoinfoffm.registry.client.web;
 
 import java.io.IOException;

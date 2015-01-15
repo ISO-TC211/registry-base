@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.geoinfoffm.registry.core.model.iso19135;
 
 /**
