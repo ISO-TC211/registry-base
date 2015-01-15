@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence 
+	http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"> -->
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+	<persistence-unit name="de.geoinfoffm.registry.persistence">
+		<!-- <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider> -->
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<!-- <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> -->
+		<!-- <class>de.geoinfoffm.registry.core.persistence.AbstractParent</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.persistence.Parent</class> -->
+<!-- 		<class>de.geoinfoffm.registry.persistence.model.iso19135.RE_SubmittingOrganization</class> -->
+<!-- 		<class>de.geoinfoffm.registry.persistence.model.iso19115.CI_ResponsibleParty</class> -->
+<!-- 		<class>de.geoinfoffm.registry.persistence.model.Organization</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.persistence.converters.CharacterStringAttributeConverter</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.persistence.UuidConverter</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.persistence.UuidAttributeConverter</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19115.CI_ResponsibleParty</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19103.CharacterString</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19115.CI_Contact</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19115.CI_Telephone</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19115.CI_Address</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19115.CI_OnlineResource</class> -->
+		<!-- <class>de.geoinfoffm.registry.core.iso19135.RE_SubmittingOrganization</class> -->
+		<properties>
+			<!-- <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" 
+				/> -->
+			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://10.10.1.190:5433/gdireg" 
+				/> -->
+			<!-- <property name="javax.persistence.jdbc.user" value="postgres" /> -->
+			<!-- <property name="javax.persistence.jdbc.password" value="postgres" 
+				/> -->
+
+			<property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
+			<property name="eclipselink.ddl-generation.output-mode"
+				value="both" />
+
+			<!-- <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/> -->
+			<!-- <property name="hibernate.connection.url" value="jdbc:postgresql://10.10.1.190:5433/gdireg"/> -->
+			<!-- <property name="hibernate.connection.username" value="postgres"/> -->
+			<!-- <property name="hibernate.connection.password" value="postgres"/> -->
+			<!-- <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/> -->
+			<!-- <property name="hibernate.show_sql" value="true" /> -->
+			<!-- <property name="hibernate.hbm2ddl.auto" value="create" /> -->
+			<!-- <property name="hibernate.connection.autocommit" value="true"/> -->
+
+			<property name="hibernate.connection.url" value="jdbc:hsqldb:mem:unit-testing-jpa" />
+			<property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.connection.username" value="sa" />
+			<property name="hibernate.connection.password" value="" />
+			<property name="hibernate.archive.autodetection" value="class, hbm" />
+			<!-- <property name="hibernate.archive.autodetection" value="false"/> -->
+		</properties>
+	</persistence-unit>
+</persistence>

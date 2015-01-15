@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:reg="http://www.geoinfoffm.de/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.geoinfoffm.de/registry" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!-- =========================================================================== -->
+	<xs:complexType name="ItemClassConfiguration">
+		<xs:sequence>
+			<xs:element name="itemClass" type="reg:ItemClass" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="ItemClassConfiguration" type="reg:ItemClassConfiguration"/>
+	<!-- =========================================================================== -->
+	<xs:complexType name="ItemClass">
+		<xs:sequence>
+			<xs:element name="property" type="reg:Property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="name" use="required"/>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="ItemClass" type="reg:ItemClass"/>
+	<!-- =========================================================================== -->
+	<xs:complexType name="Property">
+		<xs:attribute name="name" use="required"/>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="Property" type="reg:Property">
+		<xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>
