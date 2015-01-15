@@ -26,7 +26,7 @@ import de.geoinfoffm.registry.core.security.AclMaintainingRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class EntityRepositoryImpl<T extends Entity> extends AuditedRepositoryImpl<T> implements AclMaintainingRepository<T>

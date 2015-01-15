@@ -10,7 +10,7 @@ import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public interface SupersessionRepository extends AuditedRepository<Supersession>

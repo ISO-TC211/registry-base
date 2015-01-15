@@ -30,7 +30,7 @@ import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  * 
  */
 @Component

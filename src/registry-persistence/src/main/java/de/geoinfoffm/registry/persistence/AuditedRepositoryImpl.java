@@ -22,7 +22,7 @@ import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.NonExistentRevisionException;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class AuditedRepositoryImpl<T extends Entity> extends EnversRevisionRepositoryImpl<T, UUID, Integer> implements AuditedRepository<T>

@@ -11,7 +11,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public interface SimpleProposalRepository extends EntityRepository<SimpleProposal>

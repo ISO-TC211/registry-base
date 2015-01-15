@@ -13,7 +13,7 @@ import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public interface ProposalRepository extends EntityRepository<Proposal>

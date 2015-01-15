@@ -4,7 +4,7 @@
 package de.geoinfoffm.registry.api;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class NoRevisionAtThisPointInTimeException extends Exception

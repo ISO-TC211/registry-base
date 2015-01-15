@@ -40,7 +40,7 @@ import de.geoinfoffm.registry.persistence.xml.StaxXmlSerializer;
 import de.geoinfoffm.registry.persistence.xml.exceptions.XmlSerializationException;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 @Transactional @Service

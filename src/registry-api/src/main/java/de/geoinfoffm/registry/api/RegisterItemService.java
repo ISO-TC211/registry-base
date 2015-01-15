@@ -20,7 +20,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.persistence.xml.exceptions.XmlSerializationException;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public interface RegisterItemService extends ApplicationService<RE_RegisterItem>

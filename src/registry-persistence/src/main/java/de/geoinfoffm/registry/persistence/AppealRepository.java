@@ -10,7 +10,7 @@ import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Proposal;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 @Repository

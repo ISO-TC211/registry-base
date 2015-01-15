@@ -22,7 +22,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItemRepository;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 @Repository

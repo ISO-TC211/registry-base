@@ -44,7 +44,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class RegisterItemViewBean

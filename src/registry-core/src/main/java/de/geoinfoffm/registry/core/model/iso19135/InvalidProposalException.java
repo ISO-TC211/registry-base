@@ -4,7 +4,7 @@
 package de.geoinfoffm.registry.core.model.iso19135;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class InvalidProposalException extends Exception

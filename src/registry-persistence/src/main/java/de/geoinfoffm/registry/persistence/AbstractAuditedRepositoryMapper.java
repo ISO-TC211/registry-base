@@ -10,7 +10,7 @@
 //import de.geoinfoffm.registry.core.Entity;
 //
 ///**
-// * @author Florian.Esser
+// * @author Florian Esser
 // *
 // */
 //public abstract class AbstractAuditedRepositoryMapper<E extends Entity> implements AuditedRepository<E>

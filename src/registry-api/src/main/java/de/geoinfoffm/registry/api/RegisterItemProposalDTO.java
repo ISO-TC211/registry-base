@@ -38,7 +38,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.soap.Addition_Type;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class RegisterItemProposalDTO

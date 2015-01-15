@@ -6,7 +6,7 @@ package de.geoinfoffm.registry.api;
 import java.util.UUID;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class ProposalAppealDTO
