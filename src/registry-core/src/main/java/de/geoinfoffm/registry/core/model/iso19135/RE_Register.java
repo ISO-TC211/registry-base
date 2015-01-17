@@ -67,6 +67,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -100,7 +101,7 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 	@Basic(optional = false)
 	@Column(columnDefinition = "text")
 	private String name;
-
+	
 	@XmlElement(name = "contentSummary", namespace = "http://www.isotc211.org/2005/grg", required = true, type = CharacterString.class)
 	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
 	@Column(columnDefinition = "text")

@@ -32,34 +32,21 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.persistence;
+package de.geoinfoffm.registry.core.model.iso19135;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import de.geoinfoffm.registry.core.EntityRepository;
-import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
+import de.geoinfoffm.registry.core.AuditedRepository;
+import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
+import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
- * The interface RegisterRepository.
+ * The interface SubmittingOrganizationRepository.
  *
  * @author Florian Esser
  */
 @Repository
-public interface RegisterRepository extends EntityRepository<RE_Register>
+public interface SubmittingOrganizationRepoository extends AuditedRepository<RE_SubmittingOrganization>
 {
-	public RE_Register findByName(String registerName);
-	
-	@Query("SELECT r.uuid, r.name FROM RE_Register r ORDER BY r.name")
-	public List<Object[]> getRegisterNames();
-
-	@Query("SELECT r.uuid, r.name FROM RE_SubregisterDescription r WHERE r.status = 'VALID' ORDER BY r.name")
-	public List<Object[]> getSubregisterNames();
-	
-	@Query("SELECT r.uuid FROM RE_Register r WHERE r.name IN (SELECT s.name FROM RE_SubregisterDescription s WHERE s.status = 'VALID' AND s.register.uuid = :registerUuid)")
-	public List<UUID> getSubregisters(@Param("registerUuid") UUID registerUuid); 
+	RE_SubmittingOrganization findByName(String name);
 }

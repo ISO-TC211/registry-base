@@ -104,6 +104,14 @@ public class RE_Locale extends de.geoinfoffm.registry.core.Entity
 
 	}
 
+	public RE_Locale(String name, LanguageCode language, String country, MD_CharacterSetCode characterEncoding, CI_Citation citation) {
+		this.name = name;
+		this.language = language;
+		this.country = country;
+		this.characterEncoding = characterEncoding;
+		this.citation = citation;
+	}
+
 	/**
 	 * @return the name
 	 */

@@ -41,7 +41,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaQuery;
 
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
+import de.geoinfoffm.registry.core.model.ProposalRepoository;
 import de.geoinfoffm.registry.core.model.iso19135.ProposalManagementInformationRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AdditionInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
@@ -59,9 +58,9 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
 import de.geoinfoffm.registry.persistence.AppealRepository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
-import de.geoinfoffm.registry.persistence.ProposalRepository;
 import de.geoinfoffm.registry.persistence.RegisterItemRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
@@ -87,7 +86,7 @@ implements RegisterItemService
 	private RegisterRepository registerRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepository submittingOrgRepository;
+	private SubmittingOrganizationRepoository submittingOrgRepository;
 	
 	@Autowired
 	private ResponsiblePartyRepository partyRepository;
@@ -99,7 +98,7 @@ implements RegisterItemService
 	private RegisterItemRepository itemRepository;
 
 	@Autowired
-	private ProposalRepository proposalRepository;
+	private ProposalRepoository proposalRepository;
 
 	@Autowired
 	private ProposalManagementInformationRepository pmiRepository;

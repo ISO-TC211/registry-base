@@ -14,6 +14,7 @@
 		<xs:sequence>
 			<xs:element name="uuid" type="xs:string" maxOccurs="1"/>
 			<xs:element name="name" type="xs:string" maxOccurs="1"/>
+			<xs:element name="subregisterUuid" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -67,5 +68,49 @@
 	</xs:complexType>
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 	<xs:element name="GetRegisterItemResponse" type="reg:GetRegisterItemResponse"/>
+	<!-- =========================================================== -->
+	<!-- CreateRegisterRequest -->
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:complexType name="CreateRegisterRequest">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="shortName" type="xs:string"/>
+			<xs:element name="ownerOrganizationUuid" type="xs:string"/>
+			<xs:element name="managerOrganizationUuid" type="xs:string"/>
+			<xs:element name="controlBodyOrganizationUuid" type="xs:string"/>
+			<xs:element name="containedItemClassName" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="parentRegisterName" type="xs:string" minOccurs="0"/>			
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:element name="CreateRegisterRequest" type="reg:CreateRegisterRequest"/>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:complexType name="CreateRegisterResponse">
+		<xs:sequence>
+			<xs:element name="uuid" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:element name="CreateRegisterResponse" type="reg:CreateRegisterResponse"/>
+	<!-- =========================================================== -->
+	<!-- AddItemClassToRegisterRequest -->
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:complexType name="AddItemClassToRegisterRequest">
+		<xs:sequence>
+			<xs:element name="registerName" type="xs:string"/>
+			<xs:element name="itemClassName" type="xs:string" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:element name="AddItemClassToRegisterRequest" type="reg:AddItemClassToRegisterRequest"/>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:complexType name="AddItemClassToRegisterResponse">
+		<xs:sequence>
+			<xs:element name="registerName" type="xs:string"/>
+			<xs:element name="addedItemClassName" type="xs:string" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<xs:element name="AddItemClassToRegisterResponse" type="reg:AddItemClassToRegisterResponse"/>
 	<!-- =========================================================== -->
 </xs:schema>

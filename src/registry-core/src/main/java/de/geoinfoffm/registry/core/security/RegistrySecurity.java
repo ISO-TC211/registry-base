@@ -67,6 +67,8 @@ public interface RegistrySecurity
 
 	boolean isDelegated(List<Delegation> delegations, UUID userUuid, UUID organizationUuid, String roleName);
 
+	boolean isControlBody(UUID proposalUuid);
+
 	void assertIsAdmin() throws UnauthorizedException;
 
 	void assertMayAdmin(Entity entity) throws UnauthorizedException;
@@ -125,6 +127,8 @@ public interface RegistrySecurity
 
 	void assertIsLoggedIn() throws UnauthorizedException;
 
+	void assertIsTrue(boolean expression) throws UnauthorizedException;
+
 	String submitter(UUID registerId);
 
 	String entityRole(String rolePrefix, UUID entityId);
@@ -164,4 +168,5 @@ public interface RegistrySecurity
 	public abstract String getPointOfContactTodoCount();
 	public abstract String getRegisterManagerTodoCount();
 	public abstract String getControlBodyTodoCount();
+
 }

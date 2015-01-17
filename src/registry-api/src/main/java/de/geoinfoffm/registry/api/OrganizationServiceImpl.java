@@ -71,10 +71,10 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.model.iso19115.CI_ResponsibleParty;
 import de.geoinfoffm.registry.core.model.iso19115.CI_RoleCode;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
 import de.geoinfoffm.registry.core.security.RegistryPermission;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
@@ -95,7 +95,7 @@ extends AbstractApplicationService<Organization, OrganizationRepository>
 implements OrganizationService
 {
 	@Autowired
-	private SubmittingOrganizationRepository suborgRepository;
+	private SubmittingOrganizationRepoository suborgRepository;
 	
 	@Autowired
 	private RegistryUserRepository userRepository;
@@ -113,7 +113,7 @@ implements OrganizationService
 	private ResponsiblePartyRepository partyRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepository submittingOrgRepository;
+	private SubmittingOrganizationRepoository submittingOrgRepository;
 	
 	@Autowired
 	private RegisterItemService itemService;

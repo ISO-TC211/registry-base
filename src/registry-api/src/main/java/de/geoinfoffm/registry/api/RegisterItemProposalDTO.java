@@ -66,6 +66,7 @@ import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.soap.Addition_Type;
 
 /**
@@ -149,6 +150,10 @@ public class RegisterItemProposalDTO
 		initializeFromAdditionType(proposal);
 	}
 	
+	public RegisterItemProposalDTO(AbstractRegisterItemProposal_Type itemDetails) {
+		initializeFromItemDetails(itemDetails);
+	}
+	
 	protected void initializeFromItem(RE_RegisterItem_Type proposedItem) {
 		if (proposedItem.getItemClass() == null) {
 			throw new IllegalArgumentException("Proposed item must reference an item class");
@@ -172,12 +177,32 @@ public class RegisterItemProposalDTO
 			throw new IllegalArgumentException("Proposed item must reference an item class or contain an item class description");
 		}
 	}
-	
+
+	protected void initializeFromItemDetails(AbstractRegisterItemProposal_Type itemDetails) {
+		if (itemDetails.getItemClassUuid() == null) {
+			throw new IllegalArgumentException("Proposed item must reference an item class");
+		}
+
+		this.setName(itemDetails.getName());
+		this.setDefinition(itemDetails.getDefinition());
+		if (itemDetails.getDescription() != null) {
+			this.setDescription(itemDetails.getDescription());
+		}
+		
+		if (!StringUtils.isEmpty(itemDetails.getItemClassUuid())) {
+			// Item class is referenced by uuid
+			this.setItemClassUuid(UUID.fromString(itemDetails.getItemClassUuid()));
+		}
+		else {
+			throw new IllegalArgumentException("Proposed item must reference an item class or contain an item class description");
+		}
+	}
+
 	protected void initializeFromAdditionType(Addition_Type addition) {
 		this.setProposalType(ProposalType.ADDITION);
 
-		RE_RegisterItem_Type proposedItem = addition.getProposedItem().getRE_RegisterItem().getValue();
-		initializeFromItem(proposedItem);
+		AbstractRegisterItemProposal_Type itemDetails = addition.getItemDetails().getAbstractRegisterItemProposal().getValue();
+		initializeFromItemDetails(itemDetails);
 
 		this.setTargetRegisterUuid(UUID.fromString(addition.getTargetRegisterUuid()));
 		this.setJustification(addition.getJustification());

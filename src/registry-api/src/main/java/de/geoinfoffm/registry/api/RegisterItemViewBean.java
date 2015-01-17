@@ -1,39 +1,40 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
+ * modification, are permitted provided that the following conditions 
  * are met:
  *     * Redistributions of source code must retain the above copyright
  *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
+ 
+ *     * Redistributions in binary form must reproduce the above 
+ *     	 copyright notice, this list of conditions and the following 
+ *       disclaimer in the documentation and/or other materials 
  *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
+ 
+ *     * The names "German Federal Agency for Cartography and Geodesy", 
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE", 
+ *       "GDI-DE Registry" and the names of other contributors must not 
+ *       be used to endorse or promote products derived from this 
  *       software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *       
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
- * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN 
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT, 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.client.web;
+package de.geoinfoffm.registry.api;
 
+import static de.geoinfoffm.registry.api.iso.IsoXml.*;
 import static de.geoinfoffm.registry.core.model.Proposal.*;
 
 import java.math.BigInteger;
@@ -53,12 +54,14 @@ import java.util.UUID;
 
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
+import org.isotc211.iso19135.RE_RegisterItem_Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Appeal.AppealDisposition;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -75,11 +78,15 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
 /**
- * @author Florian Esser
+ * The class RegisterItemViewBean.
  *
+ * @author Florian Esser
  */
 public class RegisterItemViewBean
 {	
+	protected static final org.isotc211.iso19139.common.ObjectFactory gcoObjectFactory = new org.isotc211.iso19139.common.ObjectFactory();
+	protected static final org.isotc211.iso19135.ObjectFactory grgObjectFactory = new org.isotc211.iso19135.ObjectFactory();
+
 	private UUID uuid;
 	private Class<?> itemClass;
 	
@@ -108,24 +115,33 @@ public class RegisterItemViewBean
 	private Date dateSubmitted;
 	private RE_Disposition disposition;
 	private RE_DecisionStatus decisionStatus;
+	private Date dateAccepted;
+	private Date dateAmended;
 	private boolean isAppealed;
 	
 	private UUID proposalUuid;
 	private Class<?> proposalClass;
 	private String proposalStatus;
 	
+	private ProposalChangeRequest pendingChangeRequest;
+	
 	private AppealDisposition appealDisposition;
 	
 	private UUID sponsorUuid;
 	private String sponsorName;
 	
-	private final Set<RegisterItemViewBean> supersededItems = new HashSet<RegisterItemViewBean>(); 
+	@JsonIgnore
+	private final Set<RegisterItemViewBean> supersededItems = new HashSet<RegisterItemViewBean>();
+	@JsonIgnore
 	private final Set<RegisterItemViewBean> supersedingItems = new HashSet<RegisterItemViewBean>(); 
 	
 	private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 	
+	@JsonIgnore
 	private final Set<RE_AdditionInformation> additionInformations = new LinkedHashSet<RE_AdditionInformation>();
+	@JsonIgnore
 	private final Set<RE_AmendmentInformation> amendmentInformations = new LinkedHashSet<RE_AmendmentInformation>();
+	@JsonIgnore
 	private final Set<RE_ClarificationInformation> clarificationInformations = new LinkedHashSet<RE_ClarificationInformation>();
 
 	private final Map<UUID, String> predecessors = new LinkedHashMap<UUID, String>(); 
@@ -179,6 +195,61 @@ public class RegisterItemViewBean
 	protected void addAdditionalProperties(RE_RegisterItem item) {
 		// does nothing here
 	}
+	
+	public RE_RegisterItem_Type toXmlType() {
+		RE_RegisterItem_Type result = this.createXmlType();
+		this.setXmlValues(result);
+		
+		return result;
+	}
+	
+	protected RE_RegisterItem_Type createXmlType() {
+		return new RE_RegisterItem_Type();
+	}
+	
+	public void setXmlValues(RE_RegisterItem_Type result) {
+		result.setDateAccepted(date(this.getDateAccepted()));
+		result.setDateAmended(date(this.getDateAmended()));
+		result.setDefinition(characterString(this.getDefinition()));
+		result.setDescription(characterString(this.getDescription()));
+		result.setItemClass(itemClass(this.getItemClassUuid()));
+		result.setItemIdentifier(integer(this.getItemIdentifier()));
+		result.setName(characterString(this.getName()));
+		// result.setSpecificationSource(...);  // TODO
+		result.setStatus(itemStatus(this.getStatus()));
+		result.setUuid(this.uuid.toString());
+		
+		for (RE_AdditionInformation adnInfo : this.additionInformations) {
+			result.getAdditionInformation().add(additionInformation(adnInfo));
+		}
+		
+		for (RE_ClarificationInformation cnInfo : this.getClarificationInformations()) {
+			result.getClarificationInformation().add(clarificationInformation(cnInfo));
+		}
+		
+		for (RE_AmendmentInformation amtInfo : this.getAmendmentInformations()) {
+			result.getAmendmentInformation().add(amendmentInformation(amtInfo));
+		}
+
+		// TODO
+//		for (RE_AlternativeExpression altExp : this.getAlternativeExpressions()) {
+//			
+//		}
+		
+		// TODO
+//		result.getFieldOfApplication().add(...)
+		
+		for (UUID predecessorUuid : this.getPredecessors().keySet()) {
+			result.getPredecessor().add(registerItem(predecessorUuid));
+		}
+		
+		for (UUID successorUuid : this.getSuccessors().keySet()) {
+			result.getSuccessor().add(registerItem(successorUuid));
+		}
+		
+		// TODO
+//		result.getSpecificationLineage().add(...)
+	}
 
 	/**
 	 * @param item
@@ -203,6 +274,9 @@ public class RegisterItemViewBean
 		
 		this.isProposal = false;
 		this.setAppealed(false);
+		
+		this.dateAccepted = item.getDateAccepted();
+		this.dateAmended = item.getDateAmended();
 		
 		if (loadDetails) {
 			for (RE_AdditionInformation ai : item.getAdditionInformation()) {
@@ -285,7 +359,7 @@ public class RegisterItemViewBean
 	private void initializeFromGroup(ProposalGroup group) {
 		this.setProposalUuid(group.getUuid());
 		this.setProposalClass(group.getClass());
-		this.setName(group.getName());
+		this.setName(group.getTitle());
 
 		this.setProposalStatus(group.getStatus());
 
@@ -309,7 +383,7 @@ public class RegisterItemViewBean
 		
 		this.setProposalUuid(supersession.getUuid());
 		this.proposalClass = supersession.getClass();
-		this.setName(supersession.getName());
+		this.setName(supersession.getTitle());
 		this.setRegisterUuid(supersession.getTargetRegister().getId());
 		
 		if (!supersession.getSupersessionParts().isEmpty()) {
@@ -507,6 +581,22 @@ public class RegisterItemViewBean
 		this.decisionStatus = decisionStatus;
 	}
 
+	public Date getDateAccepted() {
+		return dateAccepted;
+	}
+
+	public void setDateAccepted(Date dateAccepted) {
+		this.dateAccepted = dateAccepted;
+	}
+
+	public Date getDateAmended() {
+		return dateAmended;
+	}
+
+	public void setDateAmended(Date dateAmended) {
+		this.dateAmended = dateAmended;
+	}
+
 	/**
 	 * @return the itemClassUuid
 	 */
@@ -647,6 +737,14 @@ public class RegisterItemViewBean
 	 */
 	public void setProposalStatus(String proposalStatus) {
 		this.proposalStatus = proposalStatus;
+	}
+
+	public ProposalChangeRequest getPendingChangeRequest() {
+		return pendingChangeRequest;
+	}
+
+	public void setPendingChangeRequest(ProposalChangeRequest pendingChangeRequest) {
+		this.pendingChangeRequest = pendingChangeRequest;
 	}
 
 	/**
@@ -896,7 +994,7 @@ public class RegisterItemViewBean
 	}
 
 	public boolean isValid() {
-		return RE_ItemStatus.VALID.equals(this.getStatus());
+		return RE_ItemStatus.VALID.name().equals(this.getStatus());
 	}
 	
 	@JsonIgnore

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -69,6 +70,7 @@ import org.thymeleaf.extras.springsecurity3.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring3.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
+import de.geoinfoffm.registry.api.ProposalDtoFactory;
 import de.geoinfoffm.registry.api.RegisterService;
 import de.geoinfoffm.registry.api.RegisterServiceImpl;
 import de.geoinfoffm.registry.core.HibernateAwareObjectMapper;
@@ -248,20 +250,4 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 //		return new RegistrySecurity();
 //	}
 
-	@Autowired
-	@Bean
-	public RegisterService registerService(RegisterRepository registerRepository) {
-		return new RegisterServiceImpl(registerRepository);
-	}
-	
-	@Bean
-	public ViewBeanFactory viewBeanFactory() {
-		return new ViewBeanFactory();
-	}
-	
-	@Autowired
-	@Bean
-	public ProposalDtoFactory proposalDtoFactory(ItemClassRegistry registry) {
-		return new ProposalDtoFactory(registry);
-	}
 }

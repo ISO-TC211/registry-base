@@ -57,6 +57,7 @@ import org.hibernate.envers.Audited;
 
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Address;
 import de.geoinfoffm.registry.core.model.iso19115.CI_ResponsibleParty;
 import de.geoinfoffm.registry.core.model.iso19115.CI_RoleCode;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
@@ -73,8 +74,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
  */
 @XmlType(name = "Organization_Type", 
 		 namespace = "http://registry.gdi-de.org",
-		 propOrder = { "shortName", "name", "category", "onlineResourceLogo", "onlineResourceWebsite",
-			   		   "submittingOrganization", "users" })
+		 propOrder = { "shortName", "name", "submittingOrganization", "address" })
 @XmlRootElement(name = "Organization", namespace = "http://registry.gdi-de.org")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
@@ -83,19 +83,28 @@ public class Organization extends Actor
 {
 	private static final long serialVersionUID = -6985882046283953955L;
 
-	@XmlElement(name = "name", namespace = "http://registry.gdi-de.org", type = CharacterString.class)
+	@XmlElement(name = "name", namespace = "http://registry.geoinfoffm.de/", type = CharacterString.class)
 	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
 	@Basic(optional = false)
 	@Column(columnDefinition = "text")
 	private String name;
 
-	@XmlElement(name = "submittingOrganization", namespace = "http://registry.gdi-de.org")
+	@XmlElement(name = "shortName", namespace = "http://registry.geoinfoffm.de/", type = CharacterString.class)
+	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
+	@Basic(optional = false)
+	@Column(columnDefinition = "text")
+	private String shortName;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	private CI_Address address;
+
+	@XmlElement(name = "submittingOrganization", namespace = "http://registry.geoinfoffm.de/")
 	@XmlPath("organization/grg:RE_SubmittingOrganization")
 //		@Basic(optional = false)
 	@OneToOne(cascade = CascadeType.PERSIST, optional = false)
 	private RE_SubmittingOrganization submittingOrganization;
-	
-	@XmlElement(name = "users", namespace = "http://registry.gdi-de.org")
+
+	@XmlTransient
 	@OneToMany(mappedBy = "organization")
 	private Set<RegistryUser> users = new HashSet<RegistryUser>();
 	
@@ -135,6 +144,22 @@ public class Organization extends Actor
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+
+	public CI_Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(CI_Address address) {
+		this.address = address;
 	}
 
 	/**

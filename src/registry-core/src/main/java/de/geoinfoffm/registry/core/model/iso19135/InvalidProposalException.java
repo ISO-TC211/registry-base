@@ -1,5 +1,7 @@
 package de.geoinfoffm.registry.core.model.iso19135;
 
+import org.springframework.validation.BindingResult;
+
 /**
  * @author Florian Esser
  *
@@ -50,5 +52,10 @@ public class InvalidProposalException extends Exception
 		super(message, cause, enableSuppression, writableStackTrace);
 		// TODO Auto-generated constructor stub
 	}
+
+	public InvalidProposalException(BindingResult bindingResult) {
+		super("Invalid proposal: " + bindingResult.toString());
+	}
+
 
 }

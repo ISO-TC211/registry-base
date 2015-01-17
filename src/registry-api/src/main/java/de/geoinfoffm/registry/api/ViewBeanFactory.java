@@ -32,12 +32,13 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.client.web;
+package de.geoinfoffm.registry.api;
 
 import java.lang.reflect.Constructor;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.geoinfoffm.registry.core.ItemClassConfiguration;
 import de.geoinfoffm.registry.core.ItemClassRegistry;
@@ -48,6 +49,7 @@ import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
+@Component
 public class ViewBeanFactory
 {
 	@Autowired

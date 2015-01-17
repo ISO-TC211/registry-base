@@ -1,38 +1,40 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
+ * modification, are permitted provided that the following conditions 
  * are met:
  *     * Redistributions of source code must retain the above copyright
  *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
+ 
+ *     * Redistributions in binary form must reproduce the above 
+ *     	 copyright notice, this list of conditions and the following 
+ *       disclaimer in the documentation and/or other materials 
  *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
+ 
+ *     * The names "German Federal Agency for Cartography and Geodesy", 
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE", 
+ *       "GDI-DE Registry" and the names of other contributors must not 
+ *       be used to endorse or promote products derived from this 
  *       software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *       
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
- * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN 
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT, 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 package de.geoinfoffm.registry.api;
+
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -50,25 +52,34 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.ProposalAcceptedEvent;
 import de.geoinfoffm.registry.core.ProposalCreatedEvent;
+import de.geoinfoffm.registry.core.ProposalRejectedEvent;
 import de.geoinfoffm.registry.core.ProposalSavedEvent;
 import de.geoinfoffm.registry.core.ProposalSubmittedEvent;
 import de.geoinfoffm.registry.core.UnauthorizedException;
+import de.geoinfoffm.registry.core.model.Actor;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Appeal;
+import de.geoinfoffm.registry.core.model.Authorization;
+import de.geoinfoffm.registry.core.model.AuthorizationRepository;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
+import de.geoinfoffm.registry.core.model.ProposalChangeRequestRepository;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
+import de.geoinfoffm.registry.core.model.ProposalRepoository;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.SupersessionPart;
 import de.geoinfoffm.registry.core.model.iso19135.InvalidProposalException;
@@ -76,48 +87,65 @@ import de.geoinfoffm.registry.core.model.iso19135.ProposalManagementInformationR
 import de.geoinfoffm.registry.core.model.iso19135.RE_ClarificationInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.persistence.AppealRepository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
-import de.geoinfoffm.registry.persistence.ProposalRepository;
+import de.geoinfoffm.registry.persistence.RegisterItemRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
 import de.geoinfoffm.registry.persistence.SupersessionRepository;
 import de.geoinfoffm.registry.soap.AbstractProposal_Type;
+import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.soap.Addition_Type;
 import de.geoinfoffm.registry.soap.Clarification_Type;
 import de.geoinfoffm.registry.soap.ProposedChange_PropertyType;
 import de.geoinfoffm.registry.soap.Retirement_Type;
 import de.geoinfoffm.registry.soap.Supersession_Type;
 
+/**
+ * The class ProposalServiceImpl.
+ *
+ * @author Florian Esser
+ */
 @Transactional
 //@Service
-public class ProposalServiceImpl extends AbstractApplicationService<Proposal, ProposalRepository> implements ProposalService
+public class ProposalServiceImpl extends AbstractApplicationService<Proposal, ProposalRepoository> implements ProposalService
 {
 	@PersistenceContext
 	private EntityManager entityManager;
 	
 	@Autowired
+	private Validator validator;
+	
+	@Autowired
+	private MessageSource messages;
+	
+	@Autowired
 	private RegisterRepository registerRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepository submittingOrgRepository;
+	private SubmittingOrganizationRepoository submittingOrgRepository;
 	
 	@Autowired
 	private ResponsiblePartyRepository partyRepository;
 
 	@Autowired
 	private ItemClassRepository itemClassRepository;
+	
+	@Autowired
+	private ProposalChangeRequestRepository pcrRepository;
 
 	@Autowired
 	private RegisterItemService itemService;
 	
 	@Autowired
-	private ProposalRepository proposalRepository;
+	private ProposalRepoository proposalRepository;
 	
 	@Autowired
 	private ProposalManagementInformationRepository pmiRepository;
@@ -133,9 +161,18 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	
 	@Autowired
 	private ItemFactoryRegistry itemFactoryRegistry;
+	
+	@Autowired
+	private RegisterItemRepository itemRepository;
 
 	@Autowired
-	public ProposalServiceImpl(ProposalRepository repository) {
+	private ControlBodyDiscoveryStrategy cbStrategy;
+
+	@Autowired
+	private AuthorizationRepository authRepository;
+
+	@Autowired
+	public ProposalServiceImpl(ProposalRepoository repository) {
 		super(repository);
 	}
 
@@ -144,14 +181,6 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		pmiRepository.save(proposal.getProposalManagementInformations());
 		proposal = repository().save(proposal);
 		
-//		String sponsorUuid = proposal.getSponsor().getUuid().toString();
-//		
-//		if (security.isLoggedIn()) {
-//			String userUuid = security.getCurrentUser().getUuid().toString();
-//			repository().appendAces(proposal, Arrays.asList(BasePermission.READ, BasePermission.WRITE, BasePermission.DELETE), new PrincipalSid(userUuid), true);			
-//		}
-//		repository().appendAces(proposal, Arrays.asList(BasePermission.READ, BasePermission.WRITE, BasePermission.DELETE), new PrincipalSid(sponsorUuid), true);
-	
 		eventPublisher().publishEvent(new ProposalSavedEvent(proposal));
 		
 		return proposal;
@@ -199,8 +228,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				throw new IllegalOperationException(String.format("Cannot clarify item with status %s", item.getStatus().name()));
 			}
 
-			return this.proposeClarification(item, proposal.calculateProposedChanges(item), proposal.getJustification(), 
+			Clarification clarification = this.createClarification(item, proposal.calculateProposedChanges(item), proposal.getJustification(), 
 					proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes(), sponsor);
+			return this.submitProposal(clarification);
 		}
 		
 		if (proposal.getProposalType().equals(ProposalType.RETIREMENT)) {
@@ -213,8 +243,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				throw new IllegalOperationException(String.format("Cannot retire item with status %s", item.getStatus().name()));
 			}
 		
-			return this.proposeRetirement(item, proposal.getJustification(), proposal.getRegisterManagerNotes(), 
+			Retirement retirement = this.createRetirement(item, proposal.getJustification(), proposal.getRegisterManagerNotes(), 
 					proposal.getControlBodyNotes(), sponsor);
+			return this.submitProposal(retirement);
 		}
 
 		if (proposal.getProposalType().equals(ProposalType.SUPERSESSION)) {
@@ -235,8 +266,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				supersededItems.add(item);
 			}
 			
-			return this.proposeSupersession(supersededItems, proposal.getNewSupersedingItems(), proposal.getJustification(), 
+			Supersession supersession = this.createSupersession(supersededItems, proposal.getNewSupersedingItems(), proposal.getJustification(), 
 					proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes(), sponsor);
+			return this.submitProposal(supersession);
 		}
 		
 		throw new InvalidProposalException(String.format("Unsupported proposal type: %s", proposal.getProposalType()));
@@ -262,37 +294,28 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Addition createAdditionProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException {
-		RE_ItemClass itemClass = itemClassRepository.findOne(proposal.getItemClassUuid());
+		RE_ItemClass itemClass;
+		if (!StringUtils.isEmpty(proposal.getItemClassName())) {
+			itemClass = itemClassRepository.findByName(proposal.getItemClassName());
+		}
+		else if (proposal.getItemClassUuid() != null) {
+			itemClass = itemClassRepository.findOne(proposal.getItemClassUuid());			
+		}
+		else {
+			throw new InvalidProposalException("Either name or UUID of item class must be provided");
+		}
+		
 		RE_SubmittingOrganization sponsor = submittingOrgRepository.findOne(proposal.getSponsorUuid());
+		
+		BindingResult bindingResult = validateProposal(proposal);
+		if (bindingResult.hasErrors()) {
+			throw new InvalidProposalException(bindingResult);
+		}
 
 		// Create dependent items and proposal first, so we can satisfy dependencies in the main item
 		List<Addition> groupProposals = new ArrayList<Addition>();
 		for (RegisterItemProposalDTO dependentProposal : proposal.getDependentProposals()) {
-			// TODO Justification etc. müssen aus ProposalDTO des abhängigen Items kommen!
-
-			dependentProposal.setTargetRegisterUuid(proposal.getTargetRegisterUuid());
-			dependentProposal.setSponsorUuid(proposal.getSponsorUuid());
-			dependentProposal.setProposalType(ProposalType.ADDITION);
-			
-			RE_ItemClass dependentProposalItemClass = this.findItemClass(dependentProposal);
-			RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
-					(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
-			RE_RegisterItem dependentItem = itemFactory.createRegisterItem(dependentProposal);
-
-			if (dependentItem == null) {
-				throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
-			}
-
-//			dependentProposal.setAdditionalValues(dependentItem, this.entityManager);
-
-			Addition subAddition = Addition.createAddition(dependentItem, sponsor, 
-					dependentProposal.getJustification(), dependentProposal.getRegisterManagerNotes(), dependentProposal.getControlBodyNotes());
-			
-			subAddition = saveProposal(subAddition, dependentItem);
-			groupProposals.add(subAddition);
-
-			// Set the referenced item UUID in the proposal so that it may be referenced the main item
-			dependentProposal.setReferencedItemUuid(subAddition.getItem().getUuid());
+			createDependentProposal(dependentProposal, proposal, groupProposals, sponsor);
 		}		
 
 		// TODO delegate to service if possible
@@ -303,34 +326,82 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (item == null) {
 			throw new NullPointerException(String.format("Factory %s returned null item", registerItemFactory.getClass().getCanonicalName()));
 		}
-
+		
 		Addition addition = Addition.createAddition(item, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
-
-//		if (registerItemFactory.getClass().equals(RegisterItemFactoryImpl.class)) {
-//			// Delegate setting of additional property values to DTO
-//			proposal.setAdditionalValues(item, this.entityManager);
-//		}
-
 
 		addition = saveProposal(addition, item);
 		
 		if (!groupProposals.isEmpty()) {
-			groupProposals.add(addition);
-			ProposalGroup group = new ProposalGroup(groupProposals);
-			group.setName(addition.getItem().getName());
-			group.setSponsor(addition.getSponsor());
-			group = this.saveProposal(group);
-			
-			for (Addition groupProposal : groupProposals) {
-				groupProposal.setGroup(group);
-				proposalRepository.save(groupProposal);
-			}
+//			HierarchicalProposal group = new HierarchicalProposal(addition, groupProposals);
+//			group.setTitle(addition.getItem().getName());
+//			group.setSponsor(addition.getSponsor());
+//			group.setPrimaryProposal(addition);
+//			group = this.saveProposal(group);
+//			
+//			groupProposals.add(addition);
+//			for (Addition groupProposal : groupProposals) {
+//				groupProposal.setGroup(group);
+//				proposalRepository.save(groupProposal);
+//			}
+//			
+//			eventPublisher().publishEvent(new ProposalCreatedEvent(group));
 		}
 		
 		eventPublisher().publishEvent(new ProposalCreatedEvent(addition));
 
 		return addition;
+	}
+
+	private void createDependentProposal(RegisterItemProposalDTO proposal, RegisterItemProposalDTO mainProposal,
+			List<Addition> groupProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
+		BindingResult bindingResult;
+		bindingResult = validateProposal(proposal);
+		if (bindingResult.hasErrors()) {
+			throw new InvalidProposalException(bindingResult);
+		}
+		
+		for (RegisterItemProposalDTO dependentProposal : proposal.getDependentProposals()) {
+			createDependentProposal(dependentProposal, proposal, groupProposals, sponsor);
+		}		
+		
+		// TODO Justification etc. müssen aus ProposalDTO des abhängigen Items kommen!
+
+		proposal.setTargetRegisterUuid(mainProposal.getTargetRegisterUuid());
+		proposal.setSponsorUuid(mainProposal.getSponsorUuid());
+		proposal.setProposalType(ProposalType.ADDITION);
+		
+		RE_ItemClass dependentProposalItemClass = this.findItemClass(proposal);
+		RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
+				(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
+		RE_RegisterItem dependentItem = itemFactory.createRegisterItem(proposal);
+
+		if (dependentItem == null) {
+			throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
+		}
+		
+//			dependentItem.setItemIdentifier(subItemIdentifier);
+
+		Addition subAddition = Addition.createAddition(dependentItem, sponsor, 
+				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
+		
+		subAddition = saveProposal(subAddition, dependentItem);
+
+		// Set the referenced item UUID in the proposal so that it may be referenced the main item
+		proposal.setReferencedItemUuid(subAddition.getItem().getUuid());
+		
+		eventPublisher().publishEvent(new ProposalCreatedEvent(subAddition));
+		
+		groupProposals.add(subAddition);
+	}
+
+	private BindingResult validateProposal(RegisterItemProposalDTO proposal) {
+		DataBinder binder = new DataBinder(proposal);
+		binder.setValidator(validator);
+		binder.validate();
+		BindingResult bindingResult = binder.getBindingResult();
+
+		return bindingResult;
 	}
 
 	private Addition saveProposal(Addition addition, RE_RegisterItem item) {
@@ -352,11 +423,105 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#updateProposal(de.geoinfoffm.registry.api.RegisterItemProposalDTO)
 	 */
 	@Override
-	public Proposal updateProposal(RegisterItemProposalDTO proposalDto) throws InvalidProposalException {
+	public Proposal updateProposal(RegisterItemProposalDTO proposalDto) throws InvalidProposalException, UnauthorizedException {
 		Proposal proposal = proposalRepository.findOne(proposalDto.getProposalUuid());
 		if (proposal == null) {
 			throw new InvalidProposalException(String.format("Referenced proposal with id '%s' does not exist.", proposalDto.getProposalUuid()));
 		}
+
+		BindingResult bindingResult = validateProposal(proposalDto);
+		if (bindingResult.hasErrors()) {
+			throw new InvalidProposalException(bindingResult);
+		}
+
+		// Is this the primary proposal of a HierarchicalProposal?
+//		if (proposal.hasGroup() && proposal.getGroup() instanceof HierarchicalProposal && ((HierarchicalProposal)proposal.getGroup()).getPrimaryProposal().equals(proposal)) {
+//			HierarchicalProposal hp = (HierarchicalProposal)proposal.getGroup();
+//			Proposal primaryProposal = hp.getPrimaryProposal();
+//
+//			List<Proposal> noLongerDependent = new ArrayList<Proposal>();
+//			noLongerDependent.addAll(hp.getDependentProposals());
+//			// Remove those proposals from 'no longer dependent' list that are still dependent
+//			for (RegisterItemProposalDTO subDto : proposalDto.getDependentProposals()) {
+//				if (subDto.getProposalUuid() != null) {
+//					Proposal subProposal = proposalRepository.findOne(subDto.getProposalUuid());
+//					noLongerDependent.remove(subProposal);
+//				}
+//			}
+//			
+//			List<RegisterItemProposalDTO> newlyDependent = new ArrayList<RegisterItemProposalDTO>();
+//			for (RegisterItemProposalDTO subDto : proposalDto.getDependentProposals()) {
+//				if (subDto.getProposalUuid() == null) {
+//					newlyDependent.add(subDto);
+//				}
+//			}
+//			
+//			for (Proposal perishable : noLongerDependent) {
+//				perishable.setGroup(null);
+//				hp.removeProposal(perishable);
+//				hp.getDependentProposals().remove(perishable);
+//				this.saveProposal(hp);
+//			}
+//			while (!noLongerDependent.isEmpty()) {
+//				Proposal p = noLongerDependent.get(0);
+//				noLongerDependent.remove(0);
+//				this.deleteProposal(p);
+//			}
+//			
+//			for (RegisterItemProposalDTO newSub : newlyDependent) {
+//				Proposal subProposal;
+//				if (ProposalType.ADDITION.equals(newSub.getProposalType())) {
+//					bindingResult = validateProposal(newSub);
+//					if (bindingResult.hasErrors()) {
+//						throw new InvalidProposalException(bindingResult);
+//					}
+//
+//					newSub.setTargetRegisterUuid(proposalDto.getTargetRegisterUuid());
+//					newSub.setSponsorUuid(proposalDto.getSponsorUuid());
+//					
+//					RE_ItemClass dependentProposalItemClass = this.findItemClass(newSub);
+//					RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
+//							(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
+//					RE_RegisterItem dependentItem = itemFactory.createRegisterItem(newSub);
+//
+//					if (dependentItem == null) {
+//						throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
+//					}
+//					
+//					subProposal = this.createAdditionProposal(newSub);
+//					subProposal.setGroup(hp);
+//					
+//					BigInteger itemIdentifier = itemService.findMaxItemIdentifier();
+//					if (itemIdentifier == null) {
+//						itemIdentifier = BigInteger.ZERO;
+//					}
+//					dependentItem.setItemIdentifier(itemIdentifier);
+//					
+//					subProposal = this.saveProposal((Addition)subProposal, dependentItem);
+//					// Set the referenced item UUID in the proposal so that it may be referenced the main item
+//					newSub.setReferencedItemUuid(dependentItem.getUuid());
+//				}
+//				else if (ProposalType.SUPERSESSION.equals(newSub.getProposalType())) {
+//					throw new RuntimeException("Not yet implemented for SUPERSESSIONs");
+//				}
+//				else {
+//					subProposal = this.propose(newSub);
+//				}
+//				
+//				eventPublisher().publishEvent(new ProposalCreatedEvent(subProposal));
+//				hp.addProposal(subProposal);
+//			}
+//			
+//			if (primaryProposal instanceof Addition) {
+//				RE_RegisterItem item = ((Addition)primaryProposal).getItem();
+//				hp.setTitle(item.getName());
+//				proposalDto.setAdditionalValues(item, this.entityManager);
+//			}
+//			
+//			hp = this.saveProposal(hp);
+//			
+//			return hp;
+//		}
 
 		if (proposalDto.getProposalType().equals(ProposalType.SUPERSESSION)) {
 			throw new RuntimeException("Use updateSupersession(...)");
@@ -401,7 +566,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 		String itemUuid;
 		if (proposalDto instanceof Addition_Type) {
-			itemUuid = ((Addition_Type) proposalDto).getProposedItem().getRE_RegisterItem().getValue().getUuid();
+			itemUuid = ((Addition_Type) proposalDto).getCreatedItem().getRE_RegisterItem().getValue().getUuid();
 		}
 		else if (proposalDto instanceof Clarification_Type) {
 			itemUuid = ((Clarification_Type) proposalDto).getClarifiedItemUuid();
@@ -424,10 +589,10 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		}
 
 		if (proposal instanceof Addition) {
-			RE_RegisterItem_Type changedItem = ((Addition_Type)proposalDto).getProposedItem().getRE_RegisterItem().getValue(); 
-			item.setName(changedItem.getName().getCharacterString().getValue().toString());
-			item.setDefinition(changedItem.getDefinition().getCharacterString().getValue().toString());
-			item.setDescription(changedItem.getDescription().getCharacterString().getValue().toString());
+			AbstractRegisterItemProposal_Type changedItem = ((Addition_Type)proposalDto).getItemDetails().getAbstractRegisterItemProposal().getValue(); 
+			item.setName(changedItem.getName());
+			item.setDefinition(changedItem.getDefinition());
+			item.setDescription(changedItem.getDescription());
 		}
 		else if (proposal instanceof Clarification) {
 			Map<String, String[]> proposedChanges = new HashMap<String, String[]>();
@@ -473,10 +638,12 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#reviewProposal(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem)
 	 */
 	@Override
-	public Proposal reviewProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException {
+	public Proposal reviewProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException, UnauthorizedException {
 		if (proposal == null) {
 			throw new InvalidProposalException("Cannot review null proposal.");
 		}
+		
+		security.assertHasEntityRelatedRoleForAll(RegistrySecurity.MANAGER_ROLE_PREFIX, proposal.getAffectedRegisters());
 		
 		proposal.review(Calendar.getInstance().getTime());
 		this.saveProposal(proposal);
@@ -491,19 +658,24 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	@Override
 	@Transactional
 	public Proposal acceptProposal(Proposal proposal, String controlBodyDecisionEvent) throws InvalidProposalException,
-			IllegalOperationException {
+			IllegalOperationException, UnauthorizedException {
 		
 		if (proposal == null) {
 			throw new InvalidProposalException("Cannot accept null proposal.");
 		}
 
-		proposal.accept(controlBodyDecisionEvent);
+		security.assertIsTrue(security.isControlBody(proposal.getUuid()));
 		
-		proposal = this.saveProposal(proposal);
-		
-		eventPublisher().publishEvent(new ProposalAcceptedEvent(proposal));
-		
-		return proposal;
+		if (proposal.hasGroup()) {
+			return this.acceptProposal(proposal.getGroup(), controlBodyDecisionEvent);
+		}
+		else {
+			proposal.accept(controlBodyDecisionEvent);
+			proposal = this.saveProposal(proposal);
+			eventPublisher().publishEvent(new ProposalAcceptedEvent(proposal));
+			
+			return proposal;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -511,15 +683,16 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Proposal rejectProposal(Proposal proposal, String controlBodyDecisionEvent) throws InvalidProposalException, IllegalOperationException, UnauthorizedException {
-
 		if (proposal == null) {
 			throw new InvalidProposalException("Cannot reject null proposal.");
 		}
 		
-		security.assertHasEntityRelatedRoleForAll(RegistrySecurity.CONTROLBODY_ROLE_PREFIX, proposal.getAffectedRegisters());
+		security.assertIsTrue(security.isControlBody(proposal.getUuid()));
 
 		proposal.reject(controlBodyDecisionEvent);
 		proposal = this.saveProposal(proposal);
+		
+		eventPublisher().publishEvent(new ProposalRejectedEvent(proposal));
 		
 		return proposal;
 	}
@@ -589,10 +762,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeRetirement(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem)
 	 */
 	@Override
-	public Retirement proposeRetirement(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException {
+	public Retirement createRetirement(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException {
 		Retirement proposal = item.proposeRetirement(justification, registerManagerNotes, controlBodyNotes, sponsor);
-		proposal = this.submitProposal(proposal);
-		itemService.saveRegisterItem(item);
+		proposal = this.saveProposal(proposal);
 		
 		eventPublisher().publishEvent(new ProposalCreatedEvent(proposal));
 
@@ -603,13 +775,11 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeClarification(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem, java.util.Map, java.lang.String, de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization)
 	 */
 	@Override
-	public Clarification proposeClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges,
+	public Clarification createClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges,
 			String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException {
 		
 		Clarification proposal = item.proposeClarification(proposedChanges, justification, registerManagerNotes, controlBodyNotes, sponsor);
 		proposal = this.saveProposal(proposal);
-
-		itemService.saveRegisterItem(item);
 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(proposal));
 
@@ -620,7 +790,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeSupersession(java.util.Set, java.util.Set, java.lang.String, de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization)
 	 */
 	@Override
-	public Supersession proposeSupersession(Set<RE_RegisterItem> supersededItems,
+	public Supersession createSupersession(Set<RE_RegisterItem> supersededItems,
 			Set<RegisterItemProposalDTO> successors, String justification, String registerManagerNotes, String controlBodyNotes, 
 			RE_SubmittingOrganization sponsor)
 			throws IllegalOperationException, InvalidProposalException {
@@ -650,6 +820,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			successor.setJustification(justification); // Add supersession justification to successor
 			successor.setRegisterManagerNotes(registerManagerNotes);
 			successor.setControlBodyNotes(controlBodyNotes);
+			successor.setSponsorUuid(sponsor.getUuid());
 		
 			Addition addition = this.createAdditionProposal(successor);
 			supersedingItems.add(addition.getItem());
@@ -678,7 +849,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			}
 		}
 
-		result = this.submitProposal(result);
+		result = this.saveProposal(result);
 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
 
@@ -778,7 +949,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			}
 		}
 		
-		supersession.setName(supersession.buildName());
+		supersession.setTitle(supersession.buildName());
 		supersession.setJustification(justification);
 		supersession.setRegisterManagerNotes(registerManagerNotes);
 		supersession.setControlBodyNotes(controlBodyNotes);
@@ -787,6 +958,28 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		proposalRepository.delete(perishableProposals);
 		
 		return supersession;
+	}
+	
+	@Override
+	public ProposalGroup createProposalGroup(List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
+		ProposalGroup result = new ProposalGroup(containedProposals);
+		result.setSponsor(sponsor);
+		
+		result = proposalRepository.save(result); 
+		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
+
+		return result;
+	}
+
+	@Override
+	public ProposalGroup createProposalGroup(String name, List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
+		ProposalGroup result = new ProposalGroup(containedProposals, name);
+		result.setSponsor(sponsor);
+		
+		result = proposalRepository.save(result); 
+		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
+
+		return result;
 	}
 
 	@Override
@@ -866,6 +1059,58 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		}
 		
 		return result;
+	}
+
+	@Override
+	public void approveProposalChange(Actor actor, ProposalChangeRequest changeRequest) {
+		List<RE_Register> registers = changeRequest.getProposal().getAffectedRegisters();
+		boolean isSubmitter = security.hasEntityRelatedRoleForAll(SUBMITTER_ROLE_PREFIX, registers);
+		boolean isControlBody = security.hasEntityRelatedRoleForAll(CONTROLBODY_ROLE_PREFIX, registers);
+		
+		boolean mayGreenlight = (changeRequest.isEditedBySubmitter() ? isControlBody : isSubmitter);
+		if (mayGreenlight) {
+			changeRequest.setReviewed(true);
+			pcrRepository.save(changeRequest);
+		}
+	}
+
+	/**
+	 * Delete a proposal and all items and other entities related to it. This operation can only be performed
+	 * as long as the proposal is not concluded.
+	 */
+	@Transactional
+	protected void deleteProposal(Proposal proposal) throws IllegalOperationException {
+		if (proposal.isConcluded()) {
+			throw new IllegalOperationException("Cannot delete concluded proposal");
+		}
+		
+		if (proposal instanceof Addition) {
+			// Delete the proposal, the proposed item and all proposal management information records
+			Addition addition = (Addition)proposal;
+			RE_RegisterItem item = addition.getItem();
+			if (item.getStatus() != RE_ItemStatus.NOT_VALID) {
+				throw new IllegalOperationException("Cannot delete proposal that references item with status != NOT_VALID");				
+			}
+			List<RE_ProposalManagementInformation> pmis = new ArrayList<>();
+			pmis.addAll(item.getAdditionInformation());
+			pmis.addAll(item.getClarificationInformation());
+			pmis.addAll(item.getAmendmentInformation());
+			while (!pmis.isEmpty()) {
+				RE_ProposalManagementInformation pmi = pmis.get(0);
+				pmis.remove(0);
+				pmiRepository.delete(pmi);
+			}
+			itemRepository.delete(item);
+			proposalRepository.delete(proposal);
+		}
+		else {
+			throw new RuntimeException("Not yet implemented");
+		}
+	}
+
+	@Override
+	public List<Authorization> findAuthorizedControlBody(Proposal proposal) {
+		return cbStrategy.findControlBodyAuthorizations(proposal);
 	}
 
 }

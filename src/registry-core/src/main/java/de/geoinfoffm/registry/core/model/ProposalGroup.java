@@ -75,16 +75,17 @@ public class ProposalGroup extends Proposal
 //	@JoinTable(name = "ProposalGroup_Proposals", joinColumns = @JoinColumn(name = "groupId"), inverseJoinColumns = @JoinColumn(name = "proposalId"))
 	private final List<Proposal> proposals = new ArrayList<Proposal>();
 	
-	@Column(columnDefinition = "text")
-	private String name;
-	
 	@Transient
 	private NameBuildingStrategy nameBuildingStrategy;
 	
 	protected ProposalGroup() {
 		this.nameBuildingStrategy = new SimpleNameBuildingStrategy();
 	}
-	
+
+	protected ProposalGroup(String title) {
+		super(title);
+	}
+
 	protected ProposalGroup(NameBuildingStrategy strategy) {
 		this.nameBuildingStrategy = strategy;
 	}
@@ -101,7 +102,7 @@ public class ProposalGroup extends Proposal
 			this.proposals.add(proposal);
 		}
 		
-		this.name = buildName();		
+		this.setTitle(buildName());		
 	}
 
 	public <P extends Proposal> ProposalGroup(Collection<P> proposals, String name) {
@@ -110,7 +111,7 @@ public class ProposalGroup extends Proposal
 		this.setProposals(new ArrayList<Proposal>());
 		this.proposals.addAll(proposals);
 		
-		this.name = name;
+		this.setTitle(name);
 	}
 
 	@Override
@@ -138,20 +139,6 @@ public class ProposalGroup extends Proposal
 			this.proposals.add(proposal);
 			proposal.setGroup(this);
 		}
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	/* (non-Javadoc)

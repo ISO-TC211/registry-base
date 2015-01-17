@@ -40,6 +40,7 @@ import java.util.List;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Inheritance;
@@ -79,10 +80,10 @@ public abstract class Proposal extends Entity
 	public static final String STATUS_FINISHED = "FINISHED";
 	public static final String STATUS_WITHDRAWN = "WITHDRAWN";
 	
+	@Column(columnDefinition = "text")
+	private String title;
 
 	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-//	@JoinTable(name = "ProposalGroup_Proposals", joinColumns = @JoinColumn(name = "proposalId"), inverseJoinColumns = @JoinColumn(name = "groupId"))
-//	@JoinColumn(name = "groupId", insertable = false, updatable = false)
 	private ProposalGroup group;
 	
 	private String status;
@@ -135,7 +136,12 @@ public abstract class Proposal extends Entity
 	protected Proposal() {
 		this.status = STATUS_NOT_SUBMITTED;
 	}
-	
+
+	protected Proposal(String title) {
+		this.setTitle(title);
+		this.status = STATUS_NOT_SUBMITTED;
+	}
+
 	/**
 	 * @return the group
 	 */
@@ -143,6 +149,12 @@ public abstract class Proposal extends Entity
 		return group;
 	}
 
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
 	/**
 	 * @param group the group to set
 	 */

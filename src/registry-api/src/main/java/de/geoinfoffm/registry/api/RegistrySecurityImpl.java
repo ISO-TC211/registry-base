@@ -50,22 +50,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.UnauthorizedException;
+import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.DelegationRepository;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalRepoository;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
-import de.geoinfoffm.registry.persistence.ProposalRepository;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
@@ -79,7 +81,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private RoleRepository roleRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepository suborgRepository;
+	private SubmittingOrganizationRepoository suborgRepository;
 
 	@Autowired
 	private OrganizationRepository orgRepository;
@@ -92,9 +94,12 @@ public class RegistrySecurityImpl implements RegistrySecurity
 
 	@Autowired
 	private DelegationRepository delegationRepository;
+	
+	@Autowired
+	private ControlBodyDiscoveryStrategy cbStrategy;
 
 	@Autowired
-	private ProposalRepository proposalRepository;
+	private ProposalRepoository proposalRepository;
 
 	public RegistrySecurityImpl() {
 	}
@@ -612,6 +617,27 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			else {
 				return null;
 			}
+		}
+	}
+
+	@Override
+	public boolean isControlBody(UUID proposalUuid) {
+		Proposal proposal = proposalRepository.findOne(proposalUuid);
+		Assert.notNull(proposal);
+		
+		for (Authorization auth : cbStrategy.findControlBodyAuthorizations(proposal)) {
+			if (auth.getUser().equals(this.getCurrentUser())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void assertIsTrue(boolean expression) throws UnauthorizedException {
+		if (!expression) {
+			throw new UnauthorizedException("You are not authorized to access this resource.");
 		}
 	}
 

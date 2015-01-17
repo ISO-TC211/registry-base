@@ -63,7 +63,7 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
@@ -88,7 +88,7 @@ implements RegistryUserService
 	private OrganizationService orgService;
 
 	@Autowired
-	private SubmittingOrganizationRepository suborgRepository;
+	private SubmittingOrganizationRepoository suborgRepository;
 	
 	@Autowired
 	private RegistryUserRepository userRepository;
@@ -112,7 +112,7 @@ implements RegistryUserService
 	private ResponsiblePartyRepository partyRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepository submittingOrgRepository;
+	private SubmittingOrganizationRepoository submittingOrgRepository;
 	
 	@Autowired
 	private RegisterItemService itemService;

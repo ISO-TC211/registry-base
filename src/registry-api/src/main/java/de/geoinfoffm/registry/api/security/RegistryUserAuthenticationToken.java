@@ -7,12 +7,12 @@
  * are met:
  *     * Redistributions of source code must retain the above copyright
  *     	 notice, this list of conditions and the following disclaimer.
-
+ *
  *     * Redistributions in binary form must reproduce the above
  *     	 copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials
  *       provided with the distribution.
-
+ *
  *     * The names "German Federal Agency for Cartography and Geodesy",
  *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
  *       "GDI-DE Registry" and the names of other contributors must not
@@ -32,17 +32,33 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.core.model;
+package de.geoinfoffm.registry.api.security;
 
-import de.geoinfoffm.registry.core.AuditedRepository;
-import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
-import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import java.util.Collection;
 
-/**
- * @author Florian Esser
- *
- */
-public interface SubmittingOrganizationRepository extends AuditedRepository<RE_SubmittingOrganization>
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+
+public class RegistryUserAuthenticationToken extends UsernamePasswordAuthenticationToken
 {
-	RE_SubmittingOrganization findByName(String name);
+	private static final long serialVersionUID = -2726026900523266923L;
+
+	private final String displayName;
+
+	public RegistryUserAuthenticationToken(Object principal, Object credentials, String displayName) {
+		super(principal, credentials);
+		
+		this.displayName = displayName;
+	}
+
+	public RegistryUserAuthenticationToken(Object principal, Object credentials, String displayName,
+			Collection<? extends GrantedAuthority> authorities) {
+		super(principal, credentials, authorities);
+		
+		this.displayName = displayName;
+	}
+
+	public String getDisplayName() {
+		return this.displayName;
+	}
 }

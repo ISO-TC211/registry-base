@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Component;
 
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;

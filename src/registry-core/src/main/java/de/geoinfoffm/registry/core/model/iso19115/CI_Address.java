@@ -34,6 +34,8 @@
  */
 package de.geoinfoffm.registry.core.model.iso19115;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -44,8 +46,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 
 import org.hibernate.envers.Audited;
-
-import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
 /**
  * Location of the responsible individual or organisation
@@ -61,89 +61,92 @@ public class CI_Address extends de.geoinfoffm.registry.core.Entity
 	 * Address line for the physical address (Street name, box number, suite)
 	 */
 	@ElementCollection
-	@AttributeOverride(name = "value", column = @Column(name = "address_deliveryPoint", length = 2000))
-	private Set<CharacterString> deliveryPoint;
+	@AttributeOverride(name = "value", column = @Column(columnDefinition = "text"))
+	private List<String> deliveryPoint;
 	/**
 	 * City of the physical address
 	 */	
-	@AttributeOverride(name = "value", column = @Column(name = "city", length = 2000))
-	private CharacterString city;
+	@Column(columnDefinition = "text")
+	private String city;
 	/**
 	 * State, province of the physical address
 	 */
-	@AttributeOverride(name = "value", column = @Column(name = "administrativeArea", length = 2000))
-	private CharacterString administrativeArea;
+	@Column(columnDefinition = "text")
+	private String administrativeArea;
 	/**
 	 * ZIP or other postal code 
 	 */
-	@AttributeOverride(name = "value", column = @Column(name = "postalCode", length = 2000))
-	private CharacterString postalCode;
+	@Column(columnDefinition = "text")
+	private String postalCode;
 	/**
 	 * Country of the physical address
 	 */
-	@AttributeOverride(name = "value", column = @Column(name = "country", length = 2000))
-	private CharacterString country;
+	@Column(columnDefinition = "text")
+	private String country;
 	/**
 	 * Address of the electronic mailbox of the responsible organisation or individual
 	 */
 	@ElementCollection
-	@AttributeOverride(name = "value", column = @Column(name = "address_email", length = 2000))
-	private Set<CharacterString> electronicMailAddress;
+	@AttributeOverride(name = "value", column = @Column(columnDefinition = "text"))
+	private Set<String> electronicMailAddress;
 
 	protected CI_Address(){
 
 	}
 
-	public Set<CharacterString> getDeliveryPoint() {
+	public List<String> getDeliveryPoint() {
+		if (deliveryPoint == null) {
+			this.deliveryPoint = new ArrayList<>();
+		}
+		
 		return deliveryPoint;
 	}
 
-	public void setDeliveryPoint(Set<CharacterString> deliveryPoint) {
+	public void setDeliveryPoint(List<String> deliveryPoint) {
 		this.deliveryPoint = deliveryPoint;
 	}
 
-	public CharacterString getCity() {
+	public String getCity() {
 		return city;
 	}
 
-	public void setCity(CharacterString city) {
+	public void setCity(String city) {
 		this.city = city;
 	}
 
-	public CharacterString getAdministrativeArea() {
+	public String getAdministrativeArea() {
 		return administrativeArea;
 	}
 
-	public void setAdministrativeArea(CharacterString administrativeArea) {
+	public void setAdministrativeArea(String administrativeArea) {
 		this.administrativeArea = administrativeArea;
 	}
 
-	public CharacterString getPostalCode() {
+	public String getPostalCode() {
 		return postalCode;
 	}
 
-	public void setPostalCode(CharacterString postalCode) {
+	public void setPostalCode(String postalCode) {
 		this.postalCode = postalCode;
 	}
 
-	public CharacterString getCountry() {
+	public String getCountry() {
 		return country;
 	}
 
-	public void setCountry(CharacterString country) {
+	public void setCountry(String country) {
 		this.country = country;
 	}
 
-	public Set<CharacterString> getElectronicMailAddress() {
+	public Set<String> getElectronicMailAddress() {
 		return electronicMailAddress;
 	}
 
-	public void setElectronicMailAddress(Set<CharacterString> electronicMailAddress) {
+	public void setElectronicMailAddress(Set<String> electronicMailAddress) {
 		this.electronicMailAddress = electronicMailAddress;
 	}
 
 	public void finalize() throws Throwable {
 
 	}
-
 }//end CI_Address

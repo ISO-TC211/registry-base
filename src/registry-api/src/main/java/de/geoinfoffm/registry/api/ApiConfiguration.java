@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.api;
 
+import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +60,16 @@ import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.security.acls.model.PermissionGrantingStrategy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import de.geoinfoffm.registry.core.ItemClassRegistry;
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
+import de.geoinfoffm.registry.core.model.ProposalRepoository;
 import de.geoinfoffm.registry.core.security.RegistryLookupStrategy;
 import de.geoinfoffm.registry.core.security.RegistryMutableAclService;
 import de.geoinfoffm.registry.core.security.RegistryPermission;
-import de.geoinfoffm.registry.persistence.ProposalRepository;
+import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.jpa.HibernateConfiguration;
 
 /**
@@ -83,7 +87,7 @@ public class ApiConfiguration
 	
 	@Autowired
 	@Bean
-	public ProposalService proposalService(ProposalRepository repository) {
+	public ProposalService proposalService(ProposalRepoository repository) {
 		return new ProposalServiceImpl(repository);
 	}
 	
@@ -150,5 +154,21 @@ public class ApiConfiguration
 	public ItemFactoryRegistry itemFactoryRegistry(ApplicationContext context, RegistryConfiguration configuration) {
 		return new ItemFactoryRegistry(context, configuration);
 	}
+
+	@Bean
+	public Validator validator() {
+		return new LocalValidatorFactoryBean();
+	}
+
+	@Autowired
+	@Bean
+	public RegisterService registerService(RegisterRepository registerRepository) {
+		return new RegisterServiceImpl(registerRepository);
+	}
 	
+	@Autowired
+	@Bean
+	public ProposalDtoFactory proposalDtoFactory(ItemClassRegistry registry, EntityManager entityManager) {
+		return new ProposalDtoFactory(registry, entityManager);
+	}
 }

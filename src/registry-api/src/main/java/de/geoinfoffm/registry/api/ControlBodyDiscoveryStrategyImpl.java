@@ -32,34 +32,61 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.persistence;
+package de.geoinfoffm.registry.api;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import de.geoinfoffm.registry.core.EntityRepository;
+import de.geoinfoffm.registry.core.model.Authorization;
+import de.geoinfoffm.registry.core.model.AuthorizationRepository;
+import de.geoinfoffm.registry.core.model.Delegation;
+import de.geoinfoffm.registry.core.model.DelegationRepository;
+import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.Role;
+import de.geoinfoffm.registry.core.model.RoleRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
- * The interface RegisterRepository.
+ * The class ControlBodyDiscoveryStrategyImpl.
  *
  * @author Florian Esser
  */
-@Repository
-public interface RegisterRepository extends EntityRepository<RE_Register>
+public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStrategy
 {
-	public RE_Register findByName(String registerName);
+	private RegisterService registerService;
+	private DelegationRepository delegationRepository;
 	
-	@Query("SELECT r.uuid, r.name FROM RE_Register r ORDER BY r.name")
-	public List<Object[]> getRegisterNames();
+	public ControlBodyDiscoveryStrategyImpl(RegisterService registerService, DelegationRepository delegationRepository) {
+		this.registerService = registerService;
+		this.delegationRepository = delegationRepository;
+	}
 
-	@Query("SELECT r.uuid, r.name FROM RE_SubregisterDescription r WHERE r.status = 'VALID' ORDER BY r.name")
-	public List<Object[]> getSubregisterNames();
-	
-	@Query("SELECT r.uuid FROM RE_Register r WHERE r.name IN (SELECT s.name FROM RE_SubregisterDescription s WHERE s.status = 'VALID' AND s.register.uuid = :registerUuid)")
-	public List<UUID> getSubregisters(@Param("registerUuid") UUID registerUuid); 
+	@Override
+	public List<Role> findControlBodyRoles(Proposal proposal) {
+		List<Role> result = new ArrayList<>();
+		for (RE_Register register : proposal.getAffectedRegisters()) {
+			Role registerCbRole = registerService.getControlBodyRole(register);
+			result.add(registerCbRole);
+		}
+
+		return result;
+	}
+
+	@Override
+	public List<Authorization> findControlBodyAuthorizations(Proposal proposal) {
+		List<Authorization> result = new ArrayList<>();
+		
+		List<Role> roles = this.findControlBodyRoles(proposal);
+		for (Role role : roles) {
+			List<Delegation> delegations = delegationRepository.findByRole(role);
+			if (delegations != null && !delegations.isEmpty()) {
+				for (Delegation delegation : delegations) {
+					result.add(delegation);
+				}
+			}
+		}
+			
+		return result;
+	}
+		
 }

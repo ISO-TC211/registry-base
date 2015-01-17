@@ -107,6 +107,10 @@ public class CI_OnlineResource extends de.geoinfoffm.registry.core.Entity
 
 	}
 
+	public CI_OnlineResource(String linkage) {
+		this.linkage = linkage;
+	}
+
 	/**
 	 * @return the linkage
 	 */

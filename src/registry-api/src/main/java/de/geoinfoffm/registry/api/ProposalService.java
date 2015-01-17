@@ -35,21 +35,25 @@
 package de.geoinfoffm.registry.api;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.UnauthorizedException;
+import de.geoinfoffm.registry.core.model.Actor;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Appeal;
+import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.InvalidProposalException;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
-import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
@@ -62,18 +66,21 @@ public interface ProposalService extends ApplicationService<Proposal>
 	
 	Proposal propose(RegisterItemProposalDTO proposal) throws InvalidProposalException, ItemNotFoundException, IllegalOperationException;
 	Addition createAdditionProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException;
-	Retirement proposeRetirement(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
-	Clarification proposeClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
-	Supersession proposeSupersession(Set<RE_RegisterItem> supersededItems, Set<RegisterItemProposalDTO> successors, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException, InvalidProposalException;
+	Retirement createRetirement(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
+	Clarification createClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
+	Supersession createSupersession(Set<RE_RegisterItem> supersededItems, Set<RegisterItemProposalDTO> successors, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException, InvalidProposalException;
+	ProposalGroup createProposalGroup(List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException;
+	ProposalGroup createProposalGroup(String name, List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException;
 
-	Proposal updateProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException;
+	Proposal updateProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException, UnauthorizedException;
 	Proposal updateProposal(UUID proposalUuid, AbstractProposal_Type proposal) throws InvalidProposalException;
 	Supersession updateSupersession(Supersession supersession, Set<RE_RegisterItem> supersededItems, Set<RE_RegisterItem> existingSuccessors, Set<RegisterItemProposalDTO> newSuccessors, String justification, String registerManagerNotes, String controlBodyNotes) throws InvalidProposalException;
+	
 	Proposal withdrawProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException;
 
-	Proposal reviewProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException;
+	Proposal reviewProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException, UnauthorizedException;
 
-	Proposal acceptProposal(Proposal proposal, String controlBodyDecisionEvent) throws InvalidProposalException, IllegalOperationException;
+	Proposal acceptProposal(Proposal proposal, String controlBodyDecisionEvent) throws InvalidProposalException, IllegalOperationException, UnauthorizedException;
 
 	Proposal rejectProposal(Proposal proposal, String controlBodyDecisionEvent) throws InvalidProposalException, IllegalOperationException, UnauthorizedException;
 
@@ -91,4 +98,8 @@ public interface ProposalService extends ApplicationService<Proposal>
 
 	Appeal findAppeal(UUID uuid);
 	Appeal findAppeal(Proposal proposal);
+	
+	void approveProposalChange(Actor actor, ProposalChangeRequest changeRequest);
+	
+	List<Authorization> findAuthorizedControlBody(Proposal proposal);
 }
