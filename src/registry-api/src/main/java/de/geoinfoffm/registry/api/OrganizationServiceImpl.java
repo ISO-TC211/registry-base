@@ -266,6 +266,19 @@ implements OrganizationService
 	}
 
 	@Override
+	public Map<UUID, Object[]> getDescriptions() {
+		Map<UUID, Object[]> result = new HashMap<UUID, Object[]>();
+		
+		List<Object[]> objects = repository().getOrganizationNames();
+		
+		for (Object[] object : objects) {
+			result.put((UUID)object[0], object);
+		}
+		
+		return result;
+	}
+
+	@Override
 	public Delegation delegate(RegistryUser user, Role role, Organization organization) throws UnauthorizedException {
 		if (!security.isAdmin() && !security.mayActOnBehalf(organization, this.getPointOfContactRole(organization))) {
 			throw new UnauthorizedException(String.format("You are not allowed to delegate role '%s' on behalf of organization '%s'", role.getName(), organization.getName()));

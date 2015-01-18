@@ -55,7 +55,7 @@ public interface OrganizationRepository extends EntityRepository<Organization>
 	@Query("SELECT o FROM Organization o WHERE LOWER(o.name) = LOWER(:name)")
 	Organization findByName(@Param("name") String organizationName);
 	
-	@Query("SELECT o.uuid, o.name FROM Organization o ORDER BY o.name")
+	@Query("SELECT o.uuid, o.name, o.shortName, o.submittingOrganization FROM Organization o ORDER BY o.name")
 	List<Object[]> getOrganizationNames();
 	
 	Organization findBySubmittingOrganization(RE_SubmittingOrganization submittingOrganization);

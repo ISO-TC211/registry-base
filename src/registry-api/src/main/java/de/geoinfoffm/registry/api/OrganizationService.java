@@ -73,6 +73,7 @@ public interface OrganizationService extends ApplicationService<Organization>
 	public OrganizationRelatedRole createOrganizationRelatedRole(String name, Organization organization);
 	
 	public Map<UUID, String> getAllNames();
+	public Map<UUID, Object[]> getDescriptions();
 
 	Collection<RegistryUser> findRoleUsers(Organization organization, Role role);
 
