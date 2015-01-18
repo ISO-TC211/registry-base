@@ -516,7 +516,9 @@
 	<xs:complexType name="SubgroupProposal_Type">
 		<xs:complexContent>
 			<xs:extension base="regsoap:AbstractConceptGroupProposal_Type">
-				<xs:sequence/>
+				<xs:sequence>
+					<xs:element name="groupUuid" type="xs:string"/>
+				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
