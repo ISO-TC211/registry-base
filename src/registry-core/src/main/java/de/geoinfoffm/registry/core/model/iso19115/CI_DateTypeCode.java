@@ -38,6 +38,8 @@ import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
 
 /**
@@ -45,7 +47,7 @@ import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
  * @created 10-Sep-2013 19:42:56
  */
 @XmlRootElement(name = "CI_DateTypeCode", namespace = "http://www.isotc211.org/2005/gmd")
-@Embeddable 
+@Audited @Embeddable 
 public class CI_DateTypeCode extends CodeListValue 
 {
 	/**

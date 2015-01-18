@@ -38,13 +38,15 @@ import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
 
 /**
  * Function performed by the responsible party
  */
 @XmlRootElement(name = "CI_RoleCode", namespace = "http://www.isotc211.org/2005/gmd")
-@Embeddable 
+@Audited @Embeddable 
 public class CI_RoleCode extends CodeListValue 
 {
 	private static final long serialVersionUID = -6784967061384825527L;

@@ -47,6 +47,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.ValueObject;
 
 /**
@@ -55,11 +57,11 @@ import de.geoinfoffm.registry.core.ValueObject;
  * @author Florian Esser
  *
  */
-@Embeddable
 @Access(AccessType.FIELD)
 @XmlType(name = "Integer", namespace = "http://www.isotc211.org/2005/gco")
 @XmlRootElement(name = "Integer", namespace = "http://www.isotc211.org/2005/gco")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Audited @Embeddable
 public class Integer extends ValueObject implements Serializable
 {
 	@XmlValue

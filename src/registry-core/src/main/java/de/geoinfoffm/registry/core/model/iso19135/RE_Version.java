@@ -49,6 +49,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.DateAdapter;
@@ -68,7 +70,7 @@ import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 @XmlRootElement(name = "RE_Version", namespace = "http://www.isotc211.org/2005/grg")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
-@Embeddable
+@Audited @Embeddable
 public class RE_Version extends ValueObject
 {
 	@XmlElement(name = "versionNumber", namespace = "http://www.isotc211.org/2005/grg", type = CharacterString.class)

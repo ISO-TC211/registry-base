@@ -46,6 +46,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
@@ -61,7 +63,7 @@ import de.geoinfoffm.registry.core.model.iso19115.CI_Citation;
 @XmlRootElement(name = "RE_ReferenceSource", namespace = "http://www.isotc211.org/2005/grg")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
-@Embeddable
+@Audited @Embeddable
 public class RE_ReferenceSource extends ValueObject
 {
 	@XmlElement(name = "text", namespace = "http://www.isotc211.org/2005/grg", type = CharacterString.class)

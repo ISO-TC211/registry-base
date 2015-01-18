@@ -41,6 +41,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
@@ -50,7 +52,7 @@ import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
  * @created 10-Sep-2013 19:43:44
  */
 @Access(AccessType.FIELD)
-@Embeddable
+@Audited @Embeddable
 public class CI_Series extends ValueObject
 {
 	@AttributeOverride(name = "value", column = @Column(name = "name", length = 2000))

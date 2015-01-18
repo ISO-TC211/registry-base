@@ -48,6 +48,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.namespace.QName;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.ValueObject;
 
 /**
@@ -58,8 +60,8 @@ import de.geoinfoffm.registry.core.ValueObject;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@MappedSuperclass
 @Access(AccessType.FIELD)
+@Audited @MappedSuperclass
 public abstract class CodeListValue extends ValueObject
 {
 	private static final long serialVersionUID = -2457064963628233278L;

@@ -39,6 +39,8 @@ import javax.persistence.AccessType;
 import javax.persistence.Embeddable;
 import javax.persistence.MappedSuperclass;
 
+import org.hibernate.envers.Audited;
+
 /**
  * An identification of a CRS object. The first use of a XX_RS_Identifier for an
  * object, if any, is normally the primary identification code, and any others
@@ -47,7 +49,7 @@ import javax.persistence.MappedSuperclass;
  * @created 10-Sep-2013 20:16:25
  */
 @Access(AccessType.FIELD)
-@Embeddable
+@Audited @Embeddable
 public final class RS_Identifier extends MD_Identifier
 {
 

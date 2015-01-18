@@ -41,6 +41,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.OneToOne;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
@@ -50,7 +52,7 @@ import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
  * @created 10-Sep-2013 20:16:05
  */
 @Access(AccessType.FIELD)
-@Embeddable
+@Audited @Embeddable
 public class MD_Identifier extends ValueObject
 {
 	/**

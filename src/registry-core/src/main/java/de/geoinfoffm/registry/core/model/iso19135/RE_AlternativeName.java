@@ -41,13 +41,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.PropertyType;
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
-@Embeddable
 @XmlRootElement(name = "RE_AlternativeName", namespace = "http://www.isotc211.org/2005/grg")
+@Audited @Embeddable
 public class RE_AlternativeName extends ValueObject
 {
 	@XmlJavaTypeAdapter(CharacterStringAdapter.class)

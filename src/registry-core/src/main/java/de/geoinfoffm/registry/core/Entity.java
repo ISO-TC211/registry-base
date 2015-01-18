@@ -50,6 +50,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.envers.Audited;
 import org.hibernate.proxy.HibernateProxy;
 
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
@@ -60,8 +61,8 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
  * @author Florian Esser
  *
  */
-@MappedSuperclass
 @XmlRootElement
+@Audited @MappedSuperclass
 public abstract class Entity implements Serializable
 {
 	@XmlID @XmlAttribute(name = "uuid", namespace = "http://www.isotc211.org/2005/gco")

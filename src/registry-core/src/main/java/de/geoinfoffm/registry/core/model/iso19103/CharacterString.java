@@ -46,6 +46,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
+import org.hibernate.envers.Audited;
+
 import de.geoinfoffm.registry.core.ValueObject;
 
 /**
@@ -54,10 +56,10 @@ import de.geoinfoffm.registry.core.ValueObject;
  * @author Florian Esser
  *
  */
-@Embeddable
 @Access(AccessType.FIELD)
 @XmlRootElement(name = "CharacterString", namespace = "http://www.isotc211.org/2005/gco")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Audited @Embeddable
 public class CharacterString extends ValueObject implements CharSequence, Serializable
 {
 	private static final long serialVersionUID = -6488446334222986744L;
