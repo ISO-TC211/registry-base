@@ -34,7 +34,7 @@
  */
 package de.geoinfoffm.registry.client.web;
 
-import de.geoinfoffm.registry.soap.CreateRegistryUserRequest;
+import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 
 public class SignupFormBean
 

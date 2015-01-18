@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.UUID;
 
 import de.geoinfoffm.registry.api.RegistryUserUpdateDTO;
+import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
-import de.geoinfoffm.registry.soap.CreateRegistryUserRequest;
 
 /**
  * @author Florian Esser

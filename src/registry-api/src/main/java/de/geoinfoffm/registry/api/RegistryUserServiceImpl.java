@@ -51,6 +51,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
+import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.core.RegistryUserCreatedEvent;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
@@ -67,8 +69,6 @@ import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationReposito
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
-import de.geoinfoffm.registry.soap.CreateRegistryUserRequest;
 
 /**
  * Service operations for {@link RegistryUser}s in the GDI-DE Registry.

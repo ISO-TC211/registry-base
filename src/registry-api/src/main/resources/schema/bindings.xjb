@@ -195,4 +195,21 @@
 		</jaxb:schemaBindings>
 	</jaxb:bindings>
 
+	<jaxb:bindings schemaLocation="service.xsd" 
+		node="/xs:schema">
+		<jaxb:schemaBindings>
+			<jaxb:package name="de.geoinfoffm.registry.api.soap"/>
+		</jaxb:schemaBindings>
+	</jaxb:bindings>
+
+	<jaxb:bindings schemaLocation="registry.xsd" 
+		node="/xs:schema">
+		<jaxb:schemaBindings>
+			<jaxb:package name="de.geoinfoffm.registry.api"/>
+		</jaxb:schemaBindings>
+		<bindings node="//xs:complexType[@name='Role_PropertyType']//xs:element[@ref='reg:Role']">
+			<property name="RegistryRole"/>
+        </bindings>	
+	</jaxb:bindings>
+
 </jaxb:bindings>

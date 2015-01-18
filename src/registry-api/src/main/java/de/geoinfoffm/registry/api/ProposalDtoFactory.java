@@ -45,6 +45,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.ItemClassConfiguration;
 import de.geoinfoffm.registry.core.ItemClassRegistry;
 //import de.geoinfoffm.registry.core.model.HierarchicalProposal;
@@ -53,9 +56,6 @@ import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
-import de.geoinfoffm.registry.soap.AbstractProposal_Type;
-import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.soap.Addition_Type;
 
 /**
  * A factory for creating ProposalDto objects.

@@ -42,6 +42,7 @@ import javax.persistence.EntityManager;
 
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.iso00639.LanguageCode;
 import de.geoinfoffm.registry.core.model.iso19115.CI_OnlineResource;
@@ -52,8 +53,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterManager;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubregisterDescription;
-import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.soap.Addition_Type;
 
 /**
  * The class SubregisterDescriptionProposalDTO.

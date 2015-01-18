@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.UUID;
 
 import de.geoinfoffm.registry.api.OrganizationUpdateDTO;
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.Organization;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
 
 public class OrganizationFormBean
 {

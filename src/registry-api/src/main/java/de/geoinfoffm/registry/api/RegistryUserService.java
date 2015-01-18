@@ -41,12 +41,10 @@ import javax.jws.WebService;
 
 import org.springframework.stereotype.Service;
 
-import de.geoinfoffm.registry.api.ApplicationService;
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
+import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.RegistryUser;
-import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
-import de.geoinfoffm.registry.soap.CreateRegistryUserRequest;
 
 /**
  * Service operations for {@link RegistryUser}s in the GDI-DE Registry.

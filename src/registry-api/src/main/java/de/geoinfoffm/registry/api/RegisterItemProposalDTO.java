@@ -66,8 +66,8 @@ import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.soap.Addition_Type;
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
 
 /**
  * @author Florian Esser

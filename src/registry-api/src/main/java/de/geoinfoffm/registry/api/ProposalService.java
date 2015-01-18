@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Actor;
@@ -57,7 +58,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.soap.AbstractProposal_Type;
 
 public interface ProposalService extends ApplicationService<Proposal>
 {

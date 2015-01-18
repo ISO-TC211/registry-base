@@ -59,6 +59,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
 
+import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
+import de.geoinfoffm.registry.api.soap.Clarification_Type;
+import de.geoinfoffm.registry.api.soap.ProposedChange_PropertyType;
+import de.geoinfoffm.registry.api.soap.Retirement_Type;
+import de.geoinfoffm.registry.api.soap.Supersession_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.ProposalAcceptedEvent;
 import de.geoinfoffm.registry.core.ProposalCreatedEvent;
@@ -100,13 +107,6 @@ import de.geoinfoffm.registry.persistence.RegisterItemRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
 import de.geoinfoffm.registry.persistence.SupersessionRepository;
-import de.geoinfoffm.registry.soap.AbstractProposal_Type;
-import de.geoinfoffm.registry.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.soap.Addition_Type;
-import de.geoinfoffm.registry.soap.Clarification_Type;
-import de.geoinfoffm.registry.soap.ProposedChange_PropertyType;
-import de.geoinfoffm.registry.soap.Retirement_Type;
-import de.geoinfoffm.registry.soap.Supersession_Type;
 
 /**
  * The class ProposalServiceImpl.

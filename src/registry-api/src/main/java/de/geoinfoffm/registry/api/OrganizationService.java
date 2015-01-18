@@ -42,13 +42,13 @@ import javax.jws.WebService;
 
 import org.springframework.stereotype.Service;
 
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRelatedRole;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
 
 /**
  * Service operations for {@link Organization}s in the GDI-DE Registry.

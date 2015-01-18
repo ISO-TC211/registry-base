@@ -58,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.AuthorizationRepository;
@@ -80,7 +81,6 @@ import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
 
 /**
  * Service operations for {@link Organization}s in the GDI-DE Registry.
