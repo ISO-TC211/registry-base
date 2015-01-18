@@ -641,4 +641,14 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		}
 	}
 
+	@Override
+	public boolean maySubmitTo(UUID targetRegisterUuid) {
+		return hasEntityRelatedRole(SUBMITTER_ROLE_PREFIX, targetRegisterUuid);
+	}
+
+	@Override
+	public void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException {
+		assertIsTrue(maySubmitTo(targetRegisterUuid));
+	}
+
 }

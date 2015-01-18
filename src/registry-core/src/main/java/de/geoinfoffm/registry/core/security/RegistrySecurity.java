@@ -68,8 +68,12 @@ public interface RegistrySecurity
 	boolean isDelegated(List<Delegation> delegations, UUID userUuid, UUID organizationUuid, String roleName);
 
 	boolean isControlBody(UUID proposalUuid);
+	
+	boolean maySubmitTo(UUID targetRegisterUuid);
 
 	void assertIsAdmin() throws UnauthorizedException;
+	
+	void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException;
 
 	void assertMayAdmin(Entity entity) throws UnauthorizedException;
 
