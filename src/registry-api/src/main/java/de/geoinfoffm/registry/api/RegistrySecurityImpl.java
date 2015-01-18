@@ -36,6 +36,7 @@ package de.geoinfoffm.registry.api;
 
 import static org.springframework.security.acls.domain.BasePermission.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -87,7 +88,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private OrganizationRepository orgRepository;
 
 	@Autowired
-	private OrganizationService orgService;
+	protected OrganizationService orgService;
 
 	@Autowired
 	private RegistryUserRepository userRepository;
@@ -131,7 +132,12 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return (RegistryUser)principal;
 		}
 		else {
-			throw new RuntimeException("Current principal is not a registry user");
+			Principal p = (Principal)principal;
+			RegistryUser user = userRepository.findByEmailAddress(p.getName());
+			if (user == null) {
+				throw new RuntimeException("Current principal is not a registry user");
+			}
+			return user;
 		}
 	}
 	
