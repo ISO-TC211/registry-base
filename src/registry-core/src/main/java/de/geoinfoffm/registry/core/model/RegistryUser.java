@@ -73,7 +73,7 @@ import de.geoinfoffm.registry.core.PasswordEncodingServiceImpl;
  *
  */
 @Access(AccessType.FIELD)
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Audited @Entity 
 public class RegistryUser extends Actor implements UserDetails
 {
