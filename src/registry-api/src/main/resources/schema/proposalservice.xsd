@@ -12,6 +12,7 @@
 			<xs:element name="justification" type="xs:string"/>
 			<xs:element name="registerManagerNotes" type="xs:string" minOccurs="0"/>
 			<xs:element name="controlBodyNotes" type="xs:string" minOccurs="0"/>
+			<xs:element name="status" type="xs:string"/>
 		</xs:sequence>
 		<xs:attribute name="uuid" type="xs:string" use="optional"/>
 	</xs:complexType>
