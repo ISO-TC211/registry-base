@@ -434,7 +434,6 @@
 	<!-- ........................................................................ -->
 	<xs:element name="RejectAppealResponse" type="regsoap:RejectAppealResponse"/>
 	<!-- =========================================================================== -->
-	<!-- =========================================================================== -->
 	<xs:complexType name="AbstractConceptProposal_Type" abstract="true">
 		<xs:complexContent>
 			<xs:extension base="regsoap:AbstractRegisterItemProposal_Type">
@@ -471,6 +470,62 @@
 	<xs:complexType name="FeatureConceptProposal_PropertyType">
 		<xs:sequence>
 			<xs:element ref="regsoap:FeatureConceptProposal" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="AbstractConceptGroupProposal_Type" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="regsoap:AbstractRegisterItemProposal_Type">
+				<xs:sequence>
+					<xs:element name="alphaCode" type="xs:string"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="AbstractConceptGroupProposal" type="regsoap:AbstractConceptGroupProposal_Type" abstract="true" substitutionGroup="regsoap:AbstractRegisterItemProposal"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="ConceptGroupProposal_PropertyType">
+		<xs:sequence>
+			<xs:element ref="regsoap:AbstractConceptGroupProposal" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="GroupProposal_Type">
+		<xs:complexContent>
+			<xs:extension base="regsoap:AbstractConceptGroupProposal_Type">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="GroupProposal" type="regsoap:GroupProposal_Type" substitutionGroup="regsoap:AbstractRegisterItemProposal"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="GroupProposal_PropertyType">
+		<xs:sequence>
+			<xs:element ref="regsoap:GroupProposal" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="SubgroupProposal_Type">
+		<xs:complexContent>
+			<xs:extension base="regsoap:AbstractConceptGroupProposal_Type">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="SubgroupProposal" type="regsoap:SubgroupProposal_Type" substitutionGroup="regsoap:AbstractRegisterItemProposal"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="SubgroupProposal_PropertyType">
+		<xs:sequence>
+			<xs:element ref="regsoap:SubgroupProposal" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attributeGroup ref="gco:ObjectReference"/>
 		<xs:attribute ref="gco:nilReason"/>
