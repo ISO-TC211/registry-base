@@ -164,23 +164,20 @@ public class RE_ItemClass extends de.geoinfoffm.registry.core.Entity
 	 * @return the registers
 	 */
 	public Set<RE_Register> getRegisters() {
+		if (this.registers == null) {
+			this.registers = new HashSet<RE_Register>();
+		}
+
 		return registers;
 	}
 
 	/**
 	 * @param registers the registers to set
 	 */
-	public void setRegisters(Set<RE_Register> registers) {
+	protected void setRegisters(Set<RE_Register> registers) {
 		this.registers = registers;
 	}
 	
-	public void addRegister(RE_Register register) {
-		if (this.registers == null) {
-			this.registers = new HashSet<RE_Register>();
-		}
-		this.registers.add(register);
-	}
-
 	public Set<RE_RegisterItem> getDescribedItem() {
 		return describedItem;
 	}
