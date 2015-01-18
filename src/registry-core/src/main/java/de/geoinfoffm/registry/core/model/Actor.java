@@ -54,7 +54,7 @@ import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.model.Sid;
 
 @Access(AccessType.FIELD)
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Audited @Entity
 public abstract class Actor extends de.geoinfoffm.registry.core.Entity
 {
