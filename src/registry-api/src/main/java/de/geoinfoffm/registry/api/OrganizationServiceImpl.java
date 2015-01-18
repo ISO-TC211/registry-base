@@ -87,8 +87,6 @@ import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
  * 
  * @author Florian Esser
  */
-@Service
-@WebService(endpointInterface = "de.bund.bkg.gdide.registry.ws.Organization")
 @ItemClassService("Organization")
 public class OrganizationServiceImpl 
 extends AbstractApplicationService<Organization, OrganizationRepository>
@@ -310,6 +308,10 @@ implements OrganizationService
 
 	@Override
 	public Delegation getOrCreateDelegationRequest(RegistryUser user, Role role, Organization organization) throws UnauthorizedException {
+		Assert.notNull(user, "User must not be null");
+		Assert.notNull(role, "Role must not be null");
+		Assert.notNull(organization, "Organization must not be null");
+		
 		Delegation delegation = findDelegation(user, role, organization); 
 		if (delegation == null) {
 			delegation = new Delegation(user, role, organization);
