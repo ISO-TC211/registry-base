@@ -55,6 +55,7 @@ import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
+import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -196,15 +197,15 @@ public class RegisterItemViewBean
 		// does nothing here
 	}
 	
-	public RE_RegisterItem_Type toXmlType() {
-		RE_RegisterItem_Type result = this.createXmlType();
+	public RE_RegisterItem_Type toXmlType(ProposalDtoFactory dtoFactory) {
+		RE_RegisterItem_Type result = this.createXmlType(dtoFactory);
 		this.setXmlValues(result);
 		
 		return result;
 	}
 	
-	protected RE_RegisterItem_Type createXmlType() {
-		return new RE_RegisterItem_Type();
+	protected RE_RegisterItem_Type createXmlType(ProposalDtoFactory proposalDtoFactory) {
+		return proposalDtoFactory.getXmlType(this.getItemClassName());
 	}
 	
 	public void setXmlValues(RE_RegisterItem_Type result) {

@@ -40,10 +40,11 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
@@ -62,7 +63,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
  *
  * @author Florian Esser
  */
-@Component
 public class ProposalDtoFactory
 {
 	private static final Logger logger = LoggerFactory.getLogger(ProposalDtoFactory.class);
@@ -197,5 +197,32 @@ public class ProposalDtoFactory
 		}
 		
 		return ctor;
+	}
+	
+	public RE_RegisterItem_Type getXmlType(String itemClassName) {
+		ItemClassConfiguration config = itemClassRegistry.getConfiguration(itemClassName);
+		if (config == null) {
+			logger.info(String.format("No item class configuration aviailabe for item class '%s'", itemClassName));
+			return new RE_RegisterItem_Type();
+		}
+
+		if (StringUtils.isEmpty(config.getXmlType())) {
+			logger.info(String.format("Item class configuration does not specify 'xmlType' for item class '%s'", itemClassName));
+			return new RE_RegisterItem_Type();			
+		}
+		
+		try {
+			Class<?> xmlType = Class.forName(config.getXmlType());
+			if (!RE_RegisterItem_Type.class.isAssignableFrom(xmlType)) {
+				logger.error(String.format("Item class configuration for item class '%s' specifies illegal xmlType '%s': Not derived from RE_RegisterItem_Type", itemClassName, config.getXmlType()));
+				return new RE_RegisterItem_Type();							
+			}
+			
+			return (RE_RegisterItem_Type)BeanUtils.instantiate(xmlType);
+		}
+		catch (ClassNotFoundException e) {
+			logger.error(String.format("Item class configuration for item class '%s' specifies unavailable xmlType '%s'", itemClassName, config.getXmlType()));
+			return new RE_RegisterItem_Type();			
+		}
 	}
 }

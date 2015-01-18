@@ -109,7 +109,7 @@ public class ItemClassRegistry extends AbstractRegistry
 	    	}
 */	    	
 	    	if (configFile != null) {
-                        logger.debug("Found resource '{}'!", path);
+	    		logger.debug("Found item class configuration '{}'", path);
 	    		try {
 					JAXBContext jaxbContext = JAXBContext.newInstance(ItemClassConfiguration.class);
 					Marshaller m = jaxbContext.createMarshaller();
@@ -124,7 +124,7 @@ public class ItemClassRegistry extends AbstractRegistry
 					itemClasses2.put(bean.getClass(), config);
 				}
 				catch (JAXBException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(), e);
 				}
 	    	}
 	    }

@@ -49,7 +49,7 @@ import javax.xml.bind.annotation.XmlType;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
 @XmlType(name = "ItemClassConfiguration", namespace = "http://www.geoinfoffm.de/registry",
-		 propOrder = { "dtoClass", "viewBeanClass", "viewItemTemplate", "viewProposalTemplate", "createProposalTemplate", "editProposalTemplate", "properties" })
+		 propOrder = { "dtoClass", "viewBeanClass", "xmlType", "viewItemTemplate", "viewProposalTemplate", "createProposalTemplate", "editProposalTemplate", "properties" })
 @XmlRootElement(name = "ItemClassConfiguration", namespace = "http://www.geoinfoffm.de/registry")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ItemClassConfiguration
@@ -65,6 +65,9 @@ public class ItemClassConfiguration
 	
 	@XmlElement
 	private String viewBeanClass;
+	
+	@XmlElement(required = false)
+	private String xmlType;
 
 	@XmlElement(required = false)
 	private String viewItemTemplate;
@@ -123,6 +126,14 @@ public class ItemClassConfiguration
 		this.viewBeanClass = viewBeanClass;
 	}
 
+
+	public String getXmlType() {
+		return xmlType;
+	}
+
+	public void setXmlType(String xmlType) {
+		this.xmlType = xmlType;
+	}
 
 	public String getViewItemTemplate() {
 		return viewItemTemplate;
