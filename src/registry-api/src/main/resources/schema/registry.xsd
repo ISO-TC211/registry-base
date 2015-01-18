@@ -8,7 +8,7 @@
 	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/gco/gco.xsd"/>-->
 	<!-- =========================================================== -->
 	<!-- RegistryRole_Type -->
-	<!-- ........................................................................ -->
+	<!-- =========================================================== -->
 	<xs:complexType name="RegistryRole_Type">
 		<xs:sequence>
 			<xs:element name="roleName" type="xs:string"/>
@@ -26,7 +26,7 @@
 	</xs:complexType>
 	<!-- =========================================================== -->
 	<!-- Authorization_Type -->
-	<!-- ........................................................................ -->
+	<!-- =========================================================== -->
 	<xs:complexType name="Authorization_Type">
 		<xs:sequence>
 			<xs:element name="actor" type="reg:Actor_PropertyType"/>
@@ -45,7 +45,7 @@
 	</xs:complexType>
 	<!-- =========================================================== -->
 	<!-- Delegation_Type -->
-	<!-- ........................................................................ -->
+	<!-- =========================================================== -->
 	<xs:complexType name="Delegation_Type">
 		<xs:complexContent>
 			<xs:extension base="reg:Authorization_Type">
@@ -68,7 +68,7 @@
 	</xs:complexType>
 	<!-- =========================================================== -->
 	<!-- Actor_Type -->
-	<!-- ........................................................................ -->
+	<!-- =========================================================== -->
 	<xs:complexType name="AbstractActor_Type" abstract="true">
 		<xs:sequence>
 			<xs:element name="authorization" type="reg:Authorization_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
@@ -86,7 +86,7 @@
 	</xs:complexType>
 	<!-- =========================================================== -->
 	<!-- Organization_Type -->
-	<!-- ........................................................................ -->
+	<!-- =========================================================== -->
 	<xs:complexType name="Organization_Type">
 		<xs:complexContent>
 			<xs:extension base="reg:AbstractActor_Type">
@@ -109,4 +109,5 @@
 		<xs:attributeGroup ref="gco:ObjectReference"/>
 		<xs:attribute ref="gco:nilReason"/>
 	</xs:complexType>
+	<!-- =========================================================== -->
 </xs:schema>
