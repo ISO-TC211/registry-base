@@ -65,7 +65,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import de.geoinfoffm.registry.core.ItemClassRegistry;
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
-import de.geoinfoffm.registry.core.model.ProposalRepoository;
+import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.security.RegistryLookupStrategy;
 import de.geoinfoffm.registry.core.security.RegistryMutableAclService;
 import de.geoinfoffm.registry.core.security.RegistryPermission;
@@ -87,7 +87,7 @@ public class ApiConfiguration
 	
 	@Autowired
 	@Bean
-	public ProposalService proposalService(ProposalRepoository repository) {
+	public ProposalService proposalService(ProposalRepository repository) {
 		return new ProposalServiceImpl(repository);
 	}
 	

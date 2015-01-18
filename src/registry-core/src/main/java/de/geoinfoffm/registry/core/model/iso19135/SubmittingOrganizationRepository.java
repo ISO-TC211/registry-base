@@ -46,7 +46,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
  * @author Florian Esser
  */
 @Repository
-public interface SubmittingOrganizationRepoository extends AuditedRepository<RE_SubmittingOrganization>
+public interface SubmittingOrganizationRepository extends AuditedRepository<RE_SubmittingOrganization>
 {
 	RE_SubmittingOrganization findByName(String name);
 }

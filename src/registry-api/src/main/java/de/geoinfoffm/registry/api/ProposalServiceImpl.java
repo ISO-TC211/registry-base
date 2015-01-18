@@ -76,7 +76,7 @@ import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequestRepository;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
-import de.geoinfoffm.registry.core.model.ProposalRepoository;
+import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -92,7 +92,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.persistence.AppealRepository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
@@ -115,7 +115,7 @@ import de.geoinfoffm.registry.soap.Supersession_Type;
  */
 @Transactional
 //@Service
-public class ProposalServiceImpl extends AbstractApplicationService<Proposal, ProposalRepoository> implements ProposalService
+public class ProposalServiceImpl extends AbstractApplicationService<Proposal, ProposalRepository> implements ProposalService
 {
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -130,7 +130,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private RegisterRepository registerRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepoository submittingOrgRepository;
+	private SubmittingOrganizationRepository submittingOrgRepository;
 	
 	@Autowired
 	private ResponsiblePartyRepository partyRepository;
@@ -145,7 +145,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private RegisterItemService itemService;
 	
 	@Autowired
-	private ProposalRepoository proposalRepository;
+	private ProposalRepository proposalRepository;
 	
 	@Autowired
 	private ProposalManagementInformationRepository pmiRepository;
@@ -172,7 +172,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private AuthorizationRepository authRepository;
 
 	@Autowired
-	public ProposalServiceImpl(ProposalRepoository repository) {
+	public ProposalServiceImpl(ProposalRepository repository) {
 		super(repository);
 	}
 

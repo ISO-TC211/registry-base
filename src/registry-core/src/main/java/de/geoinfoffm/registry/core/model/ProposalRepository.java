@@ -50,7 +50,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
  *
  * @author Florian Esser
  */
-public interface ProposalRepoository extends EntityRepository<Proposal>
+public interface ProposalRepository extends EntityRepository<Proposal>
 {
 	List<Proposal> findByDateSubmittedIsNotNullAndIsConcludedIsFalse();
 

@@ -60,13 +60,13 @@ import de.geoinfoffm.registry.core.model.DelegationRepository;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
-import de.geoinfoffm.registry.core.model.ProposalRepoository;
+import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
@@ -81,7 +81,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private RoleRepository roleRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepoository suborgRepository;
+	private SubmittingOrganizationRepository suborgRepository;
 
 	@Autowired
 	private OrganizationRepository orgRepository;
@@ -99,7 +99,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private ControlBodyDiscoveryStrategy cbStrategy;
 
 	@Autowired
-	private ProposalRepoository proposalRepository;
+	private ProposalRepository proposalRepository;
 
 	public RegistrySecurityImpl() {
 	}

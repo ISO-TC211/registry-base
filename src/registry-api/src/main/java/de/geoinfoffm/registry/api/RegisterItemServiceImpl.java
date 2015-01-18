@@ -49,7 +49,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.geoinfoffm.registry.core.model.ProposalRepoository;
+import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.model.iso19135.ProposalManagementInformationRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AdditionInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
@@ -58,7 +58,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
-import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepoository;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.persistence.AppealRepository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterItemRepository;
@@ -86,7 +86,7 @@ implements RegisterItemService
 	private RegisterRepository registerRepository;
 	
 	@Autowired
-	private SubmittingOrganizationRepoository submittingOrgRepository;
+	private SubmittingOrganizationRepository submittingOrgRepository;
 	
 	@Autowired
 	private ResponsiblePartyRepository partyRepository;
@@ -98,7 +98,7 @@ implements RegisterItemService
 	private RegisterItemRepository itemRepository;
 
 	@Autowired
-	private ProposalRepoository proposalRepository;
+	private ProposalRepository proposalRepository;
 
 	@Autowired
 	private ProposalManagementInformationRepository pmiRepository;
