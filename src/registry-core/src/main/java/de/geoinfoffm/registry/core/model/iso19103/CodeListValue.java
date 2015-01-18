@@ -81,7 +81,7 @@ public abstract class CodeListValue extends ValueObject
 	private String value;
 	
 	@XmlTransient
-	private QName type;
+	private String qname;
 	
 	protected CodeListValue() {
 		
@@ -95,7 +95,7 @@ public abstract class CodeListValue extends ValueObject
 		this.codeList = codeList;
 		this.codeListValue = codeListValue;
 		this.codeSpace = codeSpace;
-		this.type = type;
+		this.qname = type.toString();
 		this.value = value;
 	}
 	

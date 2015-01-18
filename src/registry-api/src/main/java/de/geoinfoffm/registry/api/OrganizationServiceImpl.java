@@ -181,19 +181,30 @@ implements OrganizationService
 			suborg = suborgRepository.findOne(UUID.fromString(organization.getSubmittingOrganization().getUuidref()));
 		}
 		
-		Organization org = new Organization(organization.getName(), suborg);
+		Organization org = new Organization(organization.getName(), organization.getShortName(), suborg);
 		
 		org = repository().save(org);
 		
-		// Create point of contact role for new organization
-		Role pocRole = this.createOrganizationRelatedRole(POINTOFCONTACT_ROLE_PREFIX + org.getUuid().toString(), org);
-		repository().appendAces(org, Arrays.asList(READ, WRITE, ADMINISTRATION), new GrantedAuthoritySid(pocRole.getName()), true);
-
-		// Create membership role for new organization
-		Role memberRole = this.createOrganizationRelatedRole(ORGANIZATIONMEMBER_ROLE_PREFIX + org.getUuid().toString(), org);
-		repository().appendAce(org, READ, new GrantedAuthoritySid(pocRole.getName()), true);
+		createPointOfContactRole(org);
+		createMembershipRole(org);
 
 		return org;
+	}
+
+	private OrganizationRelatedRole createPointOfContactRole(Organization organization) {
+		// Create point of contact role for new organization
+		OrganizationRelatedRole pocRole = this.createOrganizationRelatedRole(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString(), organization);
+		repository().appendAces(organization, Arrays.asList(READ, WRITE, ADMINISTRATION), new GrantedAuthoritySid(pocRole.getName()), true);
+		
+		return pocRole;
+	}
+
+	private OrganizationRelatedRole createMembershipRole(Organization organization) {
+		// Create membership role for new organization
+		OrganizationRelatedRole membershipRole = this.createOrganizationRelatedRole(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString(), organization);
+		repository().appendAce(organization, READ, new GrantedAuthoritySid(membershipRole.getName()), true);
+		
+		return membershipRole;
 	}
 	
 	@Override
@@ -403,13 +414,23 @@ implements OrganizationService
 	@Override
 	public OrganizationRelatedRole getPointOfContactRole(Organization organization) {
 		Assert.notNull(organization, "Organization must be provided");
-		return (OrganizationRelatedRole)roleService.findByName(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString());
+		OrganizationRelatedRole pocRole = (OrganizationRelatedRole)roleService.findByName(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString());
+		if (pocRole == null) {
+			pocRole = createPointOfContactRole(organization);
+		}
+		
+		return pocRole;
 	}
 
 	@Override
 	public OrganizationRelatedRole getMembershipRole(Organization organization) {
 		Assert.notNull(organization, "Organization must be provided");
-		return (OrganizationRelatedRole)roleService.findByName(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString());
+		OrganizationRelatedRole membershipRole = (OrganizationRelatedRole)roleService.findByName(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString());
+		if (membershipRole == null) {
+			membershipRole = createMembershipRole(organization);
+		}
+		
+		return membershipRole;
 	}
 
 	@Override

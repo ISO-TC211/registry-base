@@ -45,6 +45,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -87,6 +88,7 @@ public class RegistryUser extends Actor implements UserDetails
 	private String name;
 
 	@ManyToOne
+	@JoinColumn(name = "organization_uuid")
 	private Organization organization;
 
 	@NotEmpty

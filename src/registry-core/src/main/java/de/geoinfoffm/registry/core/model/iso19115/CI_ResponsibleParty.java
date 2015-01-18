@@ -37,6 +37,7 @@ package de.geoinfoffm.registry.core.model.iso19115;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -105,7 +106,12 @@ public class CI_ResponsibleParty extends de.geoinfoffm.registry.core.Entity
 	 */
 	@XmlElement(name = "role", namespace = "http://www.isotc211.org/2005/gmd")
 	@Embedded
-	@AttributeOverride(name = "value", column = @Column(name = "role", length = 2000))
+	@AttributeOverrides({
+		@AttributeOverride(name = "value", column = @Column(name = "role", length = 2000)),
+		@AttributeOverride(name = "codeList", column = @Column(name = "role_codelist", length = 2000)),
+		@AttributeOverride(name = "codeListValue", column = @Column(name = "role_codelistvalue", length = 2000)),
+		@AttributeOverride(name = "qname", column = @Column(name = "role_qname", length = 2000)),
+	})
 	private CI_RoleCode role;
 
 	protected CI_ResponsibleParty() {

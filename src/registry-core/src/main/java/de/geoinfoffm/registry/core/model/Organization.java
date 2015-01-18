@@ -118,16 +118,18 @@ public class Organization extends Actor
 	protected Organization() { 
 	}
 
-	public Organization(String name) {
+	public Organization(String name, String shortName) {
 		this.name = name;
+		this.shortName = shortName;
 
 		CI_ResponsibleParty resp = new CI_ResponsibleParty("NN", null, null, CI_RoleCode.USER);
 		RE_SubmittingOrganization suborg = new RE_SubmittingOrganization(name, resp);
 		this.submittingOrganization = suborg;		
 	}
 	
-	public Organization(String name, RE_SubmittingOrganization submittingOrganization) {
+	public Organization(String name, String shortName, RE_SubmittingOrganization submittingOrganization) {
 		this.name = name;
+		this.shortName = shortName;
 		this.submittingOrganization = submittingOrganization;
 	}
 	
