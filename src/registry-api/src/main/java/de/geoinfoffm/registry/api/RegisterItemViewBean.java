@@ -193,7 +193,7 @@ public class RegisterItemViewBean
 	/**
 	 * May be overwritten by extending classes
 	 */
-	protected void addAdditionalProperties(RE_RegisterItem item) {
+	protected void addAdditionalProperties(RE_RegisterItem item, boolean loadDetails) {
 		// does nothing here
 	}
 	
@@ -300,7 +300,7 @@ public class RegisterItemViewBean
 			}
 		}
 		
-		this.addAdditionalProperties(item);
+		this.addAdditionalProperties(item, loadDetails);
 }
 	
 	private void initializeFromProposalManagementInformation(RE_ProposalManagementInformation proposal) {
