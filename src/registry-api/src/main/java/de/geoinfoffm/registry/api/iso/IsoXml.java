@@ -69,6 +69,7 @@ import org.isotc211.iso19139.common.Boolean_PropertyType;
 import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.isotc211.iso19139.common.Date_PropertyType;
 import org.isotc211.iso19139.common.Integer_PropertyType;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
@@ -261,6 +262,32 @@ public class IsoXml
 	public static RE_RegisterItem_PropertyType registerItem(UUID itemUuid) {
 		RE_RegisterItem_PropertyType result = new RE_RegisterItem_PropertyType();
 		result.setUuidref(itemUuid.toString());
+		
+		return result;
+	}
+	
+	private static class UuidRefType {
+		private String uuidref;
+		
+		public UuidRefType() { }
+		
+		public UuidRefType(String uuidref) {
+			this.uuidref = uuidref;
+		}
+
+		public String getUuidref() {
+			return uuidref;
+		}
+
+		public void setUuidref(String uuidref) {
+			this.uuidref = uuidref;
+		}
+	}
+	
+	public static <P> P uuidRef(UUID uuid, Class<P> propertyType) {
+		P result = BeanUtils.instantiate(propertyType);
+		UuidRefType ref = new UuidRefType(uuid.toString());
+		BeanUtils.copyProperties(ref, result);
 		
 		return result;
 	}
