@@ -435,14 +435,33 @@
 	<!-- ........................................................................ -->
 	<xs:element name="RejectAppealResponse" type="regsoap:RejectAppealResponse"/>
 	<!-- =========================================================================== -->
-	<xs:complexType name="AbstractConceptProposal_Type" abstract="true">
+	<xs:complexType name="AbstractFadRegisterItemProposal_Type" abstract="true">
 		<xs:complexContent>
 			<xs:extension base="regsoap:AbstractRegisterItemProposal_Type">
 				<xs:sequence>
 					<xs:element name="alphaCode" type="xs:string"/>
+					<xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="AbstractFadRegisterItemProposal" type="regsoap:AbstractFadRegisterItemProposal_Type" abstract="true" substitutionGroup="regsoap:AbstractRegisterItemProposal"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="FadRegisterItemProposal_PropertyType">
+		<xs:sequence>
+			<xs:element ref="regsoap:AbstractFadRegisterItemProposal" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="AbstractConceptProposal_Type" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="regsoap:AbstractFadRegisterItemProposal_Type">
+				<xs:sequence>
 					<xs:element name="alphaCode2" type="xs:string"/>
 					<xs:element name="subgroupAlphaCode" type="xs:string" maxOccurs="unbounded"/>
-					<xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
