@@ -440,6 +440,7 @@
 			<xs:extension base="regsoap:AbstractRegisterItemProposal_Type">
 				<xs:sequence>
 					<xs:element name="alphaCode" type="xs:string"/>
+					<xs:element name="code" type="xs:int"/>
 					<xs:element name="alias" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
@@ -490,6 +491,32 @@
 	<xs:complexType name="FeatureConceptProposal_PropertyType">
 		<xs:sequence>
 			<xs:element ref="regsoap:FeatureConceptProposal" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="AttributeConceptProposal_Type">
+		<xs:complexContent>
+			<xs:extension base="regsoap:AbstractConceptProposal_Type">
+				<xs:sequence>
+					<xs:element name="multiplicity" type="xs:string"/>
+					<xs:element name="collectionType" type="xs:string" minOccurs="0"/>
+					<xs:element name="typeUuid" type="xs:string"/>
+					<xs:element name="valueMeasurementUnit" type="xs:string"/>
+					<xs:element name="physicalQuantityUuid" type="xs:string" minOccurs="0"/>
+					<xs:element name="recommendedUnitUuid" type="xs:string" minOccurs="0"/>
+					<xs:element name="nonComparableUnitUuid" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="AttributeConceptProposal" type="regsoap:AttributeConceptProposal_Type" substitutionGroup="regsoap:AbstractRegisterItemProposal"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="AttributeConceptProposal_PropertyType">
+		<xs:sequence>
+			<xs:element ref="regsoap:AttributeConceptProposal" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attributeGroup ref="gco:ObjectReference"/>
 		<xs:attribute ref="gco:nilReason"/>
