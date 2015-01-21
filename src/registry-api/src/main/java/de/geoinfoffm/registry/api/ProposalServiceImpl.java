@@ -79,6 +79,8 @@ import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.AuthorizationRepository;
 import de.geoinfoffm.registry.core.model.Clarification;
+import de.geoinfoffm.registry.core.model.Organization;
+import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequestRepository;
@@ -131,6 +133,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	
 	@Autowired
 	private SubmittingOrganizationRepository submittingOrgRepository;
+	
+	@Autowired
+	private OrganizationRepository orgRepository;
 	
 	@Autowired
 	private ResponsiblePartyRepository partyRepository;
@@ -306,6 +311,16 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		}
 		
 		RE_SubmittingOrganization sponsor = submittingOrgRepository.findOne(proposal.getSponsorUuid());
+		if (sponsor == null) {
+			// try organization UUID
+			Organization org = orgRepository.findOne(proposal.getSponsorUuid());
+			if (org != null) {
+				sponsor = org.getSubmittingOrganization();
+			}
+			else {
+				throw new InvalidProposalException(String.format("No submitting organization with UUID '%s' found", proposal.getSponsorUuid()));
+			}
+		}
 		
 		BindingResult bindingResult = validateProposal(proposal);
 		if (bindingResult.hasErrors()) {
