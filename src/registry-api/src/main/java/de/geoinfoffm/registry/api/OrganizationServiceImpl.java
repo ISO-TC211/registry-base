@@ -217,7 +217,9 @@ implements OrganizationService
 			throw new NullPointerException("Cannot update non-existent organization");
 		}
 		
-		security.assertMayWrite(current);
+		if (!security.isAdmin()) {
+			security.assertMayWrite(current);
+		}
 		
 		if (org.getName() != null && !org.getName().isEmpty()) {
 			current.setName(org.getName());
