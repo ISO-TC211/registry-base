@@ -59,7 +59,7 @@ public class RegistryUserDetailsManager implements UserDetailsManager, GroupMana
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-		RegistryUser user = userRepository.findByEmailAddress(username.toLowerCase());
+		RegistryUser user = userRepository.findByEmailAddressIgnoreCase(username.toLowerCase());
 		if (user == null) {
 			throw new UsernameNotFoundException("user not found");
 		}
@@ -93,7 +93,7 @@ public class RegistryUserDetailsManager implements UserDetailsManager, GroupMana
 
 	@Override
 	public boolean userExists(String username) {
-		return userRepository.findByEmailAddress(username.toLowerCase()) != null;
+		return userRepository.findByEmailAddressIgnoreCase(username.toLowerCase()) != null;
 	}
 
 	@Override
