@@ -179,7 +179,7 @@
 		</jaxb:schemaBindings>
 	</jaxb:bindings>
 	
-	<jaxb:bindings schemaLocation="http://www.w3.org/1999/xlink.xsd">
+	<jaxb:bindings schemaLocation="xlink/xlink.xsd">
 		<jaxb:bindings node="//xs:attributeGroup[@name='locatorAttrs']//xs:attribute[@ref='xlink:title']">
 			<jaxb:property name="xlink:title1" />
 		</jaxb:bindings>
@@ -188,7 +188,7 @@
 		</jaxb:bindings>
 	</jaxb:bindings>
 
-	<jaxb:bindings schemaLocation="http://www.w3.org/1999/xlink.xsd" 
+	<jaxb:bindings schemaLocation="xlink/xlink.xsd" 
 		node="/xs:schema">
 		<jaxb:schemaBindings>
 			<jaxb:package name="org.w3.xlink"/>
