@@ -632,7 +632,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		Assert.notNull(proposal);
 		
 		for (Authorization auth : cbStrategy.findControlBodyAuthorizations(proposal)) {
-			if (auth.getUser().equals(this.getCurrentUser())) {
+			if (hasRole(auth.getRole().getName())) {
 				return true;
 			}
 		}
