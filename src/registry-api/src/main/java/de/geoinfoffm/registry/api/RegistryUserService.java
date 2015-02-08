@@ -52,7 +52,6 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
  * @author Florian Esser
  */
 @Service
-@WebService
 public interface RegistryUserService extends ApplicationService<RegistryUser>
 {
 	public static final String SEND_CONFIRMATION_MAIL = "SEND_CONFIRMATION_MAIL";
