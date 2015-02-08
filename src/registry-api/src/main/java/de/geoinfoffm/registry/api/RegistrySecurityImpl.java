@@ -132,8 +132,15 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return (RegistryUser)principal;
 		}
 		else {
-			Principal p = (Principal)principal;
-			RegistryUser user = userRepository.findByEmailAddress(p.getName());
+			String mailAddress;
+			if (principal instanceof Principal) {
+				Principal p = (Principal)principal;
+				mailAddress = p.getName();
+			}
+			else {
+				mailAddress = principal.toString();
+			}
+			RegistryUser user = userRepository.findByEmailAddressIgnoreCase(mailAddress);
 			if (user == null) {
 				throw new RuntimeException("Current principal is not a registry user");
 			}
@@ -632,7 +639,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		Assert.notNull(proposal);
 		
 		for (Authorization auth : cbStrategy.findControlBodyAuthorizations(proposal)) {
-			if (auth.getUser().equals(this.getCurrentUser())) {
+			if (hasRole(auth.getRole().getName())) {
 				return true;
 			}
 		}

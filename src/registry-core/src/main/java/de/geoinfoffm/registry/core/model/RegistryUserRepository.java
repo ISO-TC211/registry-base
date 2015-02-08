@@ -50,6 +50,6 @@ import de.geoinfoffm.registry.core.EntityRepository;
 public interface RegistryUserRepository extends EntityRepository<RegistryUser>
 {
 	public RegistryUser findByName(String name);
-	public RegistryUser findByEmailAddress(String emailAddress);
+	public RegistryUser findByEmailAddressIgnoreCase(String emailAddress);
 	public List<RegistryUser> findByOrganization(Organization organization);
 }

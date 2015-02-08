@@ -316,17 +316,17 @@ implements RegistryUserService
 	 */
 	@Override
 	public boolean isEmailAddressAvailable(String emailAddress) {
-		return repository().findByEmailAddress(emailAddress) == null;
+		return repository().findByEmailAddressIgnoreCase(emailAddress) == null;
 	}
 
 	@Override
 	public RegistryUser findByEmailAddress(String emailAddress) {
-		return userRepository.findByEmailAddress(emailAddress);
+		return userRepository.findByEmailAddressIgnoreCase(emailAddress);
 	}
 	
 	@Override
 	public boolean confirmUser(String emailAddress, UUID token) {
-		RegistryUser konfirmant = repository().findByEmailAddress(emailAddress);
+		RegistryUser konfirmant = repository().findByEmailAddressIgnoreCase(emailAddress);
 		
 		if (konfirmant == null) {
 			return false;
