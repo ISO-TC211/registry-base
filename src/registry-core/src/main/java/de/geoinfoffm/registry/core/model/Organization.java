@@ -53,6 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.eclipse.persistence.oxm.annotations.XmlPath;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.envers.Audited;
 
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
@@ -109,7 +110,7 @@ public class Organization extends Actor
 	private Set<RegistryUser> users = new HashSet<RegistryUser>();
 	
 	@XmlTransient
-	@OneToMany(mappedBy = "delegatingOrganization")
+	@OneToMany(mappedBy = "delegatingOrganization", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private Set<Delegation> delegations = new HashSet<Delegation>();
 	
 	/**
