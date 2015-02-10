@@ -273,6 +273,15 @@ implements RegistryUserService
 			current.setEmailAddress(user.getEmailAddress());
 		}
 		
+		if (user.getOrganizationUuid() != null && !user.getOrganizationUuid().toString().equals(current.getOrganization().getUuid().toString())) {
+			Organization newOrganization = orgRepository.findOne(user.getOrganizationUuid());
+			if (newOrganization == null) {
+				throw new RuntimeException(String.format("User references non-existing organization '%s'", user.getOrganizationUuid().toString()));
+			}
+			
+			current.setOrganization(newOrganization);
+		}
+		
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			current.setPassword(user.getPassword());
 		}
