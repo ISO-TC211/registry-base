@@ -47,6 +47,7 @@ public class OrganizationFormBean
 {
 	private UUID uuid;
 	private String name;
+	private String shortName;
 	private List<String> roles = new ArrayList<String>();
 	
 	public OrganizationFormBean() { }
@@ -55,13 +56,15 @@ public class OrganizationFormBean
 		this.uuid = organizationUuid;
 	}
 	
-	public OrganizationFormBean(String name) {
+	public OrganizationFormBean(String name, String shortName) {
 		this.name = name;
+		this.shortName = shortName;
 	}
 	
 	public OrganizationFormBean(Organization organization) {
 		this.uuid = organization.getUuid();
 		this.name = organization.getName();
+		this.shortName = organization.getShortName();
 		this.roles = new ArrayList<String>();
 		if (organization.getAuthorizations() != null) {
 			for (Authorization auth : organization.getAuthorizations()) {
@@ -76,6 +79,7 @@ public class OrganizationFormBean
 	public CreateOrganizationRequest toRegistrationDTO() {
 		CreateOrganizationRequest result = new CreateOrganizationRequest();
 		result.setName(this.name);
+		result.setShortName(this.shortName);
 //		result.setSubmittingOrganization(...);
 		result.getRole().addAll(this.roles);
 		return result;
@@ -85,6 +89,7 @@ public class OrganizationFormBean
 		OrganizationUpdateDTO result = new OrganizationUpdateDTO();
 		result.setUuid(uuid);
 		result.setName(this.name);
+		result.setShortName(this.shortName);
 		result.setRoles(this.roles);
 		
 		return result;
@@ -104,6 +109,14 @@ public class OrganizationFormBean
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
 	}
 
 	public List<String> getRoles() {

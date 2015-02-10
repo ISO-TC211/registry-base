@@ -42,6 +42,7 @@ public class OrganizationUpdateDTO
 {
 	private UUID uuid;
 	private String name;
+	private String shortName;
 	private List<String> roles;
 	
 	/**
@@ -64,6 +65,14 @@ public class OrganizationUpdateDTO
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
 	}
 
 	public List<String> getRoles() {
