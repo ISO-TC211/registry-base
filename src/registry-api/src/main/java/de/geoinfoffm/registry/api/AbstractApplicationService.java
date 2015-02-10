@@ -153,7 +153,9 @@ implements ApplicationService<E>, ApplicationEventPublisherAware
 			throw new EntityNotFoundException(String.format("Cannot delete non-existent entity %s", id));
 		}
 		
-		security.assertMayDelete(entity);
+		if (!security.isAdmin()) {
+			security.assertMayDelete(entity);
+		}
 		
 		try {
 			repository.delete(id);
