@@ -40,7 +40,6 @@ import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
-import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -61,7 +60,6 @@ public class CI_Address extends de.geoinfoffm.registry.core.Entity
 	 * Address line for the physical address (Street name, box number, suite)
 	 */
 	@ElementCollection
-	@AttributeOverride(name = "value", column = @Column(columnDefinition = "text"))
 	private List<String> deliveryPoint;
 	/**
 	 * City of the physical address
@@ -87,7 +85,6 @@ public class CI_Address extends de.geoinfoffm.registry.core.Entity
 	 * Address of the electronic mailbox of the responsible organisation or individual
 	 */
 	@ElementCollection
-	@AttributeOverride(name = "value", column = @Column(columnDefinition = "text"))
 	private Set<String> electronicMailAddress;
 
 	protected CI_Address(){
