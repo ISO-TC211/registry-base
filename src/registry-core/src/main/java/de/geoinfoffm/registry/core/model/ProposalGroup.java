@@ -211,6 +211,8 @@ public class ProposalGroup extends Proposal
 	 */
 	@Override
 	public void accept(String controlBodyDecisionEvent) throws IllegalOperationException {
+		this.setConcluded(true);
+		this.setStatus(STATUS_FINISHED);
 		for (Proposal proposal : getProposals()) {
 			proposal.accept(controlBodyDecisionEvent);
 		}
