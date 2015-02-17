@@ -69,6 +69,7 @@ import de.geoinfoffm.registry.core.model.RoleRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
+import de.geoinfoffm.registry.core.security.RegistryUserUtils;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
@@ -600,13 +601,11 @@ public class RegistrySecurityImpl implements RegistrySecurity
 
 	@Override
 	public String getRegisterManagerTodoCount() {
-		RegistryUser currentUser = this.getCurrentUser();
-		
 		if (!hasAnyRoleWith(MANAGER_ROLE_PREFIX)) {
 			return null;
 		}
 		else {
-			RE_SubmittingOrganization sponsor = currentUser.getOrganization().getSubmittingOrganization();
+			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
 			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, Proposal.STATUS_UNDER_REVIEW);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
