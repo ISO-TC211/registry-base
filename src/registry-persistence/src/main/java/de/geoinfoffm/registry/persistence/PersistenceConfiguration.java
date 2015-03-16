@@ -34,10 +34,18 @@
  */
 package de.geoinfoffm.registry.persistence;
 
+import java.sql.Connection;
+
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.MigrationInfoService;
+import org.flywaydb.core.api.callback.FlywayCallback;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -93,7 +101,10 @@ public class PersistenceConfiguration
 	 */
 	@Autowired
 	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(HibernateConfiguration hibernateConfiguration, RegistryConfiguration registryConfiguration) {
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(HibernateConfiguration hibernateConfiguration, RegistryConfiguration registryConfiguration, DatabaseSchemaMangementService schemaManagementService) {
+		// Handle schema migration before creating the EntityManagerFactoryBean
+		schemaManagementService.analyze();
+		schemaManagementService.migrate();
 		
 		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
@@ -129,9 +140,9 @@ public class PersistenceConfiguration
 	 */
 	@Autowired
 	@Bean
-	public PlatformTransactionManager transactionManager(HibernateConfiguration hibernateConfiguration, RegistryConfiguration registryConfiguration) {
+	public PlatformTransactionManager transactionManager(HibernateConfiguration hibernateConfiguration, RegistryConfiguration registryConfiguration, DatabaseSchemaMangementService schemaService) {
 		JpaTransactionManager transactionManager = new JpaTransactionManager();
-		transactionManager.setEntityManagerFactory(entityManagerFactory(hibernateConfiguration, registryConfiguration).getObject());
+		transactionManager.setEntityManagerFactory(entityManagerFactory(hibernateConfiguration, registryConfiguration, schemaService).getObject());
 
 		return transactionManager;
 	}
@@ -143,4 +154,11 @@ public class PersistenceConfiguration
 	public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
 		return new PersistenceExceptionTranslationPostProcessor();
 	}
+	
+	@Autowired
+	@Bean
+	public DatabaseSchemaMangementService databaseSchemaMangementService(HibernateConfiguration hibernateConfiguration) {
+		return new FlywayDatabaseSchemaManagementService(dataSource(hibernateConfiguration));
+	}
+	
 }
