@@ -52,6 +52,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.hibernate.annotations.Type;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -111,6 +112,7 @@ public class RegistryUser extends Actor implements UserDetails
 	@NotNull
 	private Boolean isActive;
 
+	@Type(type = "pg-uuid")	
 	private UUID confirmationToken;
 	
 	protected RegistryUser() {
