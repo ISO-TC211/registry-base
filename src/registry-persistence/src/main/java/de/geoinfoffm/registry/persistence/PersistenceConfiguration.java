@@ -53,6 +53,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.Repository;
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.persistence.jpa.HibernateConfiguration;
@@ -70,6 +71,8 @@ import de.geoinfoffm.registry.persistence.jpa.HibernateConfiguration;
 				       repositoryFactoryBeanClass = EntityBackendFactoryBean.class)
 public class PersistenceConfiguration
 {
+	private static final Logger logger = LoggerFactory.make();
+	
 	@PersistenceContext
 	private EntityManager em;
 	
