@@ -48,7 +48,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import de.geoinfoffm.registry.core.CoreConfiguration;
 
 /**
- * Hibernate configuration for the GDI-DE Registry Client.
+ * Hibernate configuration for the Registry Client.
  * 
  * @author Florian Esser
  * 
