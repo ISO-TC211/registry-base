@@ -37,12 +37,14 @@ package de.geoinfoffm.registry.core.model.iso19115;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.AttributeOverride;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Entity;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
 
+import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
@@ -55,58 +57,61 @@ import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 @Audited @Embeddable
 public class CI_Series extends ValueObject
 {
-	@AttributeOverride(name = "value", column = @Column(name = "name", length = 2000))
-	private CharacterString name;
+	@Column(columnDefinition = "text")
+	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
+	private String name;
 
-	@AttributeOverride(name = "value", column = @Column(name = "issueIdentification", length = 2000))
-	private CharacterString issueIdentification;
+	@Column(columnDefinition = "text")
+	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
+	private String issueIdentification;
 
-	@AttributeOverride(name = "value", column = @Column(name = "page", length = 2000))
-	private CharacterString page;
+	@Column(columnDefinition = "text")
+	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
+	private String page;
 
-	public CI_Series(){
+	public CI_Series() {
 
 	}
 
 	/**
 	 * @return the name
 	 */
-	public CharacterString getName() {
+	public String getName() {
 		return name;
 	}
 
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(CharacterString name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
 	 * @return the issueIdentification
 	 */
-	public CharacterString getIssueIdentification() {
+	public String getIssueIdentification() {
 		return issueIdentification;
 	}
 
 	/**
 	 * @param issueIdentification the issueIdentification to set
 	 */
-	public void setIssueIdentification(CharacterString issueIdentification) {
+	public void setIssueIdentification(String issueIdentification) {
 		this.issueIdentification = issueIdentification;
 	}
 
 	/**
 	 * @return the page
 	 */
-	public CharacterString getPage() {
+	public String getPage() {
 		return page;
 	}
 
 	/**
 	 * @param page the page to set
 	 */
-	public void setPage(CharacterString page) {
+	public void setPage(String page) {
 		this.page = page;
 	}
 

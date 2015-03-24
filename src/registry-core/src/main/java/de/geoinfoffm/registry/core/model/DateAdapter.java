@@ -39,19 +39,19 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import de.geoinfoffm.registry.core.PropertyType;
 import de.geoinfoffm.registry.core.model.iso19103.Date;
 
-public class DateAdapter extends XmlAdapter<PropertyType<Date>, java.util.Date>
+public class DateAdapter extends XmlAdapter<PropertyType<Date>, String>
 {
 
 	@Override
-	public java.util.Date unmarshal(PropertyType<Date> v) throws Exception {
+	public String unmarshal(PropertyType<Date> v) throws Exception {
 		if (v == null) {
 			return null;
 		}
-		return v.getRef().javaDate();
+		return v.getRef().getValue();
 	}
 
 	@Override
-	public PropertyType<Date> marshal(java.util.Date v) throws Exception {
+	public PropertyType<Date> marshal(String v) throws Exception {
 		if (v == null) {
 			return null;
 		}

@@ -35,6 +35,7 @@
 package de.geoinfoffm.registry.core.model.iso19115;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -119,8 +120,7 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 */
 	@XmlElement(name = "editionDate", namespace = "http://www.isotc211.org/2005/gmd", type = de.geoinfoffm.registry.core.model.iso19103.Date.class)
 	@XmlJavaTypeAdapter(DateAdapter.class)
-	@Temporal(TemporalType.DATE)
-	private Date editionDate;
+	private String editionDate;
 	/**
 	 * value uniquely identifying an object within a namespace
 	 */
@@ -150,9 +150,9 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	@XmlElement(name = "series", namespace = "http://www.isotc211.org/2005/gmd")
 	@Embedded
 	@AttributeOverrides({
-		@AttributeOverride(name = "name", column = @Column(name = "series_name", length = 2000)),
-		@AttributeOverride(name = "issueIdentification", column = @Column(name = "series_issueIdentification", length = 2000)),
-		@AttributeOverride(name = "page", column = @Column(name = "series_page", length = 2000))		
+		@AttributeOverride(name = "name", column = @Column(name = "series_name", columnDefinition = "text")),
+		@AttributeOverride(name = "issueIdentification", column = @Column(name = "series_issueIdentification", columnDefinition = "text")),
+		@AttributeOverride(name = "page", column = @Column(name = "series_page", columnDefinition = "text"))		
 	})
 	private CI_Series series;
 	/**
@@ -204,6 +204,9 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 * @return the alternateTitle
 	 */
 	public Set<String> getAlternateTitle() {
+		if (this.alternateTitle == null) {
+			this.alternateTitle = new HashSet<String>();
+		}
 		return alternateTitle;
 	}
 
@@ -218,6 +221,9 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 * @return the date
 	 */
 	public Set<CI_Date> getDate() {
+		if (this.date == null) {
+			this.date = new HashSet<CI_Date>();
+		}
 		return date;
 	}
 
@@ -245,14 +251,14 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	/**
 	 * @return the editionDate
 	 */
-	public Date getEditionDate() {
+	public String getEditionDate() {
 		return editionDate;
 	}
 
 	/**
 	 * @param editionDate the editionDate to set
 	 */
-	public void setEditionDate(Date editionDate) {
+	public void setEditionDate(String editionDate) {
 		this.editionDate = editionDate;
 	}
 

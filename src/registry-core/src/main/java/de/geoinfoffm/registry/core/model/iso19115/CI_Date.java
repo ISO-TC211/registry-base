@@ -67,9 +67,7 @@ import de.geoinfoffm.registry.core.model.DateAdapter;
 public class CI_Date extends ValueObject
 {
 	@XmlElement(name = "date",  namespace = "http://www.isotc211.org/2005/gmd", type = de.geoinfoffm.registry.core.model.iso19103.Date.class)
-	@XmlJavaTypeAdapter(DateAdapter.class)
-	@Temporal(TemporalType.DATE)
-	private Date date;
+	private String date;
 	
 	@XmlElement(name = "dateType",  namespace = "http://www.isotc211.org/2005/gmd")
 	@Embedded
@@ -86,11 +84,11 @@ public class CI_Date extends ValueObject
 
 	}
 
-	public Date getDate() {
+	public String getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(String date) {
 		this.date = date;
 	}
 

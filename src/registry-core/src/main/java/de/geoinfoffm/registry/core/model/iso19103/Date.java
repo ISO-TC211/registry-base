@@ -55,14 +55,13 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 public class Date 
 {
-	private java.util.Date date;
+	private String date;
 	
 	protected Date() {
-		this.date = Calendar.getInstance().getTime();
 	}
 	
 	public Date(java.util.Date date) {
-		this.date = new java.util.Date(date.getTime());
+		this.date = this.printDate(date);
 	}
 	
 	public Date(String xmlDate) {
@@ -71,6 +70,10 @@ public class Date
 	
 	@XmlValue
 	public String getValue() {
+		return date;
+	}
+	
+	private String printDate(java.util.Date date) {
 		GregorianCalendar gcal = new GregorianCalendar();
 		gcal.setTime(date);		
 		XMLGregorianCalendar xmlcal;
@@ -86,20 +89,20 @@ public class Date
 	
 	@XmlTransient
 	public void setValue(String xmlValue) {
-		this.date = DatatypeConverter.parseDate(xmlValue).getTime();
+		this.date = xmlValue;
 	}
 
-	@XmlTransient
-	public String year() {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		
-		return String.valueOf(cal.get(Calendar.YEAR));
-	}
-	
-	public java.util.Date javaDate() {
-		return new java.util.Date(this.date.getTime());
-	}
+//	@XmlTransient
+//	public String year() {
+//		Calendar cal = Calendar.getInstance();
+//		cal.setTime(date);
+//		
+//		return String.valueOf(cal.get(Calendar.YEAR));
+//	}
+//	
+//	public java.util.Date javaDate() {
+//		return new java.util.Date(this.date.getTime());
+//	}
 	
 //	public CharacterString getCentury();
 //	
