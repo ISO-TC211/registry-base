@@ -162,7 +162,9 @@ public class ProposalDtoFactory
 		}
 
 		if (config == null) {
-			logger.debug("Item class registry contains no configuration for item class {} (UUID: {})", itemClass.getName(), itemClass.getUuid());
+			logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			logger.error("Item class registry contains no configuration for item class {} (UUID: {}). Missing @ItemClass annotation?", itemClass.getName(), itemClass.getUuid());
+			logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			return defaultConstructor;
 		}
 
