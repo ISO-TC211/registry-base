@@ -43,6 +43,12 @@
 			<artifactId>spring-ws-core</artifactId>
 			<version>2.1.4.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-xjc</artifactId>
+			<version>2.2.11</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
     	<directory>target</directory>
@@ -63,10 +69,10 @@
 			<plugin>
 			    <groupId>org.apache.cxf</groupId>
 			    <artifactId>cxf-xjc-plugin</artifactId>
-			    <version>2.7.0</version>
+			    <version>3.0.3</version>
 			    <configuration>
 			        <extensions>
-			            <extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:2.7.0</extension>
+			            <extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:3.0.3</extension>
 			        </extensions>
 			    </configuration>
 			    <executions>
@@ -84,11 +90,6 @@
 			                        <xsd>src/main/resources/schema/service.xsd</xsd>
 			                        <bindingFile>src/main/resources/schema/bindings.xjb</bindingFile>
 			                    </xsdOption>
-<!-- 			                    <xsdOption> -->
-<!-- 			                    	<extension>true</extension> -->
-<!-- 			                        <xsd>/src/main/resources/schema/userservice.xsd</xsd> -->
-<!-- 			                        <bindingFile>/src/main/resources/schema/bindings.xjb</bindingFile> -->
-<!-- 			                    </xsdOption> -->
 			                </xsdOptions>
 			            </configuration>
 			        </execution>
