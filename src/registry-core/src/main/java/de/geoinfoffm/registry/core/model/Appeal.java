@@ -46,6 +46,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
 
@@ -62,12 +63,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 @Audited @javax.persistence.Entity
 public class Appeal extends Entity
 {
-	public enum AppealDisposition {
-		PENDING,
-		ACCEPTED,
-		NOT_ACCEPTED
-	}
-	
 	@OneToOne
 	private Proposal appealedProposal;
 	

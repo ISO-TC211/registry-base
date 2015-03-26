@@ -60,7 +60,7 @@ import org.springframework.beans.BeanUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.geoinfoffm.registry.core.model.Appeal;
-import de.geoinfoffm.registry.core.model.Appeal.AppealDisposition;
+import de.geoinfoffm.registry.core.model.AppealDisposition;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
