@@ -148,15 +148,15 @@ public class IsoXml
 	}
 
 	public static Integer_PropertyType integer(Integer integer) {
-		return integer(BigInteger.valueOf(integer));
+		return integer(integer == null ? null : BigInteger.valueOf(integer));
 	}
 	
 	public static Integer_PropertyType integer(Long longInt) {
-		return integer(BigInteger.valueOf(longInt));
+		return integer(longInt == null ? null : BigInteger.valueOf(longInt));
 	}
 
 	public static RE_ItemStatus_PropertyType itemStatus(RE_ItemStatus status) {
-		return itemStatus(status.name()); // TODO Won't work
+		return itemStatus(status == null ? null : status.name()); // TODO Won't work
 	}
 
 	public static RE_ItemStatus_PropertyType itemStatus(String statusName) {
