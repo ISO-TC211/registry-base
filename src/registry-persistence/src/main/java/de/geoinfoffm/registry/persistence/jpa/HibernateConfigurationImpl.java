@@ -105,7 +105,9 @@ public class HibernateConfigurationImpl implements HibernateConfiguration
 	 */
 	private Properties createDefaultProperties() {
 		Properties properties = new Properties();
-		properties.setProperty("hibernate.show_sql", "true");
+		properties.setProperty("hibernate.show_sql", "false");
+		properties.setProperty("hibernate.hbm2ddl.auto", "validate");
+		properties.setProperty("flyway.migration", "false");
 		
 		return properties;
 	}
