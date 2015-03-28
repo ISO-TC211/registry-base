@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.core.security;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,8 +44,10 @@ import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.Organization;
+import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 public interface RegistrySecurity
 {
@@ -70,11 +73,19 @@ public interface RegistrySecurity
 	boolean isControlBody(UUID proposalUuid);
 	
 	boolean maySubmitTo(UUID targetRegisterUuid);
-
-	void assertIsAdmin() throws UnauthorizedException;
+	boolean maySubmitTo(RE_Register register);
+	boolean maySubmitToAll(Collection<RE_Register> registers);
+	boolean isSubmitter();
 	
 	void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException;
+	void assertMaySubmitTo(RE_Register register) throws UnauthorizedException;
+	void assertMaySubmitToAll(RE_Register... register) throws UnauthorizedException;
+	void assertIsSubmitter() throws UnauthorizedException;
 
+	boolean mayAppeal(Proposal proposal);
+	void assertMayAppeal(Proposal proposal) throws UnauthorizedException;
+
+	void assertIsAdmin() throws UnauthorizedException;	
 	void assertMayAdmin(Entity entity) throws UnauthorizedException;
 
 	void assertMayDelete(Entity entity) throws UnauthorizedException;
@@ -172,5 +183,4 @@ public interface RegistrySecurity
 	public abstract String getPointOfContactTodoCount();
 	public abstract String getRegisterManagerTodoCount();
 	public abstract String getControlBodyTodoCount();
-
 }

@@ -37,6 +37,7 @@ package de.geoinfoffm.registry.api;
 import static org.springframework.security.acls.domain.BasePermission.*;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +67,7 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
@@ -91,6 +93,9 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	@Autowired
 	protected OrganizationService orgService;
 
+	@Autowired
+	protected RegisterService registerService;
+	
 	@Autowired
 	private RegistryUserRepository userRepository;
 
@@ -652,6 +657,26 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			throw new UnauthorizedException("You are not authorized to access this resource.");
 		}
 	}
+	
+	@Override
+	public boolean maySubmitTo(RE_Register register) {
+		return this.maySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public boolean maySubmitToAll(Collection<RE_Register> registers) {
+		if (registers.isEmpty()) {
+			return false;
+		}
+		
+		for (RE_Register register : registers) {
+			if (!maySubmitTo(register)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	@Override
 	public boolean maySubmitTo(UUID targetRegisterUuid) {
@@ -661,6 +686,47 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	@Override
 	public void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException {
 		assertIsTrue(maySubmitTo(targetRegisterUuid));
+	}
+
+	@Override
+	public void assertMaySubmitTo(RE_Register register) throws UnauthorizedException {
+		this.assertMaySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public void assertMaySubmitToAll(RE_Register... registers) throws UnauthorizedException {
+		for (RE_Register register : registers) {
+			this.assertMaySubmitTo(register);
+		}
+	}
+
+	@Override
+	public boolean isSubmitter() {
+		return hasRoleWith(SUBMITTER_ROLE_PREFIX);
+	}
+
+	@Override
+	public void assertIsSubmitter() throws UnauthorizedException {
+		if (!isSubmitter()) {
+			throw new UnauthorizedException("You are not authorized to access this resource.");
+		}
+	}
+
+	@Override
+	public boolean mayAppeal(Proposal proposal) {
+		Organization suborg = orgRepository.findBySubmittingOrganization(proposal.getSponsor());
+		for (RE_Register targetRegister : proposal.getAffectedRegisters()) {
+			if (!mayActOnBehalf(suborg, registerService.getSubmitterRole(targetRegister))) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	@Override
+	public void assertMayAppeal(Proposal proposal) throws UnauthorizedException {
+		assertIsTrue(mayAppeal(proposal));
 	}
 
 }

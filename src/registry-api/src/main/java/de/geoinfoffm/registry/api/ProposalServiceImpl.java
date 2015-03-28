@@ -1079,7 +1079,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	@Override
 	public void approveProposalChange(Actor actor, ProposalChangeRequest changeRequest) {
 		List<RE_Register> registers = changeRequest.getProposal().getAffectedRegisters();
-		boolean isSubmitter = security.hasEntityRelatedRoleForAll(SUBMITTER_ROLE_PREFIX, registers);
+		boolean isSubmitter = security.maySubmitToAll(registers);
 		boolean isControlBody = security.hasEntityRelatedRoleForAll(CONTROLBODY_ROLE_PREFIX, registers);
 		
 		boolean mayGreenlight = (changeRequest.isEditedBySubmitter() ? isControlBody : isSubmitter);
