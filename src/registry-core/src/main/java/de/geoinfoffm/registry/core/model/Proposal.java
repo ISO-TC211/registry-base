@@ -134,6 +134,7 @@ public abstract class Proposal extends Entity
 	}
 
 	protected Proposal() {
+		this.title = "";
 		this.status = STATUS_NOT_SUBMITTED;
 	}
 

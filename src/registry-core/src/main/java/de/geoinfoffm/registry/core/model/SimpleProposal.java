@@ -1,35 +1,35 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
+ * modification, are permitted provided that the following conditions 
  * are met:
  *     * Redistributions of source code must retain the above copyright
  *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
+ 
+ *     * Redistributions in binary form must reproduce the above 
+ *     	 copyright notice, this list of conditions and the following 
+ *       disclaimer in the documentation and/or other materials 
  *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
+ 
+ *     * The names "German Federal Agency for Cartography and Geodesy", 
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE", 
+ *       "GDI-DE Registry" and the names of other contributors must not 
+ *       be used to endorse or promote products derived from this 
  *       software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *       
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
- * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN 
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT, 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 package de.geoinfoffm.registry.core.model;
@@ -55,6 +55,9 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
 
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
@@ -66,8 +69,9 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
- * @author Florian Esser
+ * The class SimpleProposal.
  *
+ * @author Florian Esser
  */
 @Access(AccessType.FIELD)
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -76,14 +80,22 @@ public abstract class SimpleProposal extends Proposal
 {
 	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@NotNull
+//	@IndexedEmbedded(includePaths = { "dateDisposed", "item.register.name" })
 	private RE_ProposalManagementInformation proposalManagementInformation;
 
+//	@Field(store = Store.YES)
+	private String itemClassName;
+	
 	protected SimpleProposal() {
-		
+		super();
+	}
+	
+	protected SimpleProposal(String title) {
+		super(title);
 	}
 
 	public SimpleProposal(RE_ProposalManagementInformation proposalManagementInformation) {
-		super();
+		super((proposalManagementInformation == null) ? "" : proposalManagementInformation.getItem().getName());
 		
 		if (proposalManagementInformation == null) {
 			throw new NullPointerException("proposalManagementInformation null");
@@ -91,6 +103,9 @@ public abstract class SimpleProposal extends Proposal
 		
 		this.setProposalManagementInformation(proposalManagementInformation);
 		this.setSponsor(proposalManagementInformation.getSponsor());
+		if (proposalManagementInformation.getItem() != null && proposalManagementInformation.getItem().getItemClass() != null) {
+			this.setItemClassName(proposalManagementInformation.getItem().getItemClass().getName());
+		}
 	}
 	
 	public RE_DecisionStatus getDecisionStatus() {
@@ -127,6 +142,14 @@ public abstract class SimpleProposal extends Proposal
 		return Collections.unmodifiableList(Arrays.asList(this.getProposalManagementInformation()));
 	}
 
+	public String getItemClassName() {
+		return itemClassName;
+	}
+
+	public void setItemClassName(String itemClassName) {
+		this.itemClassName = itemClassName;
+	}
+
 	@Override
 	public void review(Date reviewDate) throws IllegalOperationException {
 		if (this.isReviewed()) {
@@ -149,6 +172,7 @@ public abstract class SimpleProposal extends Proposal
 	public void accept(String controlBodyDecisionEvent) throws IllegalOperationException {
 		proposalManagementInformation.setControlBodyDecisionEvent(controlBodyDecisionEvent);
 		this.setStatus(STATUS_FINISHED);
+		this.setConcluded(true);
 		this.accept();
 	}
 
