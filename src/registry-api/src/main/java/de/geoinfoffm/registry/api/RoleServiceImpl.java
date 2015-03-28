@@ -34,14 +34,17 @@
  */
 package de.geoinfoffm.registry.api;
 
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.acls.domain.BasePermission;
-import org.springframework.security.acls.domain.GrantedAuthoritySid;
-import org.springframework.security.acls.domain.ObjectIdentityImpl;
-import org.springframework.security.acls.model.MutableAcl;
 import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.stereotype.Service;
 
+import de.bespire.registry.core.ProposalRelatedRole;
+import de.geoinfoffm.registry.core.Entity;
+import de.geoinfoffm.registry.core.model.Organization;
+import de.geoinfoffm.registry.core.model.OrganizationRelatedRole;
+import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
@@ -59,9 +62,12 @@ public class RoleServiceImpl extends AbstractApplicationService<Role, RoleReposi
 	}
 
 	@Override
-	public Role createRole(String name) {
-		Role role = new Role(name);
-		role = repository().save(role);
+	public Role getOrCreateRole(String name) {
+		Role role = repository().findByName(name); 
+		if (role == null) {
+			new Role(name);
+			role = repository().save(role);
+		}
 		
 		return role;
 	}
@@ -72,10 +78,37 @@ public class RoleServiceImpl extends AbstractApplicationService<Role, RoleReposi
 	}
 
 	@Override
-	public RegisterRelatedRole createRole(String name, RE_Register register) {
-		RegisterRelatedRole role = new RegisterRelatedRole(name, register);
-		role = repository().save(role);
+	public RegisterRelatedRole getOrCreateRole(String name, RE_Register register) {
+		return this.getOrCreateEntityRelatedRole(name, RegisterRelatedRole.class, register);
+	}
+	
+	@Override
+	public OrganizationRelatedRole getOrCreateRole(String name, Organization organization) {
+		return this.getOrCreateEntityRelatedRole(name, OrganizationRelatedRole.class, organization);
+	}
+	
+	@Override
+	public ProposalRelatedRole getOrCreateRole(String name, Proposal proposal) {
+		return this.getOrCreateEntityRelatedRole(name, ProposalRelatedRole.class, proposal);
+	}
+	
+	private <R extends Role, T extends Entity> R getOrCreateEntityRelatedRole(String name, Class<R> roleType, T entity) {
+		Role role = repository().findByName(name);
+		if (role == null) {
+			try {
+				role = (R)BeanUtils.instantiateClass(roleType.getConstructor(String.class, entity.getClass()), name, entity);
+			} 
+			catch (BeanInstantiationException | NoSuchMethodException | SecurityException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+			role = repository().save(role);
+		}
+		else {
+			if (!roleType.isAssignableFrom(role.getClass())) {
+				throw new RuntimeException(String.format("Role '%s' already exists but has type '%s'", name, role.getClass().getCanonicalName()));
+			}
+		}
 		
-		return role;
+		return (R)role;		
 	}
 }

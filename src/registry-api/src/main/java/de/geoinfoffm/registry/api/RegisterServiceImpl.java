@@ -157,10 +157,10 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 		result = repository().save(result);
 
 		// Create roles for new register
-		Role managerRole = roleService.createRole(MANAGER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role ownerRole = roleService.createRole(OWNER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role submitterRole = roleService.createRole(SUBMITTER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role controlBodyRole = roleService.createRole(CONTROLBODY_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role managerRole = roleService.getOrCreateRole(MANAGER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role ownerRole = roleService.getOrCreateRole(OWNER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role submitterRole = roleService.getOrCreateRole(SUBMITTER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role controlBodyRole = roleService.getOrCreateRole(CONTROLBODY_ROLE_PREFIX + result.getUuid().toString(), result);
 		
 		registerOwner.assignRole(ownerRole);
 		registerManager.assignRole(managerRole);

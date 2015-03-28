@@ -36,6 +36,10 @@ package de.geoinfoffm.registry.api;
 
 import org.springframework.stereotype.Service;
 
+import de.bespire.registry.core.ProposalRelatedRole;
+import de.geoinfoffm.registry.core.model.Organization;
+import de.geoinfoffm.registry.core.model.OrganizationRelatedRole;
+import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
@@ -43,8 +47,10 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 @Service
 public interface RoleService extends ApplicationService<Role>
 {
-	Role createRole(String name);
-	RegisterRelatedRole createRole(String name, RE_Register register);
+	Role getOrCreateRole(String name);
+	RegisterRelatedRole getOrCreateRole(String name, RE_Register register);
+	OrganizationRelatedRole getOrCreateRole(String name, Organization organization);
+	ProposalRelatedRole getOrCreateRole(String name, Proposal proposal);
 
 	Role findByName(String name);
 }
