@@ -34,8 +34,6 @@
  */
 package de.geoinfoffm.registry.core.model;
 
-import static de.geoinfoffm.registry.core.model.Proposal.*;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -44,23 +42,15 @@ import java.util.List;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Store;
 
 import de.geoinfoffm.registry.core.IllegalOperationException;
-import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
