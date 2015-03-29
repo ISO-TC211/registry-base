@@ -58,11 +58,12 @@ public class ProposalRelatedRole extends Role
 	@ManyToOne(optional = false)
 	private Proposal proposal;
 
-	public ProposalRelatedRole() {
+	protected ProposalRelatedRole() {
 	}
 
-	public ProposalRelatedRole(String name) {
-		super(name);
+	public ProposalRelatedRole(String rolePrefix, Proposal proposal) {
+		super(rolePrefix + proposal.getUuid().toString());
+		this.proposal = proposal;
 	}
 
 	public Proposal getProposal() {
