@@ -84,6 +84,7 @@ import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequestRepository;
+import de.geoinfoffm.registry.core.model.ProposalFactory;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.model.ProposalType;
@@ -103,6 +104,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 import de.geoinfoffm.registry.persistence.AppealRepository;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterItemRepository;
@@ -153,8 +155,14 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private ProposalRepository proposalRepository;
 	
 	@Autowired
+	private ProposalFactory proposalFactory;
+	
+	@Autowired
 	private ProposalManagementInformationRepository pmiRepository;
 
+	@Autowired
+	private ProposalWorkflowManager proposalWorkflowManager;
+	
 	@Autowired
 	private AppealRepository appealRepository;
 	
@@ -200,8 +208,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (proposal.hasGroup()) {
 			return this.submitProposal((P)proposal.getGroup());
 		}
-		
-		proposal.submit(Calendar.getInstance().getTime());
+	
+		proposalWorkflowManager.submit(proposal, Calendar.getInstance().getTime());
 		this.saveProposal(proposal);
 		
 		eventPublisher().publishEvent(new ProposalSubmittedEvent(proposal));
@@ -342,7 +350,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			throw new NullPointerException(String.format("Factory %s returned null item", registerItemFactory.getClass().getCanonicalName()));
 		}
 		
-		Addition addition = Addition.createAddition(item, sponsor, 
+		Addition addition = proposalFactory.createAddition(item, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
 
 		addition = saveProposal(addition, item);
@@ -397,7 +405,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 //			dependentItem.setItemIdentifier(subItemIdentifier);
 
-		Addition subAddition = Addition.createAddition(dependentItem, sponsor, 
+		Addition subAddition = proposalFactory.createAddition(dependentItem, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
 		
 		subAddition = saveProposal(subAddition, dependentItem);
@@ -638,7 +646,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Proposal withdrawProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException {
-		proposal.withdraw();
+		proposalWorkflowManager.withdraw(proposal);
 		return this.saveProposal(proposal);
 	}
 
@@ -660,7 +668,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 		security.assertHasEntityRelatedRoleForAll(RegistrySecurity.MANAGER_ROLE_PREFIX, proposal.getAffectedRegisters());
 		
-		proposal.review(Calendar.getInstance().getTime());
+		proposalWorkflowManager.review(proposal, Calendar.getInstance().getTime());
 		this.saveProposal(proposal);
 		
 		return proposal;
@@ -685,7 +693,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			return this.acceptProposal(proposal.getGroup(), controlBodyDecisionEvent);
 		}
 		else {
-			proposal.accept(controlBodyDecisionEvent);
+			proposalWorkflowManager.accept(proposal, controlBodyDecisionEvent);
 			proposal = this.saveProposal(proposal);
 			eventPublisher().publishEvent(new ProposalAcceptedEvent(proposal));
 			
@@ -704,7 +712,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 		security.assertIsTrue(security.isControlBody(proposal.getUuid()));
 
-		proposal.reject(controlBodyDecisionEvent);
+		proposalWorkflowManager.reject(proposal, controlBodyDecisionEvent);
 		proposal = this.saveProposal(proposal);
 		
 		eventPublisher().publishEvent(new ProposalRejectedEvent(proposal));
@@ -723,7 +731,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			throw new InvalidProposalException("Cannot reject null proposal.");
 		}
 
-		proposal.conclude();
+		proposalWorkflowManager.conclude(proposal);
 		proposal = this.saveProposal(proposal);
 		
 		return proposal;
@@ -734,7 +742,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Appeal appealProposal(Proposal proposal, String justification, String situation, String impact) throws InvalidProposalException, IllegalOperationException {
-		Appeal appeal = proposal.appeal(justification, impact, situation);
+		Appeal appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
 
 		appeal = appealRepository.save(appeal);
 		

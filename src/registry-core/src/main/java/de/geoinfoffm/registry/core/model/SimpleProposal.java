@@ -141,75 +141,10 @@ public abstract class SimpleProposal extends Proposal
 	}
 
 	@Override
-	public void review(Date reviewDate) throws IllegalOperationException {
-		if (this.isReviewed()) {
-			throw new IllegalOperationException("Proposal is already reviewed");
-		}
-		
-		this.setStatus(STATUS_IN_APPROVAL_PROCESS);
-		proposalManagementInformation.review(reviewDate);
-	}
-	
-
-	@Override
-	public void accept() throws IllegalOperationException {
-		proposalManagementInformation.makeDisposition(RE_Disposition.ACCEPTED);
-		this.setStatus(STATUS_FINISHED);
-		this.setConcluded(true);
-	}
-
-	@Override
-	public void accept(String controlBodyDecisionEvent) throws IllegalOperationException {
-		proposalManagementInformation.setControlBodyDecisionEvent(controlBodyDecisionEvent);
-		this.setStatus(STATUS_FINISHED);
-		this.setConcluded(true);
-		this.accept();
-	}
-
-	@Override
-	public void reject() throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALABLE);
-		proposalManagementInformation.makeDisposition(RE_Disposition.NOT_ACCEPTED);		
-	}
-
-	@Override
-	public void reject(String controlBodyDecisionEvent) throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALABLE);
-		proposalManagementInformation.setControlBodyDecisionEvent(controlBodyDecisionEvent);
-		this.reject();
-	}
-	
-	@Override
-	public void withdraw() throws IllegalOperationException {
-		this.setStatus(STATUS_WITHDRAWN);
-		proposalManagementInformation.makeDisposition(RE_Disposition.WITHDRAWN);
-		this.setConcluded(true);
-	}
-	
-	@Override
 	public void delete() throws IllegalOperationException {
 		this.proposalManagementInformation = null;
 	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#conclude()
-	 */
-	@Override
-	public void conclude() throws IllegalOperationException {
-		proposalManagementInformation.finalizeDisposition();
-		this.setConcluded(true);
-		this.setStatus(STATUS_FINISHED);
-	}
 	
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#appeal(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Appeal appeal(String justification, String impact, String situation) throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALED);		
-		return new Appeal(this, justification, situation, impact);
-	}
-
 	public RE_RegisterItem getItem() {
 		return proposalManagementInformation.getItem();
 	}
@@ -266,43 +201,6 @@ public abstract class SimpleProposal extends Proposal
 	
 	public void setControlBodyDecisionEvent(String event) {
 		proposalManagementInformation.setControlBodyDecisionEvent(event);
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isPending()
-	 */
-	@Override
-	public boolean isPending() {
-		return proposalManagementInformation.isPending();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isReviewed()
-	 */
-	@Override
-	public boolean isReviewed() {
-		return this.proposalManagementInformation.isReviewed();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isUnderReview()
-	 */
-	@Override
-	public boolean isUnderReview() {
-		return !this.proposalManagementInformation.isReviewed();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isTentative()
-	 */
-	@Override
-	public boolean isTentative() {
-		return this.proposalManagementInformation.isTentative();
-	}
-
-	@Override
-	public boolean isFinal() {
-		return proposalManagementInformation.isFinal();
 	}
 
 	@Override

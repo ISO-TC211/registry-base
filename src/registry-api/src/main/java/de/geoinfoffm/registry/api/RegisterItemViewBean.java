@@ -37,6 +37,7 @@ package de.geoinfoffm.registry.api;
 import static de.geoinfoffm.registry.api.iso.IsoXml.*;
 import static de.geoinfoffm.registry.core.model.Proposal.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
@@ -77,6 +79,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
  * The class RegisterItemViewBean.
@@ -131,6 +134,8 @@ public class RegisterItemViewBean
 	private UUID sponsorUuid;
 	private String sponsorName;
 	
+	private ProposalWorkflowManager workflowManager;
+	
 	@JsonIgnore
 	private final Set<RegisterItemViewBean> supersededItems = new HashSet<RegisterItemViewBean>();
 	@JsonIgnore
@@ -151,16 +156,15 @@ public class RegisterItemViewBean
 	private UUID proposalGroupUuid;
 	private final Set<RegisterItemViewBean> memberProposals = new HashSet<RegisterItemViewBean>();
 
-	public RegisterItemViewBean(RE_RegisterItem item) {
+	protected RegisterItemViewBean(RE_RegisterItem item) {
 		this(item, true);
 	}
 
-	public RegisterItemViewBean(RE_RegisterItem item, boolean loadDetails) {
+	protected RegisterItemViewBean(RE_RegisterItem item, boolean loadDetails) {
 		initializeFromItem(item, loadDetails);
 	}
 
-	public RegisterItemViewBean(Proposal proposal) {
-		this.setEditable(proposal.isEditable());
+	protected RegisterItemViewBean(Proposal proposal) {
 		if (proposal.hasGroup()) {
 			this.setProposalGroupUuid(proposal.getGroup().getUuid());
 		}
@@ -178,18 +182,72 @@ public class RegisterItemViewBean
 		}
 	}
 
-	public RegisterItemViewBean(SimpleProposal proposal) {
+	protected RegisterItemViewBean(SimpleProposal proposal) {
 		initializeFromSimpleProposal(proposal);
 	}
 	
-	public RegisterItemViewBean(Appeal appeal) {
+	protected RegisterItemViewBean(Appeal appeal) {
 		initializeFromAppeal(appeal);
 	}
 	
-	public RegisterItemViewBean(Supersession supersession) {
+	protected RegisterItemViewBean(Supersession supersession) {
 		initializeFromSupersession(supersession);
 	}
+
+	public static RegisterItemViewBean forAppeal(Appeal appeal, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(appeal);
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
 	
+	public static RegisterItemViewBean forItem(RE_RegisterItem item, boolean loadDetails, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(item, loadDetails);
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
+	
+	public static <T extends RegisterItemViewBean> T forItem(RE_RegisterItem item, boolean loadDetails, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
+		T result;
+		try {
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { item, loadDetails, workflowManager }, new Class<?>[] { RE_RegisterItem.class, Boolean.class, ProposalWorkflowManager.class });
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
+
+	
+	public static RegisterItemViewBean forProposal(Proposal proposal, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(proposal);
+		result.setWorkflowManager(workflowManager);
+		result.setEditable(workflowManager.isEditable(proposal));
+		
+		return result;
+	}
+
+	public static <T extends RegisterItemViewBean> T forProposal(Proposal proposal, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
+		T result;
+		try {
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { proposal }, new Class<?>[] { proposal.getClass() });
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+		result.setWorkflowManager(workflowManager);
+		result.setEditable(workflowManager.isEditable(proposal));
+		
+		return result;
+	}
+
+	protected void setWorkflowManager(ProposalWorkflowManager workflowManager) {
+		this.workflowManager = workflowManager;
+	}
+
 	/**
 	 * May be overwritten by extending classes
 	 */
@@ -961,37 +1019,38 @@ public class RegisterItemViewBean
 
 	@JsonIgnore
 	public boolean isNotSubmitted() {
-		return this.getProposalStatus().equals(STATUS_NOT_SUBMITTED);
+		return !workflowManager.isSubmitted(this.proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isUnderReview() {
-		return this.getProposalStatus().equals(STATUS_UNDER_REVIEW);
+		return workflowManager.isUnderReview(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isPending() {
-		return this.getProposalStatus().equals(STATUS_IN_APPROVAL_PROCESS);
+		return workflowManager.isPending(proposalStatus);
 	}
 	
 	@JsonIgnore
 	public boolean isAppealable() {
-		return this.getProposalStatus().equals(STATUS_APPEALABLE) && !this.isAppealed();
+		return workflowManager.isAppealable(proposalStatus) && !this.isAppealed();
 	}
 	
 	@JsonIgnore
 	public boolean isWithdrawable() {
-		return isPending() || isUnderReview();
+		return workflowManager.isWithdrawable(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isFinished() {
-		return this.getProposalStatus().equals(STATUS_FINISHED);
+		return workflowManager.isFinal(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isWithdrawn() {
-		return this.getDisposition().equals(RE_Disposition.WITHDRAWN);
+		return workflowManager.isWithdrawn(proposalStatus);
+//		return this.getDisposition().equals(RE_Disposition.WITHDRAWN);
 	}
 
 	public boolean isValid() {

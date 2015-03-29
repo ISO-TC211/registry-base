@@ -34,6 +34,8 @@
  */
 package de.geoinfoffm.registry.core.model;
 
+import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
+
 import java.util.Date;
 import java.util.List;
 
@@ -45,12 +47,10 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.envers.Audited;
 
@@ -61,6 +61,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
  * @author Florian Esser
@@ -72,14 +73,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 @Audited @javax.persistence.Entity
 public abstract class Proposal extends Entity
 {
-	public static final String STATUS_NOT_SUBMITTED = "NOT_SUBMITTED";
-	public static final String STATUS_UNDER_REVIEW = "UNDER_REVIEW";
-	public static final String STATUS_IN_APPROVAL_PROCESS = "IN_APPROVAL_PROCESS";
-	public static final String STATUS_APPEALABLE = "APPEALABLE";
-	public static final String STATUS_APPEALED = "APPEALED";
-	public static final String STATUS_FINISHED = "FINISHED";
-	public static final String STATUS_WITHDRAWN = "WITHDRAWN";
-	
 	@Column(columnDefinition = "text")
 	private String title;
 
@@ -104,43 +97,18 @@ public abstract class Proposal extends Entity
 	
 	public abstract boolean isContainedIn(RE_Register register);
 	
-	public void submit(Date submissionDate) throws IllegalOperationException {
-		this.setDateSubmitted(submissionDate);
-		this.setStatus(STATUS_UNDER_REVIEW);
+	public void accept() throws IllegalOperationException {
+		
 	}
 	
-	public abstract void review(Date reviewDate) throws IllegalOperationException;
-	public abstract void accept() throws IllegalOperationException;
-	public abstract void accept(String controlBodyDecisionEvent) throws IllegalOperationException;
-	public abstract void reject() throws IllegalOperationException;
-	public abstract void reject(String controlBodyDecisionEvent) throws IllegalOperationException;	
-	public abstract void withdraw() throws IllegalOperationException;
-	public abstract void conclude() throws IllegalOperationException;
 	public abstract void delete() throws IllegalOperationException;
-	public abstract Appeal appeal(String justification, String impact, String situation) throws IllegalOperationException;
-	
-	public abstract boolean isUnderReview();
-	public abstract boolean isReviewed();
-	public abstract boolean isPending();
-	public abstract boolean isTentative();
-	public abstract boolean isFinal();
-	
-	public boolean isEditable() {
-		return !this.isFinal() && this.isUnderReview();
-	}
-	
-	public boolean isWithdrawable() {
-		return this.isUnderReview() || this.isPending();
-	}
 
 	protected Proposal() {
 		this.title = "";
-		this.status = STATUS_NOT_SUBMITTED;
 	}
 
 	protected Proposal(String title) {
 		this.setTitle(title);
-		this.status = STATUS_NOT_SUBMITTED;
 	}
 
 	/**
@@ -194,10 +162,15 @@ public abstract class Proposal extends Entity
 	public Boolean isConcluded() {
 		return isConcluded;
 	}
+	
 	public void setConcluded(Boolean isConcluded) {
 		this.isConcluded = isConcluded;
 	}
-
+	
+	public boolean isEditable() {
+		return true;
+	}
+	
 	public interface Factory {
 		Proposal createProposal(RE_ProposalManagementInformation proposalManagementInformation);
 	}

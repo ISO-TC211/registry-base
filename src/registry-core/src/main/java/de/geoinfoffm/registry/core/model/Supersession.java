@@ -291,13 +291,4 @@ public class Supersession extends ProposalGroup
 			supersededItem.addSuccessors(this.getSupersedingItems());
 		}
 	}
-
-	@Override
-	public void accept(String controlBodyDecisionEvent) throws IllegalOperationException {
-		super.accept(controlBodyDecisionEvent);
-
-		for (RE_RegisterItem supersededItem : this.getSupersededItems()) {
-			supersededItem.addSuccessors(this.getSupersedingItems());
-		}
-	}
 }

@@ -108,13 +108,11 @@ public class Appeal extends Entity
 	public void accept(Date dispositionDate) throws IllegalOperationException {
 		this.setDisposition(AppealDisposition.ACCEPTED);
 		this.setDispositionDate(dispositionDate);
-		appealedProposal.accept();
 	}
 	
 	public void reject(Date dispositionDate) throws IllegalOperationException {
 		this.setDisposition(AppealDisposition.NOT_ACCEPTED);
 		this.setDispositionDate(dispositionDate);
-		appealedProposal.conclude();	
 	}
 
 	/**
