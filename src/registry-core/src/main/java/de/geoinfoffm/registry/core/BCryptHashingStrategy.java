@@ -54,9 +54,6 @@ public class BCryptHashingStrategy implements HashingStrategy
 		passwordEncoder = new BCryptPasswordEncoder(12);
 	}
 	
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.HashingStrategy#hash(java.lang.String)
-	 */
 	@Override
 	public String encode(CharSequence value) {
 		return passwordEncoder.encode(value); 

@@ -37,6 +37,8 @@ package de.geoinfoffm.registry.core;
 import java.io.Serializable;
 import java.util.UUID;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -62,6 +64,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
  *
  */
 @XmlRootElement
+@Access(AccessType.FIELD)
 @Audited @MappedSuperclass
 public abstract class Entity implements Serializable
 {
