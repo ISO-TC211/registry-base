@@ -36,6 +36,7 @@ package de.geoinfoffm.registry.api;
 
 import java.lang.reflect.Constructor;
 
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,14 +49,37 @@ import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 @Component
 public class ViewBeanFactory
 {
 	@Autowired
 	private ItemClassRegistry itemClassRegistry;
+	
+	@Autowired
+	private ProposalWorkflowManager workflowManager;
 
 	public ViewBeanFactory() {
+	}
+	
+	private Class<? extends RegisterItemViewBean> determineViewBeanType(RE_ItemClass itemClass) {
+		ItemClassConfiguration config = itemClassRegistry.getConfiguration(itemClass.getName());
+
+		String viewBeanClassName = config.getViewBeanClass();
+		Class<?> viewBeanClass;		
+		try {
+			viewBeanClass = this.getClass().getClassLoader().loadClass(viewBeanClassName);
+			if (!RegisterItemViewBean.class.isAssignableFrom(viewBeanClass)) {
+				throw new RuntimeException(String.format("The configured view bean class %s is not derived from RegisterItemViewBean", viewBeanClassName));
+			}
+			
+			return (Class<? extends RegisterItemViewBean>)viewBeanClass;
+		}
+		catch (ClassNotFoundException e) {
+			return RegisterItemViewBean.class;
+		}
+
 	}
 	
 	private Constructor<?> findConstructor(RE_ItemClass itemClass, Class<?> argumentType) {
@@ -118,15 +142,17 @@ public class ViewBeanFactory
 	
 	public RegisterItemViewBean getViewBean(SimpleProposal proposal) {
 		RE_ItemClass itemClass = proposal.getItem().getItemClass();
-		return (RegisterItemViewBean)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal);		
+		Class<? extends RegisterItemViewBean> viewBeanType = determineViewBeanType(itemClass);
+		return RegisterItemViewBean.forProposal(proposal, viewBeanType, workflowManager);
+//		return (RegisterItemViewBean)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal);		
 	}
 	
 	public RegisterItemViewBean getViewBean(Supersession supersession) {
-		return new RegisterItemViewBean(supersession);
+		return RegisterItemViewBean.forProposal(supersession, workflowManager);
 	}
 	
 	public RegisterItemViewBean getViewBean(ProposalGroup group) {
-		return new RegisterItemViewBean(group);
+		return RegisterItemViewBean.forProposal(group, workflowManager);
 	}
 
 }

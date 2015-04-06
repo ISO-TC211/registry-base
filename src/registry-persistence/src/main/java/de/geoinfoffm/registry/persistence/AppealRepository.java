@@ -36,7 +36,7 @@ package de.geoinfoffm.registry.persistence;
 
 import org.springframework.stereotype.Repository;
 
-import de.geoinfoffm.registry.core.AuditedRepository;
+import de.geoinfoffm.registry.core.EntityRepository;
 import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Proposal;
 
@@ -45,7 +45,7 @@ import de.geoinfoffm.registry.core.model.Proposal;
  *
  */
 @Repository
-public interface AppealRepository extends AuditedRepository<Appeal>
+public interface AppealRepository extends EntityRepository<Appeal>
 {
 	public Appeal findByAppealedProposal(Proposal proposal);
 }

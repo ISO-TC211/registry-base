@@ -36,10 +36,11 @@ package de.geoinfoffm.registry.core.model;
 
 import java.util.List;
 
-import de.geoinfoffm.registry.core.AuditedRepository;
+import de.geoinfoffm.registry.core.EntityRepository;
 
-public interface AuthorizationRepository extends AuditedRepository<Authorization>
+public interface AuthorizationRepository extends EntityRepository<Authorization>
 {
+	// Do not cache this
 	List<Authorization> findByActor(Actor actor);
 	List<Authorization> findByRole(Role role);
 	Authorization findByActorAndRole(Actor actor, Role role);

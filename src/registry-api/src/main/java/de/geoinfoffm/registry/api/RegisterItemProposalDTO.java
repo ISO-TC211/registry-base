@@ -99,6 +99,7 @@ public class RegisterItemProposalDTO
 	private final Set<UUID> existingSupersedingItems = new HashSet<UUID>();
 	
 //	private final List<RegisterItemProposalDTO> dependentItems = new ArrayList<RegisterItemProposalDTO>();
+	private final Set<RegisterItemProposalDTO> containedProposals = new HashSet<>();
 	
 	public RegisterItemProposalDTO() {
 		itemUuid = UUID.randomUUID();
@@ -684,6 +685,10 @@ public class RegisterItemProposalDTO
 	public void removeSupersedingItem(UUID itemUuid) {
 		existingSupersedingItems.remove(itemUuid);
 		newSupersedingItems.remove(itemUuid);
+	}
+
+	public Set<RegisterItemProposalDTO> getContainedProposals() {
+		return containedProposals;
 	}
 
 	public List<RegisterItemProposalDTO> getDependentProposals() {

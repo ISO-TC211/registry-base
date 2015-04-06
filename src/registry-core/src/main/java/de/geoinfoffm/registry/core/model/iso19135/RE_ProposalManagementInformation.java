@@ -195,6 +195,7 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	 */
 	public void setDisposition(RE_Disposition disposition) {
 		this.disposition = disposition;
+		this.setDateDisposed(Calendar.getInstance().getTime());
 	}
 
 	/**
@@ -281,10 +282,6 @@ public abstract class RE_ProposalManagementInformation extends Entity
 		this.item = item;
 	}
 	
-	public void finalize() throws Throwable {
-
-	}
-	
 	public boolean isReviewed() {
 		return this.getDateProposed() != null;
 	}
@@ -307,7 +304,6 @@ public abstract class RE_ProposalManagementInformation extends Entity
 		}
 		
 		this.setDisposition(disposition);
-		this.setDateDisposed(Calendar.getInstance().getTime());
 		switch (disposition) {
 			case ACCEPTED:
 				this.setStatus(RE_DecisionStatus.FINAL);

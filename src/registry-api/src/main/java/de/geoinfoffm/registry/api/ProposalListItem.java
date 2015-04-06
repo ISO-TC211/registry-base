@@ -34,7 +34,7 @@
  */
 package de.geoinfoffm.registry.api;
 
-import static de.geoinfoffm.registry.core.model.Proposal.*;
+import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -57,6 +57,7 @@ import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
  * The class ProposalListItem.
@@ -81,8 +82,11 @@ public class ProposalListItem
 	private MessageSource messages;
 	private Locale locale;
 	
-	public ProposalListItem(Proposal proposal, MessageSource messages, Locale locale) {
+	private ProposalWorkflowManager workflowManager;
+	
+	public ProposalListItem(Proposal proposal, MessageSource messages, Locale locale, ProposalWorkflowManager proposalWorkflowManager) {
 		this.uuid = proposal.getUuid();
+		this.workflowManager = proposalWorkflowManager;
 
 		DateFormat dateAndTime = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 		DateFormat dateOnly = new SimpleDateFormat("dd.MM.yyyy");
@@ -119,7 +123,7 @@ public class ProposalListItem
 		}
 		this.targetRegister = targetRegisterBuilder.toString();
 
-		if (proposal.isFinal()) {
+		if (workflowManager.isFinal(proposal)) {
 			if (!proposal.getProposalManagementInformations().isEmpty()) {
 				Date dateDisposed = proposal.getProposalManagementInformations().get(0).getDateDisposed();
 				this.dispositionDate = (dateDisposed == null) ? "" : dateOnly.format(dateDisposed);
@@ -164,6 +168,11 @@ public class ProposalListItem
 	public String getProposalStatus() {
 		return messages.getMessage(this.proposalStatus, null, this.proposalStatus, locale);	
 	}
+	
+	@JsonProperty
+	public String getTechnicalProposalStatus() {
+		return this.proposalStatus;
+	}
 
 	public String getProposalType() {
 		return messages.getMessage(this.proposalType, null, this.proposalType, locale);
@@ -206,22 +215,22 @@ public class ProposalListItem
 
 	@JsonProperty
 	public boolean isNotSubmitted() {
-		return STATUS_NOT_SUBMITTED.equals(this.proposalStatus);
+		return !workflowManager.isSubmitted(this.proposalStatus);
 	}
 
 	@JsonProperty
 	public boolean isUnderReview() {
-		return STATUS_UNDER_REVIEW.equals(this.proposalStatus);
+		return workflowManager.isUnderReview(this.proposalStatus);
 	}
 
 	@JsonProperty
 	public boolean isPending() {
-		return STATUS_IN_APPROVAL_PROCESS.equals(this.proposalStatus);
+		return workflowManager.isPending(this.proposalStatus);
 	}
 	
 	@JsonProperty
 	public boolean isAppealable() {
-		return STATUS_APPEALABLE.equals(this.proposalStatus) && !this.isAppealed;
+		return workflowManager.isAppealable(proposalStatus) && !this.isAppealed;
 	}
 	
 	@JsonProperty
@@ -231,7 +240,7 @@ public class ProposalListItem
 
 	@JsonProperty
 	public boolean isFinished() {
-		return STATUS_FINISHED.equals(this.proposalStatus);
+		return workflowManager.isFinal(proposalStatus);
 	}
 
 	@JsonProperty

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -54,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.RegistersChangedEvent;
 import de.geoinfoffm.registry.core.model.Actor;
@@ -79,6 +81,8 @@ public class RegisterServiceImpl
 extends AbstractApplicationService<RE_Register, RegisterRepository> 
 implements RegisterService, ApplicationListener<RegistersChangedEvent>
 {
+	private static final Logger logger = LoggerFactory.make();
+	
 	@Autowired
 	private RoleService roleService;
 	
@@ -217,6 +221,10 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 		Map<UUID, String> result = new LinkedHashMap<UUID, String>();
 		
 		RE_Register register = repository().findOne(registerUuid);
+		if (register == null) {
+			logger.error("No register with UUID {} exists", registerUuid);
+			return result;
+		}
 		for (RE_ItemClass itemClass : register.getContainedItemClasses()) {
 			result.put(itemClass.getUuid(), itemClass.getName());
 		}

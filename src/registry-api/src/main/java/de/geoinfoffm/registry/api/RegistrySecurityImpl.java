@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.api;
 
+import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 import static org.springframework.security.acls.domain.BasePermission.*;
 
 import java.security.Principal;
@@ -72,6 +73,7 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.core.security.RegistryUserUtils;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
@@ -611,7 +613,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		}
 		else {
 			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
-			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, Proposal.STATUS_UNDER_REVIEW);
+			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, STATUS_UNDER_REVIEW);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
@@ -627,7 +629,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			List<Proposal> proposals = proposalRepository.findByStatusAndGroupIsNull(Proposal.STATUS_IN_APPROVAL_PROCESS);
+			List<Proposal> proposals = proposalRepository.findByStatusAndGroupIsNull(STATUS_IN_APPROVAL_PROCESS);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}

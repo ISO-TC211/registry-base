@@ -36,10 +36,10 @@ package de.geoinfoffm.registry.api;
 
 import org.springframework.stereotype.Service;
 
-import de.bespire.registry.core.ProposalRelatedRole;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRelatedRole;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalRelatedRole;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
