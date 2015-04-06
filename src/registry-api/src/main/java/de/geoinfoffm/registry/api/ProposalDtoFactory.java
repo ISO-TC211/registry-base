@@ -51,6 +51,7 @@ import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.ItemClassConfiguration;
 import de.geoinfoffm.registry.core.ItemClassRegistry;
+import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 //import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
@@ -115,17 +116,23 @@ public class ProposalDtoFactory
 		else if (proposal instanceof Supersession) {
 			return getProposalDto((Supersession)proposal);
 		}
-//		else if (proposal instanceof HierarchicalProposal) {
-//			HierarchicalProposal group = (HierarchicalProposal)proposal;
-//			if (group.getPrimaryProposal() != null) {
-//				return getProposalDto(group.getPrimaryProposal());
-//			}
-//			else {
-//				throw new RuntimeException("Missing primary proposal");
-//			}
-//		}
+		else if (proposal instanceof HierarchicalProposal) {
+			HierarchicalProposal group = (HierarchicalProposal)proposal;
+			if (group.getPrimaryProposal() != null) {
+				return getProposalDto(group.getPrimaryProposal());
+			}
+			else {
+				throw new RuntimeException("Missing primary proposal");
+			}
+		}
 		else if (proposal instanceof ProposalGroup) {
-			throw new RuntimeException("Not yet implemented");
+			ProposalGroup group = (ProposalGroup)proposal;
+			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group);
+			for (Proposal containedProposal : group.getProposals()) {
+				groupDto.getContainedProposals().add(getProposalDto(containedProposal));
+			}
+			
+			return groupDto;
 		}
 		else {
 			throw new RuntimeException("Not yet implemented");
@@ -169,7 +176,7 @@ public class ProposalDtoFactory
 		}
 
 		String proposalDtoClassName = config.getDtoClass();
-		logger.debug("Item class configuration define class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
+		logger.debug("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
 		Class<?> proposalDtoClass;		
 		try {
 			proposalDtoClass = this.getClass().getClassLoader().loadClass(proposalDtoClassName);
