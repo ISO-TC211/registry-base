@@ -37,14 +37,15 @@ package de.geoinfoffm.registry.client.web;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+
+import de.geoinfoffm.registry.core.model.RegistryUser;
 
 public class BasePathUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 	
@@ -56,6 +57,12 @@ public class BasePathUrlAuthenticationSuccessHandler extends SimpleUrlAuthentica
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+		if (authentication.getPrincipal() instanceof RegistryUser) {
+			RegistryUser principal = (RegistryUser)authentication.getPrincipal();
+			Cookie langCookie = new Cookie("siteLanguage", principal.getPreferredLanguage());
+			response.addCookie(langCookie);
+		}
+
 		super.onAuthenticationSuccess(request, response, authentication);
 	}
 }
