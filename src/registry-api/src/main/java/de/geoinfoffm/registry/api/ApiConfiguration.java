@@ -85,12 +85,6 @@ public class ApiConfiguration
 	@Autowired
 	private HibernateConfiguration configuration;
 	
-	@Autowired
-	@Bean
-	public ProposalService proposalService(ProposalRepository repository) {
-		return new ProposalServiceImpl(repository);
-	}
-	
 	@Bean
 	public EhCacheFactoryBean ehCacheFactoryBean() {
 		EhCacheFactoryBean result = new EhCacheFactoryBean();
