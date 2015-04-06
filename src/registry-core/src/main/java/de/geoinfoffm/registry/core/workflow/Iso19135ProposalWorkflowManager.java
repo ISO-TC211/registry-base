@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 
@@ -60,9 +61,9 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 
 	@Override
 	public void reject(Proposal proposal) throws IllegalOperationException {
-		this.conclude(proposal);
+		proposal.setStatus(STATUS_APPEALABLE);
 		for (RE_ProposalManagementInformation pmi : proposal.getProposalManagementInformations()) {
-			pmi.makeDisposition(RE_Disposition.ACCEPTED);
+			pmi.makeDisposition(RE_Disposition.NOT_ACCEPTED);
 		}
 	}
 
