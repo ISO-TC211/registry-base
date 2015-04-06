@@ -70,7 +70,7 @@ implements ApplicationService<E>, ApplicationEventPublisherAware
 	private MutableAclService mutableAclService;
 	
 	@Autowired
-	private RegistrySecurity security;
+	protected RegistrySecurity security;
 	
 	public AbstractApplicationService(R repository) {
 		this.repository = repository;
