@@ -8,7 +8,7 @@ import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Proposal;
 
-public interface ProposalWorkflowManager extends WorkflowManager<Proposal> 
+public interface ProposalWorkflowManager extends WorkflowManager<Proposal>
 {
 	public static final String STATUS_NOT_SUBMITTED = "NOT_SUBMITTED";
 	public static final String STATUS_UNDER_REVIEW = "UNDER_REVIEW";

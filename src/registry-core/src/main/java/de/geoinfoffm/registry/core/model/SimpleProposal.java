@@ -206,7 +206,7 @@ public abstract class SimpleProposal extends Proposal
 	@Override
 	public List<RE_Register> getAffectedRegisters() {
 		return Arrays.asList(this.getRegister());
-	}
+	}	
 	
 	
 }

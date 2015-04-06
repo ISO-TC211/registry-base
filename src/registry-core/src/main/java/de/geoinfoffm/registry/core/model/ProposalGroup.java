@@ -153,14 +153,6 @@ public class ProposalGroup extends Proposal
 		return getProposals().get(0).getDisposition();
 	}
 
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#getSponsor()
-	 */
-	@Override
-	public RE_SubmittingOrganization getSponsor() {
-		return getProposals().get(0).getSponsor();
-	}
-
 	@Override
 	public void setSponsor(RE_SubmittingOrganization sponsor) {
 		this.sponsor = sponsor;
