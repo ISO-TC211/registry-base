@@ -141,7 +141,13 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 	public LocaleResolver localeResolver() {
 		CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
 		cookieLocaleResolver.setCookieName("siteLanguage");
-		cookieLocaleResolver.setCookiePath("/");
+
+		String basePath = ClientConfiguration.getBasePath();
+		if (!basePath.endsWith("/")) {
+			basePath = basePath + "/";
+		}
+		cookieLocaleResolver.setCookiePath(basePath);
+
 		cookieLocaleResolver.setDefaultLocale(defaultLocale());
 		return cookieLocaleResolver;
 	}
