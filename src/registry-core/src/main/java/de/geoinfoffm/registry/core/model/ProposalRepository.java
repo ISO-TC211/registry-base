@@ -34,7 +34,9 @@
  */
 package de.geoinfoffm.registry.core.model;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,12 +57,26 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	List<Proposal> findByDateSubmittedIsNotNullAndIsConcludedIsFalse();
 
 	List<Proposal> findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsTrue();
+	
 	List<Proposal> findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse();
+	Page<Proposal> findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.dateSubmitted IS NOT NULL AND p.group IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(@Param("search") String search, Pageable pageable);
 	
 	List<Proposal> findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor, String status);
 
 	List<Proposal> findByGroupIsNullAndIsConcludedIsFalse();
 	Page<Proposal> findByGroupIsNullAndIsConcludedIsFalse(Pageable pageable);
+
+	List<Proposal> findByGroupIsNullAndIsConcludedIsFalseAndUuidIn(Collection<UUID> uuids);
+	Page<Proposal> findByGroupIsNullAndIsConcludedIsFalseAndUuidIn(Collection<UUID> uuids, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.uuid IN (:uuids) AND p.group IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByGroupIsNullAndIsConcludedIsFalseAndUuidIn(@Param("uuids") Collection<UUID> uuids, @Param("search") String search, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL) OR (p.uuid IN (:uuids) AND p.group IS NULL AND p.isConcluded = false)")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search))) OR (p.uuid IN (:uuids) AND p.group IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search)))")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("search") String search, Pageable pageable);
 
 	List<Proposal> findBySponsorAndGroupIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor);
 	Page<Proposal> findBySponsorAndGroupIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor, Pageable pageable);
@@ -75,8 +91,16 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	Page<SimpleProposal> findSimpleProposalBySponsorAndItemClassAndGroupIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("itemClass") RE_ItemClass itemClass, @Param("search") String search, Pageable pageable);
 	
 	Page<Proposal> findBySponsorAndStatusAndGroupIsNull(RE_SubmittingOrganization sponsor, String status, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.sponsor = :sponsor AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findBySponsorAndStatusAndGroupIsNull(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("status") String status, @Param("search") String search, Pageable pageable);
+	
 	List<Proposal> findByStatusAndGroupIsNull(String status);
 	Page<Proposal> findByStatusAndGroupIsNull(String status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.group IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusAndGroupIsNull(@Param("status") String status, @Param("search") String search, Pageable pageable);
+
+	List<Proposal> findByStatusInAndGroupIsNull(Collection<String> status);
+	Page<Proposal> findByStatusInAndGroupIsNull(Collection<String> status, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.group IS NULL AND p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByStatusInAndGroupIsNull(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
 }
