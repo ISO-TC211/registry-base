@@ -168,6 +168,11 @@ public class ProposalListItem
 	public String getProposalStatus() {
 		return messages.getMessage(this.proposalStatus, null, this.proposalStatus, locale);	
 	}
+	
+	@JsonProperty
+	public String getTechnicalProposalStatus() {
+		return this.proposalStatus;
+	}
 
 	public String getProposalType() {
 		return messages.getMessage(this.proposalType, null, this.proposalType, locale);
