@@ -52,13 +52,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
@@ -79,6 +82,7 @@ import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.AuthorizationRepository;
 import de.geoinfoffm.registry.core.model.Clarification;
+import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
@@ -121,6 +125,8 @@ import de.geoinfoffm.registry.persistence.SupersessionRepository;
 //@Service
 public class ProposalServiceImpl extends AbstractApplicationService<Proposal, ProposalRepository> implements ProposalService
 {
+	private static final Logger logger = LoggerFactory.make();
+	
 	@PersistenceContext
 	private EntityManager entityManager;
 	
@@ -356,19 +362,19 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		addition = saveProposal(addition, item);
 		
 		if (!groupProposals.isEmpty()) {
-//			HierarchicalProposal group = new HierarchicalProposal(addition, groupProposals);
-//			group.setTitle(addition.getItem().getName());
-//			group.setSponsor(addition.getSponsor());
-//			group.setPrimaryProposal(addition);
-//			group = this.saveProposal(group);
-//			
-//			groupProposals.add(addition);
-//			for (Addition groupProposal : groupProposals) {
-//				groupProposal.setGroup(group);
-//				proposalRepository.save(groupProposal);
-//			}
-//			
-//			eventPublisher().publishEvent(new ProposalCreatedEvent(group));
+			HierarchicalProposal group = new HierarchicalProposal(addition, groupProposals);
+			group.setTitle(addition.getItem().getName());
+			group.setSponsor(addition.getSponsor());
+			group.setPrimaryProposal(addition);
+			group = this.saveProposal(group);
+			
+			groupProposals.add(addition);
+			for (Addition groupProposal : groupProposals) {
+				groupProposal.setGroup(group);
+				proposalRepository.save(groupProposal);
+			}
+			
+			eventPublisher().publishEvent(new ProposalCreatedEvent(group));
 		}
 		
 		eventPublisher().publishEvent(new ProposalCreatedEvent(addition));
@@ -1136,5 +1142,5 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	public List<Authorization> findAuthorizedControlBody(Proposal proposal) {
 		return cbStrategy.findControlBodyAuthorizations(proposal);
 	}
-
+	
 }
