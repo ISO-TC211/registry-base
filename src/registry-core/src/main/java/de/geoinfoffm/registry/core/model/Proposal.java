@@ -53,7 +53,9 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.hibernate.envers.Audited;
+import org.slf4j.Logger;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
@@ -73,6 +75,8 @@ import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 @Audited @javax.persistence.Entity
 public abstract class Proposal extends Entity
 {
+	private static final Logger logger = LoggerFactory.make();
+	
 	@Column(columnDefinition = "text")
 	private String title;
 
@@ -139,6 +143,7 @@ public abstract class Proposal extends Entity
 		return status;
 	}
 	public void setStatus(String status) {
+		logger.trace(String.format(">>> Changing status of proposal '%s' from '%s' to '%s'", this.getUuid(), this.status, status));
 		this.status = status;
 	}
 	public RE_SubmittingOrganization getSponsor() {
