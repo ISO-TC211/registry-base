@@ -45,11 +45,11 @@ import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.bespire.registry.core.ProposalRelatedRole;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRelatedRole;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalRelatedRole;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
@@ -112,7 +112,7 @@ public class RoleServiceImpl extends AbstractApplicationService<Role, RoleReposi
 			catch (BeanInstantiationException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 				throw new RuntimeException(e.getMessage(), e);
 			}
-//			role = repository().save(role);
+			role = repository().save(role);
 		}
 		else {
 			if (!roleType.isAssignableFrom(role.getClass())) {
