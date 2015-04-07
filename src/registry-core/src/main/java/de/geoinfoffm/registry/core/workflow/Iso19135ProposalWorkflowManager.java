@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Proposal;
@@ -78,6 +79,7 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 	@Override
 	public void withdraw(Proposal proposal) throws IllegalOperationException {
 		for (RE_ProposalManagementInformation pmi : proposal.getProposalManagementInformations()) {
+			pmi = (RE_ProposalManagementInformation)Entity.unproxify(pmi);
 			pmi.makeDisposition(RE_Disposition.WITHDRAWN);
 		}
 		this.conclude(proposal);
