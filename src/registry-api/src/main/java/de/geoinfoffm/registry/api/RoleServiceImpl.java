@@ -104,7 +104,7 @@ public class RoleServiceImpl extends AbstractApplicationService<Role, RoleReposi
 	
 	@Transactional
 	private <R extends Role, T extends Entity> R getOrCreateEntityRelatedRole(String name, Class<R> roleType, T entity) {
-		Role role = repository().findByName(name);
+		Role role = repository().findByName(name + entity.getUuid().toString());
 		if (role == null) {
 			try {
 				role = (R)ConstructorUtils.invokeConstructor(roleType, new Object[] { name,  entity }, new Class<?>[] { String.class, entity.getClass() });
