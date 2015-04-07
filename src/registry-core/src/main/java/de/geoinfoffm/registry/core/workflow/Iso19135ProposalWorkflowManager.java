@@ -77,10 +77,10 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 
 	@Override
 	public void withdraw(Proposal proposal) throws IllegalOperationException {
-		this.conclude(proposal);
 		for (RE_ProposalManagementInformation pmi : proposal.getProposalManagementInformations()) {
 			pmi.makeDisposition(RE_Disposition.WITHDRAWN);
 		}
+		this.conclude(proposal);
 	}
 
 	@Override
