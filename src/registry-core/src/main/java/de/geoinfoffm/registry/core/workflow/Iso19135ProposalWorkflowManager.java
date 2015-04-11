@@ -22,7 +22,9 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 	
 	@Override
 	public void initialize(Proposal proposal) {
-		proposal.setStatus(STATUS_NOT_SUBMITTED);
+		if (proposal.getStatus() == null) {
+			proposal.setStatus(STATUS_NOT_SUBMITTED);
+		}
 	}
 
 	@Override
