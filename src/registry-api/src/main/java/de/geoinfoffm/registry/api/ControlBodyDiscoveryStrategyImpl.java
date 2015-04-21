@@ -65,8 +65,7 @@ public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStr
 	public List<Role> findControlBodyRoles(Proposal proposal) {
 		List<Role> result = new ArrayList<>();
 		for (RE_Register register : proposal.getAffectedRegisters()) {
-			Role registerCbRole = registerService.getControlBodyRole(register);
-			result.add(registerCbRole);
+			result.addAll(this.findControlBodyRoles(register));
 		}
 
 		return result;
@@ -77,6 +76,14 @@ public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStr
 		List<Authorization> result = new ArrayList<>();
 		
 		List<Role> roles = this.findControlBodyRoles(proposal);
+		result.addAll(findControlBodyAuthorizations(roles));
+			
+		return result;
+	}
+
+	private List<Authorization> findControlBodyAuthorizations(List<Role> roles) {
+		List<Authorization> result = new ArrayList<Authorization>();
+		
 		for (Role role : roles) {
 			List<Delegation> delegations = delegationRepository.findByRole(role);
 			if (delegations != null && !delegations.isEmpty()) {
@@ -85,6 +92,26 @@ public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStr
 				}
 			}
 		}
+		
+		return result;
+	}
+
+	@Override
+	public List<Role> findControlBodyRoles(RE_Register register) {
+		List<Role> result = new ArrayList<Role>();
+		
+		Role registerCbRole = registerService.getControlBodyRole(register);
+		result.add(registerCbRole);
+		
+		return result;
+	}
+
+	@Override
+	public List<Authorization> findControlBodyAuthorizations(RE_Register register) {
+		List<Authorization> result = new ArrayList<>();
+		
+		List<Role> roles = this.findControlBodyRoles(register);
+		result.addAll(findControlBodyAuthorizations(roles));
 			
 		return result;
 	}
