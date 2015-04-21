@@ -231,4 +231,9 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 		this.conclude(appeal.getAppealedProposal());
 		appeal.reject(dispositionDate);
 	}
+
+	@Override
+	public boolean isDiscussable(Proposal proposal) {
+		return STATUS_NOT_SUBMITTED.equals(proposal.getStatus()) || STATUS_IN_APPROVAL_PROCESS.equals(proposal.getStatus());
+	}
 }

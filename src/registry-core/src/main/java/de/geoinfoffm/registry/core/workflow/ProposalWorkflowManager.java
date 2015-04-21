@@ -55,4 +55,6 @@ public interface ProposalWorkflowManager extends WorkflowManager<Proposal>
 	boolean isWithdrawable(String status);
 	boolean isEditable(Proposal proposal);
 	boolean isEditable(String status);
+	
+	boolean isDiscussable(Proposal proposal);
 }
