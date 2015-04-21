@@ -56,6 +56,8 @@ import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
@@ -66,8 +68,6 @@ import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.api.soap.Addition_Type;
 
 /**
  * @author Florian Esser
@@ -92,6 +92,8 @@ public class RegisterItemProposalDTO
 	private String registerManagerNotes;
 	private String controlBodyNotes;
 	private ProposalType proposalType;
+	
+	private boolean markedForDeletion;
 	
 	private final Map<String, String[]> originalValues = new HashMap<String, String[]>();
 	
@@ -319,7 +321,7 @@ public class RegisterItemProposalDTO
 	public void loadAdditionalValues(RE_RegisterItem item) {
 		
 	}
-
+	
 	public void loadDependentProposalDetails(Collection<RegisterItemProposalDTO> dependentProposals) {
 	}
 
@@ -519,6 +521,14 @@ public class RegisterItemProposalDTO
 		this.proposalType = proposalType;
 	}
 	
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
+	}
+
 	/**
 	 * @return the proposedChanges
 	 */
@@ -711,7 +721,7 @@ public class RegisterItemProposalDTO
 	public List<RegisterItemProposalDTO> getAggregateDependencies() {
 		return Arrays.asList();
 	}
-
+	
 	public List<RegisterItemProposalDTO> getCompositeDependencies() {
 		return Arrays.asList();
 	}
