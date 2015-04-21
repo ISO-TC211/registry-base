@@ -71,10 +71,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 @Audited @javax.persistence.Entity
 public class ProposalGroup extends Proposal
 {
-	@OneToMany(mappedBy = "group", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-//	@JoinTable(name = "ProposalGroup_Proposals", joinColumns = @JoinColumn(name = "groupId"), inverseJoinColumns = @JoinColumn(name = "proposalId"))
-	private final List<Proposal> proposals = new ArrayList<Proposal>();
-	
 	@Transient
 	private NameBuildingStrategy nameBuildingStrategy;
 	
@@ -98,8 +94,8 @@ public class ProposalGroup extends Proposal
 		this(strategy);
 		
 		for (P proposal : proposals) {
-			proposal.setGroup(this);
-			this.proposals.add(proposal);
+			proposal.setParent(this);
+			this.getProposals().add(proposal);
 		}
 		
 		this.setTitle(buildName());		
@@ -109,7 +105,7 @@ public class ProposalGroup extends Proposal
 		this();
 		
 		this.setProposals(new ArrayList<Proposal>());
-		this.proposals.addAll(proposals);
+		this.getProposals().addAll(proposals);
 		
 		this.setTitle(name);
 	}
@@ -118,17 +114,17 @@ public class ProposalGroup extends Proposal
 	 * @return the proposals
 	 */
 	public List<Proposal> getProposals() {
-		return Collections.unmodifiableList(proposals);
+		return this.getDependentProposals();
 	}
 
 	/**
 	 * @param proposals the proposals to set
 	 */
 	protected void setProposals(List<Proposal> proposals) {
-		this.proposals.clear();
+		this.getDependentProposals().clear();
 		for (Proposal proposal : proposals) {
-			this.proposals.add(proposal);
-			proposal.setGroup(this);
+			this.getDependentProposals().add(proposal);
+			proposal.setParent(this);
 		}
 	}
 
@@ -153,38 +149,6 @@ public class ProposalGroup extends Proposal
 		return getProposals().get(0).getDisposition();
 	}
 
-	@Override
-	public void setSponsor(RE_SubmittingOrganization sponsor) {
-		this.sponsor = sponsor;
-		for (Proposal proposal : this.proposals) {
-			proposal.setSponsor(sponsor);
-		}
-	}
-	
-	@Override
-	public void setDateSubmitted(Date dateSubmitted) {
-		super.setDateSubmitted(dateSubmitted);
-		for (Proposal proposal : this.proposals)  {
-			proposal.setDateSubmitted(dateSubmitted);
-		}
-	}
-
-	@Override
-	public void setStatus(String status) {
-		super.setStatus(status);
-		for (Proposal proposal : this.proposals)  {
-			proposal.setStatus(status);
-		}
-	}
-	
-	@Override
-	public void setConcluded(Boolean isConcluded) {
-		super.setConcluded(isConcluded);
-		for (Proposal proposal : this.proposals)  {
-			proposal.setConcluded(isConcluded);
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see de.geoinfoffm.registry.core.model.Proposal#getStatus()
 	 */
@@ -194,28 +158,28 @@ public class ProposalGroup extends Proposal
 	}
 	
 	public void addProposal(Proposal proposal) throws IllegalOperationException {
-		if (proposal.getGroup() != null && !proposal.getGroup().getUuid().equals(this.getUuid())) {
-			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getGroup().getUuid()));
+		if (proposal.hasParent() && !proposal.getParent().getUuid().equals(this.getUuid())) {
+			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getParent().getUuid()));
 		}
-		this.proposals.add(proposal);
-		proposal.setGroup(this);
+		this.getProposals().add(proposal);
+		proposal.setParent(this);
 	}
 	
 	public void removeProposal(Proposal proposal) {
-		if (this.proposals == null) {
+		if (this.getProposals() == null) {
 			return;
 		}
 		
-		this.proposals.remove(proposal);
-		proposal.setGroup(null);
+		this.getProposals().remove(proposal);
+		proposal.setParent(null);
 	}
 	
 	public void removeProposals(Collection<Proposal> proposals) {
-		if (this.proposals == null) {
+		if (this.getProposals() == null) {
 			return;
 		}
 		
-		this.proposals.removeAll(proposals);
+		this.getProposals().removeAll(proposals);
 	}
 
 	/* (non-Javadoc)
@@ -223,7 +187,7 @@ public class ProposalGroup extends Proposal
 	 */
 	@Override
 	public boolean isContainedIn(RE_Register register) {
-		if (this.proposals == null || this.proposals.isEmpty()) {
+		if (this.getProposals() == null || this.getProposals().isEmpty()) {
 			return false;
 		}
 
@@ -241,7 +205,7 @@ public class ProposalGroup extends Proposal
 	}
 	
 	public String buildName() {
-		return nameBuildingStrategy.buildName(this.proposals);
+		return nameBuildingStrategy.buildName(this.getProposals());
 	}
 	
 	public static class SimpleNameBuildingStrategy implements NameBuildingStrategy {
@@ -280,7 +244,7 @@ public class ProposalGroup extends Proposal
 
 	@Override
 	public void delete() throws IllegalOperationException {
-		for (Proposal proposal : this.proposals) {
+		for (Proposal proposal : this.getProposals()) {
 			proposal.delete();
 		}
 	}

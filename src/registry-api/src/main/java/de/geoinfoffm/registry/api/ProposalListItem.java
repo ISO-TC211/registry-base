@@ -34,8 +34,6 @@
  */
 package de.geoinfoffm.registry.api;
 
-import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,7 +47,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
-import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
@@ -98,21 +95,9 @@ public class ProposalListItem
 			SimpleProposal sp = (SimpleProposal)proposal;
 			this.itemClassName = sp.getItemClassName();
 		}
-		else if (proposal instanceof HierarchicalProposal && ((HierarchicalProposal)proposal).getPrimaryProposal() != null) {
-			HierarchicalProposal hp = (HierarchicalProposal)proposal;
-			if (hp.getPrimaryProposal() instanceof SimpleProposal) {
-				SimpleProposal sp = (SimpleProposal)hp.getPrimaryProposal();
-				this.itemClassName = sp.getItemClassName();
-			}
-		}
 		this.proposalStatus = proposal.getStatus();
 		
-		if (proposal instanceof HierarchicalProposal && ((HierarchicalProposal)proposal).getPrimaryProposal() != null) {
-			this.proposalType = ((HierarchicalProposal)proposal).getPrimaryProposal().getClass().getName();
-		}
-		else {
-			this.proposalType = proposal.getClass().getName();
-		}
+		this.proposalType = proposal.getClass().getName();
 
 		StringBuilder targetRegisterBuilder = new StringBuilder();
 		for (RE_Register register : proposal.getAffectedRegisters()) {

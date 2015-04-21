@@ -77,6 +77,7 @@ public class RegisterItemProposalDTO
 {	
 	// Used to reference existing items
 	private UUID referencedItemUuid;
+	private UUID parentItemUuid;
 	
 	private UUID itemUuid;
 	private UUID proposalUuid;
@@ -99,7 +100,7 @@ public class RegisterItemProposalDTO
 	private final Set<UUID> existingSupersedingItems = new HashSet<UUID>();
 	
 //	private final List<RegisterItemProposalDTO> dependentItems = new ArrayList<RegisterItemProposalDTO>();
-	private final Set<RegisterItemProposalDTO> containedProposals = new HashSet<>();
+	private final Set<RegisterItemProposalDTO> dependentProposals = new HashSet<>();
 	
 	public RegisterItemProposalDTO() {
 		itemUuid = UUID.randomUUID();
@@ -235,7 +236,12 @@ public class RegisterItemProposalDTO
 //		initializeFromItem(retirement.getRetiredItemUuid());
 //	}
 	
-	public RegisterItemProposalDTO(Proposal proposal) {
+	public RegisterItemProposalDTO(Proposal proposal, ProposalDtoFactory factory) {
+		this.proposalUuid = proposal.getUuid();
+		for (Proposal dependentProposal : proposal.getDependentProposals()) {
+			this.getDependentProposals().add(factory.getProposalDto(dependentProposal));
+		}
+		
 		if (proposal instanceof SimpleProposal) {
 			initializeFromSimpleProposal((SimpleProposal)proposal);
 		}
@@ -314,6 +320,9 @@ public class RegisterItemProposalDTO
 		
 	}
 
+	public void loadDependentProposalDetails(Collection<RegisterItemProposalDTO> dependentProposals) {
+	}
+
 	public UUID getReferencedItemUuid() {
 		return referencedItemUuid;
 	}
@@ -322,6 +331,14 @@ public class RegisterItemProposalDTO
 		this.referencedItemUuid = referencedItemUuid;
 	}
 	
+	public UUID getParentItemUuid() {
+		return parentItemUuid;
+	}
+
+	public void setParentItemUuid(UUID parentItemUuid) {
+		this.parentItemUuid = parentItemUuid;
+	}
+
 	public UUID getUuid() {
 		return itemUuid;
 	}
@@ -687,12 +704,15 @@ public class RegisterItemProposalDTO
 		newSupersedingItems.remove(itemUuid);
 	}
 
-	public Set<RegisterItemProposalDTO> getContainedProposals() {
-		return containedProposals;
+	public Set<RegisterItemProposalDTO> getDependentProposals() {
+		return dependentProposals;
 	}
 
-	public List<RegisterItemProposalDTO> getDependentProposals() {
-//		return dependentItems;
+	public List<RegisterItemProposalDTO> getAggregateDependencies() {
+		return Arrays.asList();
+	}
+
+	public List<RegisterItemProposalDTO> getCompositeDependencies() {
 		return Arrays.asList();
 	}
 	

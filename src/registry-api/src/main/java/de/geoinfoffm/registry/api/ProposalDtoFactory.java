@@ -49,10 +49,9 @@ import org.springframework.util.StringUtils;
 import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
+import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.ItemClassConfiguration;
 import de.geoinfoffm.registry.core.ItemClassRegistry;
-import de.geoinfoffm.registry.core.model.HierarchicalProposal;
-//import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -116,20 +115,11 @@ public class ProposalDtoFactory
 		else if (proposal instanceof Supersession) {
 			return getProposalDto((Supersession)proposal);
 		}
-		else if (proposal instanceof HierarchicalProposal) {
-			HierarchicalProposal group = (HierarchicalProposal)proposal;
-			if (group.getPrimaryProposal() != null) {
-				return getProposalDto(group.getPrimaryProposal());
-			}
-			else {
-				throw new RuntimeException("Missing primary proposal");
-			}
-		}
 		else if (proposal instanceof ProposalGroup) {
 			ProposalGroup group = (ProposalGroup)proposal;
-			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group);
+			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group, this);
 			for (Proposal containedProposal : group.getProposals()) {
-				groupDto.getContainedProposals().add(getProposalDto(containedProposal));
+				groupDto.getDependentProposals().add(getProposalDto(containedProposal));
 			}
 			
 			return groupDto;
@@ -141,11 +131,11 @@ public class ProposalDtoFactory
 
 	public RegisterItemProposalDTO getProposalDto(SimpleProposal proposal) {
 		RE_ItemClass itemClass = proposal.getItem().getItemClass();
-		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal);		
+		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal, Entity.unproxify(this));		
 	}
 	
 	public RegisterItemProposalDTO getProposalDto(Supersession supersession) {
-		return new RegisterItemProposalDTO(supersession);
+		return new RegisterItemProposalDTO(supersession, this);
 	}
 
 	private Constructor<?> findConstructor(RE_ItemClass itemClass) {
@@ -161,7 +151,7 @@ public class ProposalDtoFactory
 				defaultConstructor = RegisterItemProposalDTO.class.getConstructor();
 			}
 			else {
-				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType);
+				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException | SecurityException e) {
@@ -194,7 +184,7 @@ public class ProposalDtoFactory
 				ctor = proposalDtoClass.getDeclaredConstructor();
 			}
 			else {
-				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
+				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException ex) {

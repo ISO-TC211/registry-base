@@ -35,11 +35,13 @@
 package de.geoinfoffm.registry.api;
 
 import java.beans.PropertyDescriptor;
+import java.math.BigInteger;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +78,9 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 	
 	@Autowired
 	private RegisterRepository registerRepository;
+	
+	@Autowired
+	private RegisterItemService itemService;
 
 	protected ApplicationContext context;
 	
@@ -109,11 +114,21 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 					result.setItemClass(itemClass);
 					result.setName(proposal.getName());
 					result.setDefinition(proposal.getDefinition());
-//					result.addAdditionInformation(additionInformation);
 					result.setStatus(RE_ItemStatus.NOT_VALID);
 					result.setRegister(targetRegister);
 					
 					proposal.setAdditionalValues(result, entityManager);
+					
+					// The following call could lead to the entity being saved prematurely.
+					// To prevent a ConstraintException, set a random negative value here.
+					result.setItemIdentifier(BigInteger.valueOf(-RandomUtils.nextInt()));
+					
+					BigInteger maxIdentifier = itemService.findMaxItemIdentifier();
+					if (maxIdentifier == null) {
+						maxIdentifier = BigInteger.ZERO;
+					}
+					result.setItemIdentifier(maxIdentifier.add(BigInteger.ONE));
+
 //				}
 				
 				return result;

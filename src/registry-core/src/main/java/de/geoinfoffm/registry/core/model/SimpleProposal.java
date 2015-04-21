@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.core.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -129,7 +130,13 @@ public abstract class SimpleProposal extends Proposal
 	 */
 	@Override
 	public List<RE_ProposalManagementInformation> getProposalManagementInformations() {
-		return Collections.unmodifiableList(Arrays.asList(this.getProposalManagementInformation()));
+		List<RE_ProposalManagementInformation> result = new ArrayList<RE_ProposalManagementInformation>();
+		result.add(this.getProposalManagementInformation());
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			result.addAll(dependentProposal.getProposalManagementInformations());
+		}
+		return Collections.unmodifiableList(result);
+//		return Collections.unmodifiableList(Arrays.asList(this.getProposalManagementInformation()));
 	}
 
 	public String getItemClassName() {
@@ -159,8 +166,9 @@ public abstract class SimpleProposal extends Proposal
 	}
 
 	public void setSponsor(RE_SubmittingOrganization sponsor) {
+		super.setSponsor(sponsor);
+		
 		proposalManagementInformation.setSponsor(sponsor);
-		this.sponsor = sponsor;
 	}
 
 	public String getJustification() {

@@ -34,8 +34,7 @@
  */
 package de.geoinfoffm.registry.core.model;
 
-import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,9 +47,9 @@ import javax.persistence.DiscriminatorType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.hibernate.envers.Audited;
 import org.slf4j.Logger;
@@ -63,7 +62,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
  * @author Florian Esser
@@ -81,8 +79,11 @@ public abstract class Proposal extends Entity
 	private String title;
 
 	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	private ProposalGroup group;
+	private Proposal parent;
 	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "parent")
+	private List<Proposal> dependentProposals;
+
 	private String status;
 	
 	@ManyToOne
@@ -115,28 +116,39 @@ public abstract class Proposal extends Entity
 		this.setTitle(title);
 	}
 
-	/**
-	 * @return the group
-	 */
-	public ProposalGroup getGroup() {
-		return group;
+	public Proposal getParent() {
+		return parent;
 	}
 
+	public void setParent(Proposal parent) {
+		this.parent = parent;
+	}
+
+	public boolean hasDependentProposals() {
+		return !this.getDependentProposals().isEmpty();
+	}
+
+	public List<Proposal> getDependentProposals() {
+		if (dependentProposals == null) {
+			dependentProposals = new ArrayList<Proposal>();
+		}
+		return dependentProposals;
+	}
+	
+	public void setDependentProposals(List<Proposal> dependentProposals) {
+		this.dependentProposals = dependentProposals;
+	}
+	
 	public String getTitle() {
 		return title;
 	}
+	
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	/**
-	 * @param group the group to set
-	 */
-	public void setGroup(ProposalGroup group) {
-		this.group = group;
-	}
-
-	public boolean hasGroup() {
-		return this.getGroup() != null;
+	
+	public boolean hasParent() {
+		return this.getParent() != null;
 	}
 	
 	public String getStatus() {
@@ -145,12 +157,20 @@ public abstract class Proposal extends Entity
 	public void setStatus(String status) {
 		logger.trace(String.format(">>> Changing status of proposal '%s' from '%s' to '%s'", this.getUuid(), this.status, status));
 		this.status = status;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setStatus(status);
+		}
 	}
 	public RE_SubmittingOrganization getSponsor() {
 		return sponsor;
 	}
 
-	public abstract void setSponsor(RE_SubmittingOrganization sponsor);
+	public void setSponsor(RE_SubmittingOrganization sponsor) {
+		this.sponsor = sponsor;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setSponsor(sponsor);
+		}
+	}
 
 	public boolean isSubmitted() {
 		return dateSubmitted != null;
@@ -162,6 +182,9 @@ public abstract class Proposal extends Entity
 	
 	public void setDateSubmitted(Date dateSubmitted) {
 		this.dateSubmitted = dateSubmitted;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setDateSubmitted(dateSubmitted);
+		}
 	}
 
 	public Boolean isConcluded() {
@@ -170,6 +193,9 @@ public abstract class Proposal extends Entity
 	
 	public void setConcluded(Boolean isConcluded) {
 		this.isConcluded = isConcluded;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setConcluded(isConcluded);
+		}
 	}
 	
 	public boolean isEditable() {

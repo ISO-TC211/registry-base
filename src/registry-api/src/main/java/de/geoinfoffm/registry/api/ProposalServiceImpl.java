@@ -55,7 +55,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
@@ -82,7 +81,6 @@ import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.AuthorizationRepository;
 import de.geoinfoffm.registry.core.model.Clarification;
-import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
@@ -197,6 +195,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 
 	@Override
 	public <P extends Proposal> P saveProposal(P proposal) {
+		proposalWorkflowManager.initialize(proposal);
+		
 		pmiRepository.save(proposal.getProposalManagementInformations());
 		proposal = repository().save(proposal);
 		
@@ -211,8 +211,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			throw new IllegalOperationException("The proposal was already submitted");
 		}
 		
-		if (proposal.hasGroup()) {
-			return this.submitProposal((P)proposal.getGroup());
+		if (proposal.hasParent()) {
+			return this.submitProposal((P)proposal.getParent());
 		}
 	
 		proposalWorkflowManager.submit(proposal, Calendar.getInstance().getTime());
@@ -342,9 +342,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		}
 
 		// Create dependent items and proposal first, so we can satisfy dependencies in the main item
-		List<Addition> groupProposals = new ArrayList<Addition>();
-		for (RegisterItemProposalDTO dependentProposal : proposal.getDependentProposals()) {
-			createDependentProposal(dependentProposal, proposal, groupProposals, sponsor);
+		List<Proposal> groupProposals = new ArrayList<Proposal>();
+		for (RegisterItemProposalDTO dependentProposal : proposal.getAggregateDependencies()) {
+			groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
 		}		
 
 		// TODO delegate to service if possible
@@ -360,21 +360,17 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
 
 		addition = saveProposal(addition, item);
-		
+		for (RegisterItemProposalDTO dependentProposal : proposal.getCompositeDependencies()) {
+			dependentProposal.setParentItemUuid(addition.getItem().getUuid());
+			groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
+		}		
+
 		if (!groupProposals.isEmpty()) {
-			HierarchicalProposal group = new HierarchicalProposal(addition, groupProposals);
-			group.setTitle(addition.getItem().getName());
-			group.setSponsor(addition.getSponsor());
-			group.setPrimaryProposal(addition);
-			group = this.saveProposal(group);
-			
-			groupProposals.add(addition);
-			for (Addition groupProposal : groupProposals) {
-				groupProposal.setGroup(group);
+			addition.getDependentProposals().addAll(groupProposals);
+			for (Proposal groupProposal : groupProposals) {
+				groupProposal.setParent(addition);
 				proposalRepository.save(groupProposal);
 			}
-			
-			eventPublisher().publishEvent(new ProposalCreatedEvent(group));
 		}
 		
 		eventPublisher().publishEvent(new ProposalCreatedEvent(addition));
@@ -382,24 +378,25 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		return addition;
 	}
 
-	private void createDependentProposal(RegisterItemProposalDTO proposal, RegisterItemProposalDTO mainProposal,
-			List<Addition> groupProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
+	private Proposal createDependentProposal(RegisterItemProposalDTO proposal, RegisterItemProposalDTO mainProposal, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
 		BindingResult bindingResult;
 		bindingResult = validateProposal(proposal);
 		if (bindingResult.hasErrors()) {
 			throw new InvalidProposalException(bindingResult);
 		}
 		
-		for (RegisterItemProposalDTO dependentProposal : proposal.getDependentProposals()) {
-			createDependentProposal(dependentProposal, proposal, groupProposals, sponsor);
+		proposal.setTargetRegisterUuid(mainProposal.getTargetRegisterUuid());
+		proposal.setSponsorUuid(mainProposal.getSponsorUuid());
+		proposal.setJustification(mainProposal.getJustification());
+		proposal.setProposalType(ProposalType.ADDITION);
+		
+		List<Proposal> subsubProposals = new ArrayList<Proposal>();
+		for (RegisterItemProposalDTO dependentProposal : proposal.getAggregateDependencies()) {
+			subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
 		}		
 		
 		// TODO Justification etc. müssen aus ProposalDTO des abhängigen Items kommen!
 
-		proposal.setTargetRegisterUuid(mainProposal.getTargetRegisterUuid());
-		proposal.setSponsorUuid(mainProposal.getSponsorUuid());
-		proposal.setProposalType(ProposalType.ADDITION);
-		
 		RE_ItemClass dependentProposalItemClass = this.findItemClass(proposal);
 		RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
 				(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
@@ -409,8 +406,6 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
 		}
 		
-//			dependentItem.setItemIdentifier(subItemIdentifier);
-
 		Addition subAddition = proposalFactory.createAddition(dependentItem, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
 		
@@ -419,9 +414,20 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		// Set the referenced item UUID in the proposal so that it may be referenced the main item
 		proposal.setReferencedItemUuid(subAddition.getItem().getUuid());
 		
-		eventPublisher().publishEvent(new ProposalCreatedEvent(subAddition));
+		for (RegisterItemProposalDTO dependentProposal : proposal.getCompositeDependencies()) {
+			dependentProposal.setParentItemUuid(subAddition.getItem().getUuid());
+			subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
+		}		
 		
-		groupProposals.add(subAddition);
+		if (!subsubProposals.isEmpty()) {
+			subAddition.getDependentProposals().addAll(subsubProposals);
+			for (Proposal subsubProposal : subsubProposals) {
+				subsubProposal.setParent(subAddition);
+			}
+		}
+		eventPublisher().publishEvent(new ProposalCreatedEvent(subAddition));
+	
+		return subAddition;
 	}
 
 	private BindingResult validateProposal(RegisterItemProposalDTO proposal) {
@@ -434,11 +440,6 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	}
 
 	private Addition saveProposal(Addition addition, RE_RegisterItem item) {
-		BigInteger maxIdentifier = itemService.findMaxItemIdentifier();
-		if (maxIdentifier == null) {
-			maxIdentifier = BigInteger.ZERO;
-		}
-		item.setItemIdentifier(maxIdentifier.add(BigInteger.ONE));
 
 		item = item.submitAsProposal();
 
@@ -462,95 +463,53 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (bindingResult.hasErrors()) {
 			throw new InvalidProposalException(bindingResult);
 		}
+		
+		if (!proposal.getDependentProposals().isEmpty()) {
+			List<Proposal> noLongerDependent = new ArrayList<Proposal>();
+			noLongerDependent.addAll(proposal.getDependentProposals());
 
-		// Is this the primary proposal of a HierarchicalProposal?
-//		if (proposal.hasGroup() && proposal.getGroup() instanceof HierarchicalProposal && ((HierarchicalProposal)proposal.getGroup()).getPrimaryProposal().equals(proposal)) {
-//			HierarchicalProposal hp = (HierarchicalProposal)proposal.getGroup();
-//			Proposal primaryProposal = hp.getPrimaryProposal();
-//
-//			List<Proposal> noLongerDependent = new ArrayList<Proposal>();
-//			noLongerDependent.addAll(hp.getDependentProposals());
-//			// Remove those proposals from 'no longer dependent' list that are still dependent
-//			for (RegisterItemProposalDTO subDto : proposalDto.getDependentProposals()) {
-//				if (subDto.getProposalUuid() != null) {
-//					Proposal subProposal = proposalRepository.findOne(subDto.getProposalUuid());
-//					noLongerDependent.remove(subProposal);
-//				}
-//			}
-//			
-//			List<RegisterItemProposalDTO> newlyDependent = new ArrayList<RegisterItemProposalDTO>();
-//			for (RegisterItemProposalDTO subDto : proposalDto.getDependentProposals()) {
-//				if (subDto.getProposalUuid() == null) {
-//					newlyDependent.add(subDto);
-//				}
-//			}
-//			
-//			for (Proposal perishable : noLongerDependent) {
-//				perishable.setGroup(null);
-//				hp.removeProposal(perishable);
-//				hp.getDependentProposals().remove(perishable);
-//				this.saveProposal(hp);
-//			}
-//			while (!noLongerDependent.isEmpty()) {
-//				Proposal p = noLongerDependent.get(0);
-//				noLongerDependent.remove(0);
-//				this.deleteProposal(p);
-//			}
-//			
-//			for (RegisterItemProposalDTO newSub : newlyDependent) {
-//				Proposal subProposal;
-//				if (ProposalType.ADDITION.equals(newSub.getProposalType())) {
-//					bindingResult = validateProposal(newSub);
-//					if (bindingResult.hasErrors()) {
-//						throw new InvalidProposalException(bindingResult);
-//					}
-//
-//					newSub.setTargetRegisterUuid(proposalDto.getTargetRegisterUuid());
-//					newSub.setSponsorUuid(proposalDto.getSponsorUuid());
-//					
-//					RE_ItemClass dependentProposalItemClass = this.findItemClass(newSub);
-//					RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
-//							(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
-//					RE_RegisterItem dependentItem = itemFactory.createRegisterItem(newSub);
-//
-//					if (dependentItem == null) {
-//						throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
-//					}
-//					
-//					subProposal = this.createAdditionProposal(newSub);
-//					subProposal.setGroup(hp);
-//					
-//					BigInteger itemIdentifier = itemService.findMaxItemIdentifier();
-//					if (itemIdentifier == null) {
-//						itemIdentifier = BigInteger.ZERO;
-//					}
-//					dependentItem.setItemIdentifier(itemIdentifier);
-//					
-//					subProposal = this.saveProposal((Addition)subProposal, dependentItem);
-//					// Set the referenced item UUID in the proposal so that it may be referenced the main item
-//					newSub.setReferencedItemUuid(dependentItem.getUuid());
-//				}
-//				else if (ProposalType.SUPERSESSION.equals(newSub.getProposalType())) {
-//					throw new RuntimeException("Not yet implemented for SUPERSESSIONs");
-//				}
-//				else {
-//					subProposal = this.propose(newSub);
-//				}
-//				
-//				eventPublisher().publishEvent(new ProposalCreatedEvent(subProposal));
-//				hp.addProposal(subProposal);
-//			}
-//			
-//			if (primaryProposal instanceof Addition) {
-//				RE_RegisterItem item = ((Addition)primaryProposal).getItem();
-//				hp.setTitle(item.getName());
-//				proposalDto.setAdditionalValues(item, this.entityManager);
-//			}
-//			
-//			hp = this.saveProposal(hp);
-//			
-//			return hp;
-//		}
+			// Remove those proposals from 'no longer dependent' list that are still dependent
+			List<RegisterItemProposalDTO> allDependent = new ArrayList<RegisterItemProposalDTO>();
+			allDependent.addAll(proposalDto.getAggregateDependencies());
+			allDependent.addAll(proposalDto.getCompositeDependencies());
+
+			for (RegisterItemProposalDTO subDto : allDependent) {
+				if (subDto.getProposalUuid() != null && !subDto.isMarkedForDeletion()) {
+					Proposal subProposal = proposalRepository.findOne(subDto.getProposalUuid());
+					noLongerDependent.remove(subProposal);
+				}
+			}
+			
+			List<RegisterItemProposalDTO> newlyDependent = new ArrayList<RegisterItemProposalDTO>();
+			for (RegisterItemProposalDTO subDto : allDependent) {
+				if (subDto.getProposalUuid() == null) {
+					subDto.setProposalType(proposalDto.getProposalType());
+					newlyDependent.add(subDto);
+				}
+				else {
+					this.updateProposal(subDto);
+				}
+			}
+			
+			for (Proposal perishable : noLongerDependent) {
+				perishable.setParent(null);
+				proposal.getDependentProposals().remove(perishable);
+				this.saveProposal(proposal);
+			}
+			while (!noLongerDependent.isEmpty()) {
+				Proposal p = noLongerDependent.get(0);
+				noLongerDependent.remove(0);
+				this.deleteProposal(p);
+			}
+			
+			for (RegisterItemProposalDTO newSub : newlyDependent) {
+				newSub.setParentItemUuid(proposalDto.getItemUuid());
+				Proposal subProposal = createDependentProposal(newSub, proposalDto, proposal.getSponsor());
+				subProposal.setParent(proposal);
+				proposal.getDependentProposals().add(subProposal);
+			}
+
+		}
 
 		if (proposalDto.getProposalType().equals(ProposalType.SUPERSESSION)) {
 			throw new RuntimeException("Use updateSupersession(...)");
@@ -560,13 +519,32 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			if (item == null) {
 				throw new InvalidProposalException(String.format("Referenced item with id '%s' does not exist.", proposalDto.getItemUuid()));
 			}
+			
+			proposal.setTitle(proposalDto.getName());
 
 			if (proposal instanceof Addition) {
+				Addition addition = (Addition)proposal;
+				
 				item.setName(proposalDto.getName());
 				item.setDefinition(proposalDto.getDefinition());
-				item.setDescription(proposalDto.getDescription());
+				item.setDescription(proposalDto.getDescription());				
 				
 				proposalDto.setAdditionalValues(item, this.entityManager);
+
+				List<Proposal> dependentProposals = new ArrayList<Proposal>();
+				for (RegisterItemProposalDTO dependentProposal : proposalDto.getCompositeDependencies()) {
+					if (dependentProposal.getProposalUuid() == null) {
+						dependentProposal.setParentItemUuid(addition.getItem().getUuid());
+						dependentProposals.add(createDependentProposal(dependentProposal, proposalDto, proposal.getSponsor()));
+					}
+				}
+				
+				if (!dependentProposals.isEmpty()) {
+					addition.getDependentProposals().addAll(dependentProposals);
+					for (Proposal dependentProposal : dependentProposals) {
+						dependentProposal.setParent(addition);
+					}
+				}
 			}
 			else if (proposal instanceof Clarification) {
 				String proposedChangesJson = RE_ClarificationInformation.toJson(proposalDto.calculateProposedChanges(item));
@@ -695,8 +673,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 
 		security.assertIsTrue(security.isControlBody(proposal.getUuid()));
 		
-		if (proposal.hasGroup()) {
-			return this.acceptProposal(proposal.getGroup(), controlBodyDecisionEvent);
+		if (proposal.hasParent()) {
+			return this.acceptProposal(proposal.getParent(), controlBodyDecisionEvent);
 		}
 		else {
 			proposalWorkflowManager.accept(proposal, controlBodyDecisionEvent);
@@ -1045,10 +1023,10 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	public Collection<Proposal> findProposals(RE_Register register, RE_DecisionStatus status) {
 		Collection<Proposal> proposals;
 		if (status == RE_DecisionStatus.FINAL) {
-			proposals = proposalRepository.findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsTrue();
+			proposals = proposalRepository.findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsTrue();
 		}
 		else {
-			proposals = proposalRepository.findByDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse();
+			proposals = proposalRepository.findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse();
 		}
 		Collection<Proposal> result = new ArrayList<Proposal>();
 		for (Proposal proposal : proposals) {

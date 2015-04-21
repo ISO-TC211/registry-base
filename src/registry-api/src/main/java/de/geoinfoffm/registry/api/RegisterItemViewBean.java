@@ -110,6 +110,8 @@ public class RegisterItemViewBean
 
 	private boolean isProposal;
 	private boolean isProposalGroup;
+	private boolean hasParent;
+	private boolean hasDependentProposals;
 	private ProposalType proposalType;
 	private String justification;
 	private String registerManagerNotes;
@@ -153,7 +155,7 @@ public class RegisterItemViewBean
 	private final Map<UUID, String> predecessors = new LinkedHashMap<UUID, String>(); 
 	private final Map<UUID, String> successors = new LinkedHashMap<UUID, String>(); 
 	
-	private UUID proposalGroupUuid;
+	private UUID parentProposalUuid;
 	private final Set<RegisterItemViewBean> memberProposals = new HashSet<RegisterItemViewBean>();
 
 	protected RegisterItemViewBean(RE_RegisterItem item) {
@@ -165,8 +167,16 @@ public class RegisterItemViewBean
 	}
 
 	protected RegisterItemViewBean(Proposal proposal) {
-		if (proposal.hasGroup()) {
-			this.setProposalGroupUuid(proposal.getGroup().getUuid());
+		if (proposal.hasParent()) {
+			this.setParentProposalUuid(proposal.getParent().getUuid());
+			this.hasParent = true;
+		}
+		
+		if (proposal.hasDependentProposals()) {
+			for (Proposal dependentProposal : proposal.getDependentProposals()) {
+				this.getMemberProposals().add(new RegisterItemViewBean(dependentProposal));
+			}
+			this.hasDependentProposals = true;
 		}
 		
 		this.setDateSubmitted(proposal.getDateSubmitted());
@@ -699,6 +709,22 @@ public class RegisterItemViewBean
 		this.isProposalGroup = isProposalGroup;
 	}
 
+	public boolean hasParent() {
+		return hasParent;
+	}
+
+	public void setHasParent(boolean hasParent) {
+		this.hasParent = hasParent;
+	}
+
+	public boolean hasDependentProposals() {
+		return hasDependentProposals;
+	}
+
+	public void setHasDependentProposals(boolean hasDependentProposals) {
+		this.hasDependentProposals = hasDependentProposals;
+	}
+
 	/**
 	 * @return the isEditable
 	 */
@@ -991,12 +1017,12 @@ public class RegisterItemViewBean
 		this.registerUuid = registerUuid;
 	}
 
-	public UUID getProposalGroupUuid() {
-		return proposalGroupUuid;
+	public UUID getParentProposalUuid() {
+		return parentProposalUuid;
 	}
 	
-	public void setProposalGroupUuid(UUID uuid) {
-		this.proposalGroupUuid = uuid;
+	public void setParentProposalUuid(UUID uuid) {
+		this.parentProposalUuid = uuid;
 	}
 
 	public Set<RegisterItemViewBean> getMemberProposals() {

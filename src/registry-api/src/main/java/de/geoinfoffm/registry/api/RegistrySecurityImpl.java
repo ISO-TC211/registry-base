@@ -613,7 +613,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		}
 		else {
 			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
-			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, STATUS_UNDER_REVIEW);
+			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(sponsor, STATUS_UNDER_REVIEW);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
@@ -629,7 +629,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			List<Proposal> proposals = proposalRepository.findByStatusAndGroupIsNull(STATUS_IN_APPROVAL_PROCESS);
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(STATUS_IN_APPROVAL_PROCESS);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
