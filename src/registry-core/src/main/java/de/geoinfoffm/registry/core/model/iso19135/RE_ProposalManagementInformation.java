@@ -299,9 +299,9 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	}
 	
 	public void makeDisposition(RE_Disposition disposition) throws IllegalOperationException {
-		if (this.getStatus().equals(RE_DecisionStatus.FINAL)) {
-			throw new IllegalOperationException("Cannot make disposition on finalized proposal.");
-		}
+//		if (this.getStatus().equals(RE_DecisionStatus.FINAL)) {
+//			throw new IllegalOperationException("Cannot make disposition on finalized proposal.");
+//		}
 		
 		this.setDisposition(disposition);
 		switch (disposition) {
