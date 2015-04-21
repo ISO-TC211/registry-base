@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
@@ -52,8 +51,10 @@ import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -70,13 +71,8 @@ import org.thymeleaf.extras.springsecurity3.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring3.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
-import de.geoinfoffm.registry.api.ProposalDtoFactory;
-import de.geoinfoffm.registry.api.RegisterService;
-import de.geoinfoffm.registry.api.RegisterServiceImpl;
 import de.geoinfoffm.registry.core.HibernateAwareObjectMapper;
-import de.geoinfoffm.registry.core.ItemClassRegistry;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
-import de.geoinfoffm.registry.persistence.RegisterRepository;
 
 public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 
 {
@@ -129,12 +125,18 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 		resolver.setFallbackPageable(new PageRequest(1, 5));
 		argumentResolvers.add(resolver);
 	}
+	
+	public AbstractHttpMessageConverter<?> jaxbConverter() {
+		return new Jaxb2RootElementHttpMessageConverter();
+	}
 
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		MappingJackson2HttpMessageConverter jsonMapper = new MappingJackson2HttpMessageConverter();
 		jsonMapper.setObjectMapper(new HibernateAwareObjectMapper());
 		converters.add(jsonMapper);
+		
+		converters.add(jaxbConverter());
 	}
 
 	@Bean(name = "localeResolver")
