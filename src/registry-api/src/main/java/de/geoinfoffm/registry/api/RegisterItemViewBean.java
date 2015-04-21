@@ -53,6 +53,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
@@ -221,7 +223,7 @@ public class RegisterItemViewBean
 	public static <T extends RegisterItemViewBean> T forItem(RE_RegisterItem item, boolean loadDetails, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
 		T result;
 		try {
-			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { item, loadDetails, workflowManager }, new Class<?>[] { RE_RegisterItem.class, Boolean.class, ProposalWorkflowManager.class });
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { item, loadDetails }, new Class<?>[] { RE_RegisterItem.class, Boolean.class });
 		}
 		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -243,7 +245,7 @@ public class RegisterItemViewBean
 	public static <T extends RegisterItemViewBean> T forProposal(Proposal proposal, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
 		T result;
 		try {
-			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { proposal }, new Class<?>[] { proposal.getClass() });
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { proposal }, new Class<?>[] { Proposal.class });
 		}
 		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 			throw new RuntimeException(e.getMessage(), e);

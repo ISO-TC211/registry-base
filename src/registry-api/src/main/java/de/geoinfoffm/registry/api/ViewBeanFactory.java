@@ -36,6 +36,8 @@ package de.geoinfoffm.registry.api;
 
 import java.lang.reflect.Constructor;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,7 +124,23 @@ public class ViewBeanFactory
 	
 	public RegisterItemViewBean getViewBean(RE_RegisterItem item) {
 		RE_ItemClass itemClass = item.getItemClass();
-		return (RegisterItemViewBean)BeanUtils.instantiateClass(findConstructor(itemClass, RE_RegisterItem.class), item);
+
+		ItemClassConfiguration config = itemClassRegistry.getConfiguration(itemClass.getName());
+		if (config == null) {
+			return RegisterItemViewBean.forItem(item, true, workflowManager);
+		}
+		else {
+			Class<? extends RegisterItemViewBean> viewBeanType;
+			try {
+				viewBeanType = (Class<? extends RegisterItemViewBean>)Class.forName(config.getViewBeanClass());
+			}
+			catch (ClassNotFoundException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+			return RegisterItemViewBean.forItem(item, true, viewBeanType, workflowManager);
+		}
+		
+//		return (RegisterItemViewBean)BeanUtils.instantiateClass(findConstructor(itemClass, RE_RegisterItem.class), item);
 	}
 	
 	public RegisterItemViewBean getViewBean(Proposal proposal) {
