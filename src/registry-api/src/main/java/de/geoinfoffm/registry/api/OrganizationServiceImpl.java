@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.jws.WebService;
-
 import org.isotc211.iso19135.RE_SubmittingOrganization_Type;
 import org.isotc211.iso19139.metadata.CI_ResponsibleParty_Type;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +52,6 @@ import org.springframework.security.acls.domain.GrantedAuthoritySid;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.security.acls.model.Permission;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -126,7 +123,7 @@ implements OrganizationService
 	private AuthorizationRepository authRepository;
 	
 	@Autowired
-	private DelegationRepository delegationRepository;
+	protected DelegationRepository delegationRepository;
 	
 	@Autowired
 	private RoleService roleService;
@@ -218,7 +215,7 @@ implements OrganizationService
 		}
 		
 		if (!security.isAdmin()) {
-			security.assertMayWrite(current);
+			security.assertIsLoggedIn();
 		}
 		
 		if (org.getName() != null && !org.getName().isEmpty()) {
