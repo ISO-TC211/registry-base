@@ -114,6 +114,7 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 					result.setItemClass(itemClass);
 					result.setName(proposal.getName());
 					result.setDefinition(proposal.getDefinition());
+					result.setDescription(proposal.getDescription());
 					result.setStatus(RE_ItemStatus.NOT_VALID);
 					result.setRegister(targetRegister);
 					
