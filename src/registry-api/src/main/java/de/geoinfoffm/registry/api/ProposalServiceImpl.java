@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
@@ -726,6 +727,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Appeal appealProposal(Proposal proposal, String justification, String situation, String impact) throws InvalidProposalException, IllegalOperationException {
+		Assert.notNull(proposal, "Cannot appeal null proposal");
 		Appeal appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
 
 		appeal = appealRepository.save(appeal);
@@ -738,14 +740,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Appeal acceptAppeal(Appeal appeal) throws IllegalOperationException {
-		if (appeal == null) {
-			throw new NullPointerException("Cannot reject null proposal.");
-		}
-
-		appeal.accept(Calendar.getInstance().getTime());
+		Assert.notNull(appeal, "Cannot reject null proposal");
 		
-		this.saveProposal(appeal.getAppealedProposal());
-		appeal = appealRepository.save(appeal);
+		proposalWorkflowManager.acceptAppeal(appeal, Calendar.getInstance().getTime());
 		return appeal;
 	}
 
@@ -757,11 +754,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (appeal == null) {
 			throw new NullPointerException("Cannot reject null proposal.");
 		}
-
-		appeal.reject(Calendar.getInstance().getTime());
-
-		this.saveProposal(appeal.getAppealedProposal());
-		appeal = appealRepository.save(appeal);
+		
+		proposalWorkflowManager.rejectAppeal(appeal, Calendar.getInstance().getTime());
 		return appeal;
 	}
 
