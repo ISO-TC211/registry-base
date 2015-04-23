@@ -46,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.geoinfoffm.registry.core.model.Addition;
+import de.geoinfoffm.registry.core.model.Appeal;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
@@ -53,6 +54,7 @@ import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
@@ -75,11 +77,16 @@ public class ProposalListItem
 	private ProposalChangeRequest pendingChangeRequest;
 	private boolean isAppealed;
 	private String targetRegister;
+	private RE_Disposition disposition;
 	
 	private MessageSource messages;
 	private Locale locale;
 	
 	private ProposalWorkflowManager workflowManager;
+	
+	public ProposalListItem(Appeal appeal, MessageSource messages, Locale locale, ProposalWorkflowManager proposalWorkflowManager) {
+		this(appeal.getAppealedProposal(), messages, locale, proposalWorkflowManager);
+	}
 	
 	public ProposalListItem(Proposal proposal, MessageSource messages, Locale locale, ProposalWorkflowManager proposalWorkflowManager) {
 		this.uuid = proposal.getUuid();
@@ -108,8 +115,9 @@ public class ProposalListItem
 		}
 		this.targetRegister = targetRegisterBuilder.toString();
 
-		if (workflowManager.isFinal(proposal)) {
+		if (workflowManager.isAppealable(proposal) || workflowManager.isAppealed(proposal) || workflowManager.isFinal(proposal)) {
 			if (!proposal.getProposalManagementInformations().isEmpty()) {
+				this.disposition = proposal.getDisposition();
 				Date dateDisposed = proposal.getProposalManagementInformations().get(0).getDateDisposed();
 				this.dispositionDate = (dateDisposed == null) ? "" : dateOnly.format(dateDisposed);
 			}
@@ -187,6 +195,20 @@ public class ProposalListItem
 
 	public void setTargetRegister(String targetRegister) {
 		this.targetRegister = targetRegister;
+	}
+
+	@JsonProperty
+	public String getDisposition() {
+		if (this.disposition == null) {
+			return "";
+		}
+		else {
+			return messages.getMessage(this.disposition.name(), null, this.disposition.name(), locale);
+		}
+	}
+
+	public void setDisposition(RE_Disposition disposition) {
+		this.disposition = disposition;
 	}
 
 	@JsonProperty
