@@ -34,6 +34,8 @@
  */
 package de.geoinfoffm.registry.core.forum;
 
+import java.util.Collection;
+
 import org.springframework.stereotype.Repository;
 
 import de.geoinfoffm.registry.core.EntityRepository;
@@ -43,5 +45,6 @@ import de.geoinfoffm.registry.core.model.Proposal;
 @Repository
 public interface ProposalDiscussionRepository extends EntityRepository<ProposalDiscussion>
 {
+	Collection<ProposalDiscussion> findByDiscussedProposal(Proposal proposal);
 	ProposalDiscussion findByDiscussedProposalAndDiscussionType(Proposal proposal, DiscussionType type);
 }
