@@ -159,8 +159,8 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 	@XmlPath("containedItemClasses/grg:RE_ItemClass")
 	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinTable(name = "RE_Register_ItemClasses",
-	   		   joinColumns = @JoinColumn(name="itemClassId"),
-	   		   inverseJoinColumns = @JoinColumn(name="registerId")
+	   		   joinColumns = @JoinColumn(name="registerId"),
+	   		   inverseJoinColumns = @JoinColumn(name="itemClassId")
 	)
 	private Set<RE_ItemClass> containedItemClasses;
 	
