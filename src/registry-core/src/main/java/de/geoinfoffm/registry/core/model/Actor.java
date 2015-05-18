@@ -96,6 +96,10 @@ public abstract class Actor extends de.geoinfoffm.registry.core.Entity
 			this.authorizations = new HashSet<Authorization>();
 		}
 		
+		for (Authorization existing : this.authorizations) {
+			if (existing.isSame(authorization)) return;
+		}
+		
 		authorization.setActor(this);
 		this.authorizations.add(authorization);
 	}

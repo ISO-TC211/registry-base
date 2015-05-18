@@ -99,4 +99,9 @@ public class Authorization extends de.geoinfoffm.registry.core.Entity
 	public void setRole(Role role) {
 		this.role = role;
 	}
+	
+	public boolean isSame(Authorization other) {
+		return this.getUser().equals(other.getUser())
+			&& this.getRole().equals(other.getRole());
+	}
 }
