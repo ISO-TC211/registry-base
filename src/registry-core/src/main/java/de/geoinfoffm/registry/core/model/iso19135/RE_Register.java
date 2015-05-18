@@ -376,8 +376,21 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 		if (this.containedItemClasses == null) {
 			this.containedItemClasses = new LinkedHashSet<RE_ItemClass>();
 		}
-
-		return this.containedItemClasses;
+		
+		List<RE_ItemClass> temp = new ArrayList<RE_ItemClass>();
+		temp.addAll(this.containedItemClasses);
+		
+		Collections.sort(temp, new Comparator<RE_ItemClass>() {
+			@Override
+			public int compare(RE_ItemClass o1, RE_ItemClass o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+	
+		Set<RE_ItemClass> result = new LinkedHashSet<RE_ItemClass>();
+		result.addAll(temp);
+		
+		return result;
 	}
 
 	/**
