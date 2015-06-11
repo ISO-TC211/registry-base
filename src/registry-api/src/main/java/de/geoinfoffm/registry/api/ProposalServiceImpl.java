@@ -1094,8 +1094,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * as long as the proposal is not concluded.
 	 * @throws UnauthorizedException 
 	 */
+	@Override
 	@Transactional
-	protected void deleteProposal(Proposal proposal) throws IllegalOperationException, UnauthorizedException {
+	public void deleteProposal(Proposal proposal) throws IllegalOperationException, UnauthorizedException {
 		if (proposal.isConcluded()) {
 			throw new IllegalOperationException("Cannot delete concluded proposal");
 		}
