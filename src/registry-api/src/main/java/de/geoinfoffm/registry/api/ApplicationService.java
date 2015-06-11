@@ -58,42 +58,42 @@ public interface ApplicationService<T extends Entity>
 	public <S extends T> S update(S entity) throws UnauthorizedException;
 	
 	/**
-	 * Deletes an organization.
+	 * Deletes an entity.
 	 * 
-	 * @param id ID of the organization to delete.
+	 * @param id ID of the entityto delete.
 	 * @throws UnauthorizedException 
-	 * @throws IllegalArgumentException thrown if no organization with the given ID exists
+	 * @throws IllegalArgumentException thrown if no entity with the given ID exists
 	 */
 	public void delete(UUID id) throws UnauthorizedException;
 	
 	/**
-	 * Finds the organization with then given ID.
+	 * Finds the entity with then given ID.
 	 *  
-	 * @param id ID of the organization to find
-	 * @return the organization or null if no organization with the given ID exists
+	 * @param id ID of the entity to find
+	 * @return the entity or null if no entity with the given ID exists
 	 */
 	public T findOne(UUID id);
 	
 	/**
-	 * Finds all organizations.
+	 * Finds all entities.
 	 * 
-	 * @return all organizations
+	 * @return all entities
 	 */
 	public List<T> findAll();
 	
 	/**
-	 * Finds all organizations at a specific backend revision.
+	 * Finds all entities at a specific backend revision.
 	 * 
 	 * @param revision Backend revision
-	 * @return a historic list of organizations
+	 * @return a historic list of entities
 	 */
 	public List<T> findAll(int revision) throws NonExistentRevisionException;
 
 	/**
-	 * Finds all organizations at a specific point in time.
+	 * Finds all entities at a specific point in time.
 	 * 
 	 * @param revisionDate Backend revision date
-	 * @return a historic list of organizations
+	 * @return a historic list of entities
 	 * @throws NoRevisionAtThisPointInTimeException 
 	 */
 	public List<T> findAll(Date revisionDate) throws NoRevisionAtThisPointInTimeException;
@@ -101,7 +101,7 @@ public interface ApplicationService<T extends Entity>
 	public List<T> findAll(Sort sort);
 
 	/**
-	 * @return the number of organizations 
+	 * @return the number of entities 
 	 */
 	public long count();
 
