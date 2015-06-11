@@ -38,14 +38,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.api.AbstractEventListener;
 import de.geoinfoffm.registry.api.security.PasswordResetRequest;
 import de.geoinfoffm.registry.api.security.PasswordResetRequestedEvent;
 import de.geoinfoffm.registry.client.web.ClientConfiguration;
+import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 
 /**
@@ -55,7 +57,10 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 @Component
 public class PasswordResetRequestedEventListener extends AbstractEventListener implements ApplicationListener<PasswordResetRequestedEvent>
 {
-	private Logger logger = LoggerFactory.getLogger(PasswordResetRequestedEventListener.class);
+	private Logger logger = LoggerFactory.make();
+	
+	@Autowired
+	private RegistryConfiguration registryConfiguration;
 
 	public PasswordResetRequestedEventListener() {
 	}
@@ -71,7 +76,7 @@ public class PasswordResetRequestedEventListener extends AbstractEventListener i
 
 		if (!user.isConfirmed() || !user.isActive()) return;
 
-		final String mailBaseUrl = ClientConfiguration.getMailBaseUrl(); 				
+		final String mailBaseUrl = registryConfiguration.getMailBaseUrl(); 				
 		final String passwordResetUrl = mailBaseUrl + "reset-password?token=" + reset.getToken() + "&mail=" + user.getEmailAddress();
 
 		Map<String, Object> model = new HashMap<String, Object>();
@@ -79,7 +84,7 @@ public class PasswordResetRequestedEventListener extends AbstractEventListener i
 
         try {
          	this.sendMailToUser(user, "mail.subject.password.reset", "mailtemplates/password_reset", 
-        			ClientConfiguration.getMailBaseUrl(), model);
+        			registryConfiguration.getMailBaseUrl(), model);
         }
     	catch (Throwable t) {
     		logger.error("Sending mail failed: " + t.getMessage(), t);

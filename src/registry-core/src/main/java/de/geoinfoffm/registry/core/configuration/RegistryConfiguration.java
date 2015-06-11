@@ -59,6 +59,7 @@ public class RegistryConfiguration
 	private static final String PROPERTY_MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
 	private static final String PROPERTY_MAIL_SMTP_HOST = "mail.smtp.host";
 	private static final String PROPERTY_MAIL_SMTP_PORT = "mail.smtp.port";
+	private static final String PROPERTY_MAIL_BASE_URL = "mail.baseUrl";
 	private static final String PROPERTY_ADMIN_EMAIL = "admin.email";
 	
 	private Properties configuration;
@@ -147,6 +148,15 @@ public class RegistryConfiguration
 		
 		return null;
 	}
+	
+	public String getMailBaseUrl() {
+		String baseUrl = this.configuration.getProperty(PROPERTY_MAIL_BASE_URL, PROPERTY_MAIL_BASE_URL + ".undefined");
+		if (!baseUrl.endsWith("/")) {
+			baseUrl = baseUrl + "/";
+		}
+		
+		return baseUrl;		
+	}	
 	
 	public boolean isAdministrator(String emailAddress) {
 		String adminEmail = this.configuration.getProperty(PROPERTY_ADMIN_EMAIL, null);
