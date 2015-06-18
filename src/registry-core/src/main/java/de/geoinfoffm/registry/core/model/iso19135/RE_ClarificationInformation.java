@@ -49,9 +49,10 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.envers.Audited;
 import org.springframework.beans.BeanUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 

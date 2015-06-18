@@ -51,10 +51,11 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;

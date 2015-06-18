@@ -71,7 +71,7 @@ import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
-import de.geoinfoffm.registry.core.HibernateAwareObjectMapper;
+import de.geoinfoffm.registry.HibernateAwareObjectMapper;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
 public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 

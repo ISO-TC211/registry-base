@@ -1,17 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.geoinfoffm.registry</groupId>
+	<parent>
+        <groupId>de.geoinfoffm.registry</groupId>
+        <artifactId>registry-parent</artifactId>
+        <version>2.1-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
+    </parent>
 	<artifactId>registry-persistence</artifactId>
-	<version>2.1-SNAPSHOT</version>
-	<properties>
-		<java-version>1.7</java-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
-		<org.springframework-version>4.0.2.RELEASE</org.springframework-version>
-		<org.hibernate-version>4.2.6.Final</org.hibernate-version>
-		<org.aspectj-version>1.6.10</org.aspectj-version>
-		<org.slf4j-version>1.6.6</org.slf4j-version>
-	</properties>
 	<build>
     	<directory>target</directory>
 		<resources>
@@ -43,7 +39,6 @@
 		<dependency>
 			<groupId>de.geoinfoffm.registry</groupId>
 			<artifactId>registry-core</artifactId>
-			<version>2.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
@@ -94,13 +89,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-			<version>4.0.2.RELEASE</version>
 		</dependency>
       	<dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>3.1</version>
         </dependency>		
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-rest-webmvc</artifactId>
+			<version>2.0.2.RELEASE</version>
+		</dependency>
 	</dependencies>
 	<distributionManagement>
 		<repository>
