@@ -34,22 +34,21 @@
  */
 package de.geoinfoffm.registry.api.iso;
 
-import java.lang.annotation.Annotation;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.isotc211.iso19135.AbstractRE_ProposalManagementInformation_Type;
 import org.isotc211.iso19135.RE_AdditionInformation_PropertyType;
 import org.isotc211.iso19135.RE_AdditionInformation_Type;
+import org.isotc211.iso19135.RE_AlternativeExpression_PropertyType;
+import org.isotc211.iso19135.RE_AlternativeExpression_Type;
+import org.isotc211.iso19135.RE_AlternativeName_PropertyType;
+import org.isotc211.iso19135.RE_AlternativeName_Type;
 import org.isotc211.iso19135.RE_AmendmentInformation_PropertyType;
 import org.isotc211.iso19135.RE_AmendmentInformation_Type;
 import org.isotc211.iso19135.RE_AmendmentType_PropertyType;
@@ -60,27 +59,99 @@ import org.isotc211.iso19135.RE_DecisionStatus_PropertyType;
 import org.isotc211.iso19135.RE_DecisionStatus_Type;
 import org.isotc211.iso19135.RE_Disposition_PropertyType;
 import org.isotc211.iso19135.RE_Disposition_Type;
+import org.isotc211.iso19135.RE_FieldOfApplication_PropertyType;
+import org.isotc211.iso19135.RE_FieldOfApplication_Type;
 import org.isotc211.iso19135.RE_ItemClass_PropertyType;
+import org.isotc211.iso19135.RE_ItemClass_Type;
 import org.isotc211.iso19135.RE_ItemStatus_PropertyType;
 import org.isotc211.iso19135.RE_ItemStatus_Type;
+import org.isotc211.iso19135.RE_Locale_PropertyType;
+import org.isotc211.iso19135.RE_Locale_Type;
+import org.isotc211.iso19135.RE_ReferenceSource_PropertyType;
+import org.isotc211.iso19135.RE_ReferenceSource_Type;
+import org.isotc211.iso19135.RE_Reference_PropertyType;
+import org.isotc211.iso19135.RE_Reference_Type;
 import org.isotc211.iso19135.RE_RegisterItem_PropertyType;
+import org.isotc211.iso19135.RE_RegisterItem_Type;
+import org.isotc211.iso19135.RE_RegisterManager_PropertyType;
+import org.isotc211.iso19135.RE_RegisterManager_Type;
+import org.isotc211.iso19135.RE_RegisterOwner_PropertyType;
+import org.isotc211.iso19135.RE_RegisterOwner_Type;
+import org.isotc211.iso19135.RE_Register_Type;
+import org.isotc211.iso19135.RE_SimilarityToSource_PropertyType;
 import org.isotc211.iso19135.RE_SubmittingOrganization_PropertyType;
+import org.isotc211.iso19135.RE_SubmittingOrganization_Type;
+import org.isotc211.iso19135.RE_Version_PropertyType;
+import org.isotc211.iso19135.RE_Version_Type;
 import org.isotc211.iso19139.common.Boolean_PropertyType;
 import org.isotc211.iso19139.common.CharacterString_PropertyType;
+import org.isotc211.iso19139.common.CodeListValue_Type;
 import org.isotc211.iso19139.common.Date_PropertyType;
 import org.isotc211.iso19139.common.Integer_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Address_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Address_Type;
+import org.isotc211.iso19139.metadata.CI_Citation_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Citation_Type;
+import org.isotc211.iso19139.metadata.CI_Contact_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Contact_Type;
+import org.isotc211.iso19139.metadata.CI_DateTypeCode_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Date_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Date_Type;
+import org.isotc211.iso19139.metadata.CI_OnLineFunctionCode_PropertyType;
+import org.isotc211.iso19139.metadata.CI_OnlineResource_PropertyType;
+import org.isotc211.iso19139.metadata.CI_OnlineResource_Type;
+import org.isotc211.iso19139.metadata.CI_PresentationFormCode_PropertyType;
+import org.isotc211.iso19139.metadata.CI_ResponsibleParty_PropertyType;
+import org.isotc211.iso19139.metadata.CI_ResponsibleParty_Type;
+import org.isotc211.iso19139.metadata.CI_RoleCode_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Series_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Series_Type;
+import org.isotc211.iso19139.metadata.CI_Telephone_PropertyType;
+import org.isotc211.iso19139.metadata.CI_Telephone_Type;
+import org.isotc211.iso19139.metadata.LanguageCode_PropertyType;
+import org.isotc211.iso19139.metadata.MD_CharacterSetCode_PropertyType;
+import org.isotc211.iso19139.metadata.URL_PropertyType;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import de.geoinfoffm.registry.core.model.iso00639.LanguageCode;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
+import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Address;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Citation;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Contact;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Date;
+import de.geoinfoffm.registry.core.model.iso19115.CI_DateTypeCode;
+import de.geoinfoffm.registry.core.model.iso19115.CI_OnLineFunctionCode;
+import de.geoinfoffm.registry.core.model.iso19115.CI_OnlineResource;
+import de.geoinfoffm.registry.core.model.iso19115.CI_PresentationFormCode;
+import de.geoinfoffm.registry.core.model.iso19115.CI_ResponsibleParty;
+import de.geoinfoffm.registry.core.model.iso19115.CI_RoleCode;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Series;
+import de.geoinfoffm.registry.core.model.iso19115.CI_Telephone;
+import de.geoinfoffm.registry.core.model.iso19115.MD_CharacterSetCode;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AdditionInformation;
+import de.geoinfoffm.registry.core.model.iso19135.RE_AlternativeExpression;
+import de.geoinfoffm.registry.core.model.iso19135.RE_AlternativeName;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AmendmentInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AmendmentType;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ClarificationInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
+import de.geoinfoffm.registry.core.model.iso19135.RE_FieldOfApplication;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Locale;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Reference;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ReferenceSource;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterManager;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterOwner;
+import de.geoinfoffm.registry.core.model.iso19135.RE_SimilarityToSource;
+import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Version;
 
 /**
  * The class IsoXml.
@@ -90,7 +161,10 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 public class IsoXml
 {
 	private static final org.isotc211.iso19139.common.ObjectFactory gcoObjectFactory = new org.isotc211.iso19139.common.ObjectFactory();
+	private static final org.isotc211.iso19139.metadata.ObjectFactory gmdObjectFactory = new org.isotc211.iso19139.metadata.ObjectFactory(); 
 	private static final org.isotc211.iso19135.ObjectFactory grgObjectFactory = new org.isotc211.iso19135.ObjectFactory();
+
+	private static final String NIL_REASON = "missing";
 
 	private IsoXml() {
 	}
@@ -102,6 +176,10 @@ public class IsoXml
 		}
 		
 		return result;
+	}
+	
+	public static CharacterString_PropertyType characterString(CharacterString cs) {
+		return characterString(CharacterString.asString(cs));
 	}
 	
 	public static String characterString(CharacterString_PropertyType cs) {
@@ -262,6 +340,630 @@ public class IsoXml
 	public static RE_RegisterItem_PropertyType registerItem(UUID itemUuid) {
 		RE_RegisterItem_PropertyType result = new RE_RegisterItem_PropertyType();
 		result.setUuidref(itemUuid.toString());
+		
+		return result;
+	}
+	
+	public static RE_ReferenceSource_PropertyType referenceSource(RE_ReferenceSource source) {
+		RE_ReferenceSource_PropertyType result = grgObjectFactory.createRE_ReferenceSource_PropertyType();
+		
+		if (source == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_ReferenceSource_Type sourceType = grgObjectFactory.createRE_ReferenceSource_Type();
+		sourceType.setCitation(citation(source.getCitation()));
+		
+		result.setRE_ReferenceSource(sourceType);
+		return result;
+	}
+	
+	public static RE_SimilarityToSource_PropertyType similarity(RE_SimilarityToSource similiarity) {
+		RE_SimilarityToSource_PropertyType result = grgObjectFactory.createRE_SimilarityToSource_PropertyType();
+		
+		if (similiarity == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setRE_SimilarityToSource(code(similiarity));
+		return result;
+	}
+	
+	public static RE_Reference_PropertyType reference(RE_Reference reference) {
+		RE_Reference_PropertyType result = grgObjectFactory.createRE_Reference_PropertyType();
+		
+		if (reference == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_Reference_Type refType = grgObjectFactory.createRE_Reference_Type();
+		refType.setUuid(reference.getUuid().toString());
+		refType.setItemIdentifierAtSource(characterString(reference.getItemIdentifierAtSource()));
+		refType.setNotes(characterString(reference.getNotes()));
+		refType.setReferenceText(characterString(reference.getReferenceText()));
+		refType.setSimilarity(similarity(reference.getSimilarity()));
+		refType.setSourceCitation(referenceSource(reference.getSourceCitation()));
+		
+		result.setRE_Reference(refType);
+		return result;
+	}
+	
+	public static RE_FieldOfApplication_PropertyType fieldOfApplication(RE_FieldOfApplication field) {
+		RE_FieldOfApplication_PropertyType result = grgObjectFactory.createRE_FieldOfApplication_PropertyType();
+		
+		if (field == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_FieldOfApplication_Type fieldType = grgObjectFactory.createRE_FieldOfApplication_Type();
+		fieldType.setDescription(characterString(field.getDescription()));
+		fieldType.setName(characterString(field.getName()));
+		
+		result.setRE_FieldOfApplication(fieldType);
+		return result;
+	}
+	
+	
+	public static RE_AlternativeExpression_PropertyType alternativeExpression(RE_AlternativeExpression expression) {
+		RE_AlternativeExpression_PropertyType result = grgObjectFactory.createRE_AlternativeExpression_PropertyType();
+		
+		if (expression == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_AlternativeExpression_Type expressionType = grgObjectFactory.createRE_AlternativeExpression_Type();
+		
+		expressionType.setDefinition(characterString(expression.getDefinition()));
+		expressionType.setDescription(characterString(expression.getDescription()));
+		expressionType.setLocale(locale(expression.getLocale()));
+		expressionType.setName(characterString(expression.getName()));
+		if (expressionType.getFieldOfApplication().isEmpty()) {
+			expressionType.getFieldOfApplication().add(fieldOfApplication(null));
+		}
+		for (RE_FieldOfApplication field : expression.getFieldOfApplication()) {
+			expressionType.getFieldOfApplication().add(fieldOfApplication(field));
+		}
+		
+		result.setRE_AlternativeExpression(expressionType);
+		return result;
+	}
+
+	public static RE_RegisterItem_PropertyType registerItem(RE_RegisterItem item) {
+		RE_RegisterItem_PropertyType result = new RE_RegisterItem_PropertyType();
+		
+		if (item == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_RegisterItem_Type itemType = grgObjectFactory.createRE_RegisterItem_Type();
+		itemType.setDateAccepted(date(item.getDateAccepted()));
+		itemType.setDateAmended(date(item.getDateAmended()));
+		itemType.setDefinition(characterString(item.getDefinition()));
+		itemType.setDescription(characterString(item.getDescription()));
+		itemType.setItemClass(itemClass(item.getItemClass().getUuid()));
+		itemType.setItemIdentifier(integer(item.getItemIdentifier()));
+		itemType.setName(characterString(item.getName()));
+		itemType.setSpecificationSource(reference(item.getSpecificationSource()));
+		itemType.setStatus(itemStatus(item.getStatus()));
+		itemType.setUuid(item.getUuid().toString());
+		for (RE_AdditionInformation additionInfo : item.getAdditionInformation()) {
+			itemType.getAdditionInformation().add(additionInformation(additionInfo));			
+		}
+		for (RE_ClarificationInformation clarificationInfo : item.getClarificationInformation()) {
+			itemType.getClarificationInformation().add(clarificationInformation(clarificationInfo));
+		}
+		for (RE_AmendmentInformation amendmentInfo : item.getAmendmentInformation()) {
+			itemType.getAmendmentInformation().add(amendmentInformation(amendmentInfo));
+		}
+		for (RE_AlternativeExpression alternativeExpression : item.getAlternativeExpressions()) {
+			itemType.getAlternativeExpressions().add(alternativeExpression(alternativeExpression));
+		}
+		for (RE_FieldOfApplication field : item.getFieldOfApplication()) {
+			itemType.getFieldOfApplication().add(fieldOfApplication(field));
+		}
+		for (RE_RegisterItem predecessor : item.getPredecessors()) {
+			itemType.getPredecessor().add(registerItem(predecessor.getUuid()));
+		}
+		for (RE_RegisterItem successor : item.getSuccessors()) {
+			itemType.getSuccessor().add(registerItem(successor.getUuid()));
+		}
+
+		result.setRE_RegisterItem(grgObjectFactory.createRE_RegisterItem(itemType));
+		return result;
+	}
+
+	public static URL_PropertyType url(String url) {
+		URL_PropertyType result = gmdObjectFactory.createURL_PropertyType();
+		result.setURL(url);
+		
+		return result;
+	}
+	
+	public static CI_OnlineResource_PropertyType onlineResource(String url) {
+		CI_OnlineResource_PropertyType result = gmdObjectFactory.createCI_OnlineResource_PropertyType();
+		
+		if (StringUtils.isEmpty(url)) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_OnlineResource_Type or = gmdObjectFactory.createCI_OnlineResource_Type();
+		or.setLinkage(url(url));
+		
+		return result;
+	}
+	
+	public static CI_OnlineResource_PropertyType onlineResource(CI_OnlineResource resource) {
+		CI_OnlineResource_PropertyType result = gmdObjectFactory.createCI_OnlineResource_PropertyType();
+		
+		if (resource == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_OnlineResource_Type resourceType = gmdObjectFactory.createCI_OnlineResource_Type();
+		resourceType.setApplicationProfile(characterString(resource.getApplicationProfile()));
+		resourceType.setDescription(characterString(resource.getDescription()));
+		resourceType.setFunction(onlineFunctionCode(resource.getFunction()));
+		resourceType.setLinkage(url(resource.getLinkage()));
+		resourceType.setName(characterString(resource.getName()));
+		resourceType.setProtocol(characterString(resource.getProtocol()));
+		resourceType.setUuid(resource.getUuid().toString());
+		
+		result.setCI_OnlineResource(resourceType);
+		return result;
+	}
+	
+	public static CodeListValue_Type code(CodeListValue code) {
+		CodeListValue_Type codeType = gcoObjectFactory.createCodeListValue_Type();
+		codeType.setCodeList(code.getCodeList());
+		codeType.setCodeListValue(code.getCodeListValue());
+		codeType.setCodeSpace(code.getCodeSpace());
+		codeType.setValue(code.getCodeListValue());
+		
+		return codeType;
+	}
+	
+	public static CI_DateTypeCode_PropertyType dateTypeCode(CI_DateTypeCode code) {
+		CI_DateTypeCode_PropertyType result = gmdObjectFactory.createCI_DateTypeCode_PropertyType();
+		
+		if (code == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setCI_DateTypeCode(code(code));
+		return result;
+	}
+
+	public static CI_PresentationFormCode_PropertyType presentationFormCode(CI_PresentationFormCode code) {
+		CI_PresentationFormCode_PropertyType result = gmdObjectFactory.createCI_PresentationFormCode_PropertyType();
+		
+		if (code == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setCI_PresentationFormCode(code(code));
+		return result;
+	}
+
+	public static LanguageCode_PropertyType languageCode(String code) {
+		LanguageCode_PropertyType result = gmdObjectFactory.createLanguageCode_PropertyType();
+		
+		CodeListValue_Type codeType = gcoObjectFactory.createCodeListValue_Type();
+		result.setLanguageCode(codeType);
+		
+		return result;
+	}
+	
+	public static LanguageCode_PropertyType languageCode(LanguageCode language) {
+		LanguageCode_PropertyType result = gmdObjectFactory.createLanguageCode_PropertyType();
+		
+		if (language == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setLanguageCode(code(language));
+		return result;
+	}
+
+	public static CI_RoleCode_PropertyType roleCode(CI_RoleCode role) {
+		CI_RoleCode_PropertyType result = gmdObjectFactory.createCI_RoleCode_PropertyType();
+		
+		if (role == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setCI_RoleCode(code(role));
+		return result;
+	}
+	
+	public static MD_CharacterSetCode_PropertyType characterSetCode(MD_CharacterSetCode cs) {
+		MD_CharacterSetCode_PropertyType result = gmdObjectFactory.createMD_CharacterSetCode_PropertyType();
+
+		if (cs == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+
+		result.setMD_CharacterSetCode(code(cs));
+		return result;
+	}
+	
+	public static CI_OnLineFunctionCode_PropertyType onlineFunctionCode(CI_OnLineFunctionCode code) {
+		CI_OnLineFunctionCode_PropertyType result = gmdObjectFactory.createCI_OnLineFunctionCode_PropertyType();
+		
+		if (code == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setCI_OnLineFunctionCode(code(code));
+		return result;
+	}
+	
+	public static RE_Locale_PropertyType locale(String name, String languageCode) {
+		RE_Locale_PropertyType result = grgObjectFactory.createRE_Locale_PropertyType();
+		
+		RE_Locale_Type localeType = grgObjectFactory.createRE_Locale_Type();
+		localeType.setName(characterString(name));
+		localeType.setLanguage(languageCode(languageCode));
+
+		result.setRE_Locale(localeType);
+		
+		return result;
+	}
+	
+	public static Date_PropertyType date(String date) {
+		Date_PropertyType result = gcoObjectFactory.createDate_PropertyType();
+	
+		if (StringUtils.isEmpty(date)) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		result.setDate(date);
+	
+		return result;
+	}
+	
+	public static CI_Date_PropertyType ciDate(CI_Date date) {
+		CI_Date_PropertyType result = gmdObjectFactory.createCI_Date_PropertyType();
+		
+		if (date == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Date_Type dateType = gmdObjectFactory.createCI_Date_Type();
+		dateType.setDate(date(date.getDate()));
+		dateType.setDateType(dateTypeCode(date.getDateType()));
+		
+		result.setCI_Date(dateType);
+		return result;
+	}
+	
+	public static CI_Series_PropertyType series(CI_Series series) {
+		CI_Series_PropertyType result = gmdObjectFactory.createCI_Series_PropertyType();
+		
+		if (series == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Series_Type seriesType = gmdObjectFactory.createCI_Series_Type();
+		seriesType.setIssueIdentification(characterString(series.getIssueIdentification()));
+		seriesType.setName(characterString(series.getName()));
+		seriesType.setPage(characterString(series.getPage()));
+		
+		result.setCI_Series(seriesType);
+		return result;
+	}
+	
+	public static CI_Citation_PropertyType citation(CI_Citation citation) {
+		CI_Citation_PropertyType result = gmdObjectFactory.createCI_Citation_PropertyType();
+		
+		if (citation == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Citation_Type citationType = gmdObjectFactory.createCI_Citation_Type();
+		citationType.setCollectiveTitle(characterString(citation.getCollectiveTitle()));
+		citationType.setEdition(characterString(citation.getEdition()));
+		for (CI_Date date : citation.getDate()) {
+			citationType.getDate().add(ciDate(date));
+		}
+		citationType.setEditionDate(date(citation.getEditionDate()));
+		citationType.setISBN(characterString(citation.getISBN()));
+		citationType.setISSN(characterString(citation.getISSN()));
+		citationType.setOtherCitationDetails(characterString(citation.getOtherCitationDetails()));
+		citationType.setSeries(series(citation.getSeries()));
+		citationType.setTitle(characterString(citation.getTitle()));
+		citationType.setUuid(citation.getUuid().toString());
+		for (String altTitle : citation.getAlternateTitle()) {
+			citationType.getAlternateTitle().add(characterString(altTitle));
+		}
+		for (CI_ResponsibleParty party : citation.getCitedResponsibleParty()) {
+			citationType.getCitedResponsibleParty().add(responsibleParty(party));
+		}
+		for (CI_PresentationFormCode form : citation.getPresentationForm()) {
+			citationType.getPresentationForm().add(presentationFormCode(form));
+		}
+		
+		result.setCI_Citation(citationType);
+		return result;
+	}
+	
+	public static RE_Locale_PropertyType locale(RE_Locale locale) {
+		RE_Locale_PropertyType result = grgObjectFactory.createRE_Locale_PropertyType();
+		
+		if (locale == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_Locale_Type localeType = grgObjectFactory.createRE_Locale_Type();
+		localeType.setCharacterEncoding(characterSetCode(locale.getCharacterEncoding()));
+		localeType.setCitation(citation(locale.getCitation()));
+		localeType.setCountry(characterString(locale.getCountry()));
+		localeType.setLanguage(languageCode(locale.getLanguage()));
+		localeType.setName(characterString(locale.getName()));
+		localeType.setUuid(locale.getUuid().toString());
+		
+		result.setRE_Locale(localeType);
+		return result;
+	}
+	
+	public static RE_RegisterOwner_PropertyType owner(RE_RegisterOwner owner) {
+		RE_RegisterOwner_PropertyType result = grgObjectFactory.createRE_RegisterOwner_PropertyType();
+		
+		if (owner == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_RegisterOwner_Type ownerType = grgObjectFactory.createRE_RegisterOwner_Type();
+		ownerType.setName(characterString(owner.getName()));
+		ownerType.setContact(responsibleParty(owner.getContact()));
+		ownerType.setUuid(owner.getUuid().toString());
+		
+		result.setRE_RegisterOwner(ownerType);		
+		return result;
+	}
+	
+	public static CI_ResponsibleParty_PropertyType responsibleParty(CI_ResponsibleParty party) {
+		CI_ResponsibleParty_PropertyType result = gmdObjectFactory.createCI_ResponsibleParty_PropertyType();
+		
+		if (party == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_ResponsibleParty_Type partyType = gmdObjectFactory.createCI_ResponsibleParty_Type();
+		partyType.setUuid(party.getUuid().toString());
+		partyType.setIndividualName(characterString(party.getIndividualName()));
+		partyType.setOrganisationName(characterString(party.getOrganisationName()));
+		partyType.setPositionName(characterString(party.getPositionName()));
+		partyType.setRole(roleCode(party.getRole()));
+		partyType.setContactInfo(contact(party.getContactInfo()));
+
+		result.setCI_ResponsibleParty(partyType);
+		return result;
+	}
+	
+	public static CI_Address_PropertyType address(CI_Address address) {
+		CI_Address_PropertyType result = gmdObjectFactory.createCI_Address_PropertyType();
+		
+		if (address == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Address_Type addressType = gmdObjectFactory.createCI_Address_Type();
+		addressType.setAdministrativeArea(characterString(address.getAdministrativeArea()));
+		addressType.setCity(characterString(address.getCity()));
+		addressType.setCountry(characterString(address.getCountry()));
+		addressType.setPostalCode(characterString(address.getPostalCode()));
+		addressType.setUuid(address.getUuid().toString());
+		for (String deliveryPoint : address.getDeliveryPoint()) {
+			addressType.getDeliveryPoint().add(characterString(deliveryPoint));
+		}
+		for (String email : address.getElectronicMailAddress()) {
+			addressType.getElectronicMailAddress().add(characterString(email));
+		}
+		
+		result.setCI_Address(addressType);
+		return result;
+	}
+	
+	public static CI_Telephone_PropertyType phone(CI_Telephone phone) {
+		CI_Telephone_PropertyType result = gmdObjectFactory.createCI_Telephone_PropertyType();
+		
+		if (phone == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Telephone_Type phoneType = gmdObjectFactory.createCI_Telephone_Type();
+		phoneType.setUuid(phone.getUuid().toString());
+		for (CharacterString fax : phone.getFacsimile()) {
+			phoneType.getFacsimile().add(characterString(fax));
+		}
+		for (CharacterString voice : phone.getVoice()) {
+			phoneType.getVoice().add(characterString(voice));
+		}
+		
+		result.setCI_Telephone(phoneType);
+		return result;
+	}
+	
+	public static CI_Contact_PropertyType contact(CI_Contact contact) {
+		CI_Contact_PropertyType result = gmdObjectFactory.createCI_Contact_PropertyType();
+				
+		if (contact == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		CI_Contact_Type contactType = gmdObjectFactory.createCI_Contact_Type();
+		contactType.setUuid(contact.getUuid().toString());
+		contactType.setAddress(address(contact.getAddress()));
+		contactType.setContactInstructions(characterString(contact.getContactInstructions()));
+		contactType.setHoursOfService(characterString(contact.getHoursOfService()));
+		contactType.setOnlineResource(onlineResource(contact.getOnlineResource()));
+		contactType.setPhone(phone(contact.getPhone()));
+		
+		result.setCI_Contact(contactType);		
+		return result;
+	}
+	
+	public static RE_SubmittingOrganization_PropertyType submittingOrganization(RE_SubmittingOrganization submitter) {
+		RE_SubmittingOrganization_PropertyType result = grgObjectFactory.createRE_SubmittingOrganization_PropertyType();
+				
+		if (submitter == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_SubmittingOrganization_Type submitterType = grgObjectFactory.createRE_SubmittingOrganization_Type();
+		submitterType.setContact(responsibleParty(submitter.getContact()));
+		submitterType.setName(characterString(submitter.getName()));
+		submitterType.setUuid(submitter.getUuid().toString());
+		
+		result.setRE_SubmittingOrganization(submitterType);
+		return result;
+	}
+	
+	public static RE_AlternativeName_PropertyType alternativeName(RE_AlternativeName altName) {
+		RE_AlternativeName_PropertyType result = grgObjectFactory.createRE_AlternativeName_PropertyType();
+		
+		if (altName == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_AlternativeName_Type altNameType = grgObjectFactory.createRE_AlternativeName_Type();
+		altNameType.setName(characterString(altName.getName()));
+		altNameType.setLocale(locale(altName.getLocale()));
+		
+		result.setRE_AlternativeName(altNameType);
+		return result;
+	}
+	
+	public static RE_ItemClass_PropertyType itemClass(RE_ItemClass itemClass) {
+		RE_ItemClass_PropertyType result = grgObjectFactory.createRE_ItemClass_PropertyType();
+		
+		if (itemClass == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_ItemClass_Type itemClassType = grgObjectFactory.createRE_ItemClass_Type();
+		itemClassType.setName(characterString(itemClass.getName()));
+		itemClassType.setTechnicalStandard(citation(itemClass.getTechnicalStandard()));
+		itemClassType.setUuid(itemClass.getUuid().toString());
+		if (itemClass.getAlternativeNames().isEmpty()) {
+			itemClassType.getAlternativeNames().add(alternativeName(null));
+		}
+		for (RE_AlternativeName altName : itemClass.getAlternativeNames()) {
+			itemClassType.getAlternativeNames().add(alternativeName(altName));
+		}
+		if (itemClass.getDescribedItem().isEmpty()) {
+			itemClassType.getDescribedItem().add(registerItem((RE_RegisterItem)null));
+		}
+		for (RE_RegisterItem item : itemClass.getDescribedItem()) {
+			itemClassType.getDescribedItem().add(registerItem(item.getUuid()));
+		}
+		
+		result.setRE_ItemClass(itemClassType);
+		return result;
+	}
+	
+	public static RE_RegisterManager_PropertyType manager(RE_RegisterManager manager) {
+		RE_RegisterManager_PropertyType result = grgObjectFactory.createRE_RegisterManager_PropertyType();
+		
+		if (manager == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_RegisterManager_Type managerType = grgObjectFactory.createRE_RegisterManager_Type();
+		managerType.setContact(responsibleParty(manager.getContact()));
+		managerType.setName(characterString(manager.getName()));
+		managerType.setUuid(manager.getUuid().toString());
+		
+		result.setRE_RegisterManager(managerType);
+		return result;
+	}
+	
+	public static RE_Version_PropertyType version(RE_Version version) {
+		RE_Version_PropertyType result = grgObjectFactory.createRE_Version_PropertyType();
+		
+		if (version == null) {
+			result.getNilReason().add(NIL_REASON);
+			return result;
+		}
+		
+		RE_Version_Type versionType = grgObjectFactory.createRE_Version_Type();
+		versionType.setVersionDate(date(version.getVersionDate()));
+		versionType.setVersionNumber(characterString(version.getVersionNumber()));
+		
+		result.setRE_Version(versionType);
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @param register
+	 * @param urlPattern e.g. "https://localhost:8080/register/%s" where %s is a placeholder for the register's UUID
+	 * @return
+	 */
+	public static RE_Register_Type register(RE_Register register, String urlPattern) {
+		RE_Register_Type result = grgObjectFactory.createRE_Register_Type();
+		
+		result.setUuid(register.getUuid().toString());
+		result.setName(characterString(register.getName()));
+		result.setContentSummary(characterString(register.getContentSummary()));
+		result.getUniformResourceIdentifier().add(onlineResource(String.format(urlPattern, register.getUuid().toString())));
+		result.setOperatingLanguage(locale(register.getOperatingLanguage()));
+		if (register.getAlternativeLanguages().isEmpty()) {
+			result.getAlternativeLanguages().add(locale(null));
+		}
+		for (RE_Locale alternativeLanguage : register.getAlternativeLanguages()) {
+			result.getAlternativeLanguages().add(locale(alternativeLanguage));
+		}
+		result.setVersion(version(register.getVersion()));
+		result.setDateOfLastChange(date(register.getDateOfLastChange()));
+		result.setOwner(owner(register.getOwner()));
+		if (register.getSubmitter().isEmpty()) {
+			result.getSubmitter().add(submittingOrganization((RE_SubmittingOrganization)null));
+		}
+		for (RE_SubmittingOrganization submitter : register.getSubmitter()) {
+			result.getSubmitter().add(submittingOrganization(submitter));
+		}
+		if (register.getContainedItemClasses().isEmpty()) {
+			result.getContainedItemClass().add(itemClass((RE_ItemClass)null));
+		}
+		for (RE_ItemClass itemClass : register.getContainedItemClasses()) {
+			result.getContainedItemClass().add(itemClass(itemClass));
+		}
+		result.setManager(manager(register.getManager()));
+		if (register.getContainedItems().isEmpty()) {
+			result.getContainedItem().add(registerItem((RE_RegisterItem)null));
+		}
+		for (RE_RegisterItem containedItem : register.getContainedItems()) {
+			result.getContainedItem().add(registerItem(containedItem.getUuid()));
+		}
 		
 		return result;
 	}

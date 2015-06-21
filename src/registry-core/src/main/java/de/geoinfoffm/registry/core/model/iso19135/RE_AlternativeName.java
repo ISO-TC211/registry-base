@@ -37,6 +37,8 @@ package de.geoinfoffm.registry.core.model.iso19135;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -49,13 +51,16 @@ import de.geoinfoffm.registry.core.ValueObject;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
 @XmlRootElement(name = "RE_AlternativeName", namespace = "http://www.isotc211.org/2005/grg")
-@Audited @Embeddable
-public class RE_AlternativeName extends ValueObject
+@Audited @Entity
+public class RE_AlternativeName extends de.geoinfoffm.registry.core.Entity
 {
 	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
 	@Basic(optional = false)
 	@Column(columnDefinition = "text")
 	private String name;
+	
+	@ManyToOne
+	private RE_Locale locale;
 	
 	protected RE_AlternativeName() { }
 	
@@ -69,5 +74,13 @@ public class RE_AlternativeName extends ValueObject
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public RE_Locale getLocale() {
+		return locale;
+	}
+
+	public void setLocale(RE_Locale locale) {
+		this.locale = locale;
 	}
 }

@@ -191,8 +191,8 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 
 	@XmlElement(name = "specificationLineage", namespace = "http://www.isotc211.org/2005/grg")
 	@XmlPath("specificationLineage/grg:RE_Reference")
-	@OneToOne
-	private RE_Reference specificationLineage;
+	@OneToMany
+	private Set<RE_Reference> specificationLineage;
 
 //	@Embedded
 //	@AttributeOverrides({
@@ -472,14 +472,17 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 	/**
 	 * @return the specificationLineage
 	 */
-	public RE_Reference getSpecificationLineage() {
+	public Set<RE_Reference> getSpecificationLineage() {
+		if (specificationLineage == null) {
+			specificationLineage = new HashSet<RE_Reference>();
+		}
 		return specificationLineage;
 	}
 
 	/**
 	 * @param specificationLineage the specificationLineage to set
 	 */
-	public void setSpecificationLineage(RE_Reference specificationLineage) {
+	protected void setSpecificationLineage(Set<RE_Reference> specificationLineage) {
 		this.specificationLineage = specificationLineage;
 	}
 

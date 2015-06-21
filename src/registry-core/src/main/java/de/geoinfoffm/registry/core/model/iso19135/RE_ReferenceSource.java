@@ -66,31 +66,12 @@ import de.geoinfoffm.registry.core.model.iso19115.CI_Citation;
 @Audited @Embeddable
 public class RE_ReferenceSource extends ValueObject
 {
-	@XmlElement(name = "text", namespace = "http://www.isotc211.org/2005/grg", type = CharacterString.class)
-	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
-	@Column(columnDefinition = "text")
-	private String text;
-	
 	@XmlElement(name = "citation", namespace = "http://www.isotc211.org/2005/grg")
 	@OneToOne
 	private CI_Citation citation;
 
 	public RE_ReferenceSource(){
 
-	}
-
-	/**
-	 * @return the text
-	 */
-	public String getText() {
-		return text;
-	}
-
-	/**
-	 * @param text the text to set
-	 */
-	public void setText(String text) {
-		this.text = text;
 	}
 
 	/**

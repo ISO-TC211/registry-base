@@ -36,6 +36,8 @@ package de.geoinfoffm.registry.core.model.iso19135;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
@@ -86,6 +88,13 @@ public class RE_Locale extends de.geoinfoffm.registry.core.Entity
 	private String name;
 
 	@XmlElement(name = "language", namespace = "http://www.isotc211.org/2005/grg")
+	@AttributeOverrides({
+		@AttributeOverride(name = "codeList", column = @Column(name = "language_codelist")),
+		@AttributeOverride(name = "codeListValue", column = @Column(name = "language_codelistvalue")),
+		@AttributeOverride(name = "codeSpace", column = @Column(name = "language_codespace")),
+		@AttributeOverride(name = "value", column = @Column(name = "language_value")),
+		@AttributeOverride(name = "qname", column = @Column(name = "language_qname")),
+	})
 	private LanguageCode language;
 
 	@XmlElement(name = "country", namespace = "http://www.isotc211.org/2005/grg", type = CharacterString.class)
@@ -93,7 +102,14 @@ public class RE_Locale extends de.geoinfoffm.registry.core.Entity
 	@Column(columnDefinition = "text")
 	private String country;
 
-	@XmlElement(name = "characterEncodig", namespace = "http://www.isotc211.org/2005/grg")
+	@XmlElement(name = "characterEncoding", namespace = "http://www.isotc211.org/2005/grg")
+	@AttributeOverrides({
+		@AttributeOverride(name = "codeList", column = @Column(name = "characterencoding_codelist")),
+		@AttributeOverride(name = "codeListValue", column = @Column(name = "characterencoding_codelistvalue")),
+		@AttributeOverride(name = "codeSpace", column = @Column(name = "characterencoding_codespace")),
+		@AttributeOverride(name = "value", column = @Column(name = "characterencoding_value")),
+		@AttributeOverride(name = "qname", column = @Column(name = "characterencoding_qname")),
+	})
 	private MD_CharacterSetCode characterEncoding;
 
 	@XmlElement(name = "citation", namespace = "http://www.isotc211.org/2005/grg")

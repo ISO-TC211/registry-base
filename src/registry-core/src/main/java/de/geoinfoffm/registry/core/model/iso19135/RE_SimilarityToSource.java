@@ -34,6 +34,15 @@
  */
 package de.geoinfoffm.registry.core.model.iso19135;
 
+import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
+
+import org.hibernate.envers.Audited;
+
+import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
+import de.geoinfoffm.registry.core.model.iso19115.MD_CharacterSetCode;
+
 
 
 /**
@@ -45,12 +54,23 @@ package de.geoinfoffm.registry.core.model.iso19135;
  * <UsedBy>
  * @created 09-Sep-2013 19:14:23
  */
-public enum RE_SimilarityToSource {
+@XmlRootElement(name = "RE_SimilarityToSource", namespace = "http://www.isotc211.org/2005/grg")
+@Audited @Embeddable 
+public class RE_SimilarityToSource extends CodeListValue  
+{
+//	identical,
+//	restyled,
+//	contextAdded,
+//	generalization,
+//	specialization,
+//	unspecified;
+	
+	public static final RE_SimilarityToSource IDENTICAL = new RE_SimilarityToSource("http://www.isotc211.org/schemas/grg/grgCodelists.xmlRE_SimilarityToSource", "identical", "identical");
 
-	identical,
-	restyled,
-	contextAdded,
-	generalization,
-	specialization,
-	unspecified;
+	protected RE_SimilarityToSource() { }
+	
+	public RE_SimilarityToSource(String codeList, String codeListValue, String code) {
+		super(codeList, codeListValue, code, new QName("http://www.isotc211.org/2005/gmd", "MD_CharacterSetCode", "gmd")); 
+	}
+	
 }//end RE_SimilarityToSource
