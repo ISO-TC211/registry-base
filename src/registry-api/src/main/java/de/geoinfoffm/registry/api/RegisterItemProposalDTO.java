@@ -602,7 +602,7 @@ public class RegisterItemProposalDTO
 					if (pd == null) {
 						continue;
 					}
-				
+					// FIXME : java.lang.String cannot be cast to java.util.Collection, https://jira.geoinfoffm.de/browse/FADREG-67
 					newCollection = (Collection)pd.getReadMethod().invoke(this);
 					
 					if (CollectionUtils.isEmpty(originalCollection) && CollectionUtils.isEmpty(newCollection)) continue;
