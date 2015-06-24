@@ -68,6 +68,11 @@ public interface RegisterItemRepository extends RE_RegisterItemRepository
 	public Set<RE_RegisterItem> findByStatus(RE_ItemStatus status);
 	public Page<RE_RegisterItem> findByStatus(RE_ItemStatus status, Pageable pageable);
 	
+//	@Query("SELECT i.uuid FROM RE_RegisterItem i WHERE i.itemClass = :itemClass")
+//	public List<UUID> getItems(RE_ItemClass itemClass);
+	
+	public Set<RE_RegisterItem> findByItemClass(RE_ItemClass itemClass);
+	
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatus(RE_Register register, RE_ItemClass itemClass, RE_ItemStatus status, Pageable pageable);
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatusIn(RE_Register register, RE_ItemClass itemClass, Collection<RE_ItemStatus> status, Pageable pageable);
 
