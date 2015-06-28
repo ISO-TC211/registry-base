@@ -207,7 +207,7 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	/**
 	 * @param dateDisposed the dateDisposed to set
 	 */
-	protected void setDateDisposed(Date dateDisposed) {
+	public void setDateDisposed(Date dateDisposed) {
 		this.dateDisposed = dateDisposed;
 	}
 
