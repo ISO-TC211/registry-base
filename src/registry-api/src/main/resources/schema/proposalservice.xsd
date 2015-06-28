@@ -89,7 +89,7 @@
 	<xs:complexType name="ProposedChange_Type">
 		<xs:sequence>
 			<xs:element name="property" type="xs:string"/>
-			<xs:element name="newValue" type="gco:CharacterString_PropertyType"/>
+			<xs:element name="newValue" type="gco:CharacterString_PropertyType" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- ........................................................................ -->
