@@ -352,7 +352,7 @@
 		</xs:restriction>
 	</xs:simpleType>
 	<!-- ........................................................................ -->
-	<xs:element name="AppealDisposition" type="regsoap:AppealDisposition_Type" substitutionGroup="gco:CharacterString"/>
+	<xs:element name="AppealDisposition" type="regsoap:AppealDisposition_Type"/>
 	<!-- ........................................................................ -->
 	<xs:complexType name="AppealDisposition_PropertyType">
 		<xs:sequence>
