@@ -34,6 +34,8 @@
  */
 package de.geoinfoffm.registry.client.web;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DatatablesResult
@@ -46,7 +48,7 @@ public class DatatablesResult
 	public DatatablesResult(long totalRecords, long totalDisplayRecords, String echo, Object data) {
 		this.totalRecords = totalRecords;
 		this.totalDisplayRecords = totalDisplayRecords;
-		this.echo = Integer.parseInt(echo);
+		this.echo = (StringUtils.isEmpty(echo) ? 1 : Integer.parseInt(echo));
 		this.data = data;
 	}
 

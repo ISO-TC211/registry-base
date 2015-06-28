@@ -95,7 +95,7 @@ public class ProposalListItem
 		DateFormat dateAndTime = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 		DateFormat dateOnly = new SimpleDateFormat("dd.MM.yyyy");
 
-		this.proposalDate = (proposal.getDateSubmitted() == null ? "" : dateAndTime.format(proposal.getDateSubmitted()));
+		this.proposalDate = (proposal.getDateSubmitted() == null ? "" : dateOnly.format(proposal.getDateSubmitted()));
 
 		this.title = proposal.getTitle();
 		if (proposal instanceof SimpleProposal) {
