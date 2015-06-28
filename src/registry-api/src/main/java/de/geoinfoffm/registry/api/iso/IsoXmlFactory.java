@@ -34,13 +34,20 @@
  */
 package de.geoinfoffm.registry.api.iso;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.isotc211.iso19135.AbstractRE_ProposalManagementInformation_Type;
 import org.isotc211.iso19135.RE_AdditionInformation_PropertyType;
@@ -67,6 +74,7 @@ import org.isotc211.iso19135.RE_ItemStatus_PropertyType;
 import org.isotc211.iso19135.RE_ItemStatus_Type;
 import org.isotc211.iso19135.RE_Locale_PropertyType;
 import org.isotc211.iso19135.RE_Locale_Type;
+import org.isotc211.iso19135.RE_ProposalManagementInformation_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_Type;
 import org.isotc211.iso19135.RE_Reference_PropertyType;
@@ -111,9 +119,16 @@ import org.isotc211.iso19139.metadata.CI_Telephone_Type;
 import org.isotc211.iso19139.metadata.LanguageCode_PropertyType;
 import org.isotc211.iso19139.metadata.MD_CharacterSetCode_PropertyType;
 import org.isotc211.iso19139.metadata.URL_PropertyType;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import de.geoinfoffm.registry.api.ProposalDtoFactory;
+import de.geoinfoffm.registry.api.RegisterItemViewBean;
+import de.geoinfoffm.registry.api.ViewBeanFactory;
 import de.geoinfoffm.registry.core.model.iso00639.LanguageCode;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
@@ -158,15 +173,22 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Version;
  *
  * @author Florian Esser
  */
-public class IsoXml
+@Component
+public class IsoXmlFactory
 {
 	private static final org.isotc211.iso19139.common.ObjectFactory gcoObjectFactory = new org.isotc211.iso19139.common.ObjectFactory();
 	private static final org.isotc211.iso19139.metadata.ObjectFactory gmdObjectFactory = new org.isotc211.iso19139.metadata.ObjectFactory(); 
 	private static final org.isotc211.iso19135.ObjectFactory grgObjectFactory = new org.isotc211.iso19135.ObjectFactory();
 
 	private static final String NIL_REASON = "missing";
+	
+	@Autowired
+	private ViewBeanFactory viewBeanFactory;
+	
+	@Autowired
+	private ProposalDtoFactory dtoFactory;
 
-	private IsoXml() {
+	public IsoXmlFactory() {
 	}
 
 	public static CharacterString_PropertyType characterString(String s) {
@@ -183,7 +205,12 @@ public class IsoXml
 	}
 	
 	public static String characterString(CharacterString_PropertyType cs) {
-		return cs.getCharacterString().getValue().toString();
+		if (cs.isSetCharacterString() && cs.getCharacterString().getValue() != null) {
+			return cs.getCharacterString().getValue().toString();
+		}
+		else { 
+			return null;
+		}
 	}
 
 	public static Boolean_PropertyType booleanProperty(Boolean b) {
@@ -216,6 +243,23 @@ public class IsoXml
 		return result;
 	}
 	
+	public static Date date(Date_PropertyType dateProperty) {
+		if (dateProperty.getDateTime() != null) {
+			XMLGregorianCalendar xmlDate = dateProperty.getDateTime();
+			return xmlDate.toGregorianCalendar().getTime();
+		}
+		else if (!StringUtils.isEmpty(dateProperty.getDate())) {
+			DateTime date = ISODateTimeFormat.date().parseDateTime(dateProperty.getDate());
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(date.getMillis());
+			
+			return cal.getTime();
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public static Integer_PropertyType integer(BigInteger integer) {
 		Integer_PropertyType result = gcoObjectFactory.createInteger_PropertyType();
 		if (integer != null) {
@@ -244,6 +288,10 @@ public class IsoXml
 		return result;
 	}
 	
+	public static RE_ItemStatus itemStatus(RE_ItemStatus_PropertyType status) {
+		return getEnum(RE_ItemStatus.class, status.getRE_ItemStatus().value());
+	}
+	
 	public static String getXmlEnumValue(Class<? extends Enum> enumClass, String field) {
 		try {
 			XmlEnumValue valueAnnotation = enumClass.getField(field).getAnnotation(XmlEnumValue.class);
@@ -255,7 +303,28 @@ public class IsoXml
 			throw new IllegalArgumentException("Invalid status: " + field);
 		}
 		
-		return field;
+		throw new RuntimeException(String.format("No @XmlEnumValue annotation for '%s' exists in enum '%s'", field, enumClass.getCanonicalName()));
+	}
+	
+	public static <E extends Enum<E>> E getEnum(Class<E> enumClass, String xmlEnumValue) {
+		try {
+			return Enum.valueOf(enumClass, xmlEnumValue);
+		}
+		catch (Throwable t) {
+			// Ignore
+		}
+		
+		for (Field field : enumClass.getFields()) {
+			XmlEnumValue valueAnnotation = field.getAnnotation(XmlEnumValue.class);
+			if (valueAnnotation == null) {
+				continue;
+			}
+			else if (valueAnnotation.value().equals(xmlEnumValue)) {
+				return Enum.valueOf(enumClass, field.getName());
+			}
+		}
+		
+		throw new RuntimeException(String.format("No @XmlEnumValue annotation for '%s' exists in enum '%s'", xmlEnumValue, enumClass.getCanonicalName()));
 	}
 	
 	public static RE_Disposition_PropertyType disposition(String dispositionName) {
@@ -433,7 +502,7 @@ public class IsoXml
 		return result;
 	}
 
-	public static RE_RegisterItem_PropertyType registerItem(RE_RegisterItem item) {
+	public RE_RegisterItem_PropertyType registerItem(RE_RegisterItem item) {
 		RE_RegisterItem_PropertyType result = new RE_RegisterItem_PropertyType();
 		
 		if (item == null) {
@@ -441,7 +510,9 @@ public class IsoXml
 			return result;
 		}
 		
-		RE_RegisterItem_Type itemType = grgObjectFactory.createRE_RegisterItem_Type();
+		RegisterItemViewBean viewBean = viewBeanFactory.getViewBean(item);
+		RE_RegisterItem_Type itemType = viewBean.toXmlType(dtoFactory);
+		
 		itemType.setDateAccepted(date(item.getDateAccepted()));
 		itemType.setDateAmended(date(item.getDateAmended()));
 		itemType.setDefinition(characterString(item.getDefinition()));
@@ -452,29 +523,44 @@ public class IsoXml
 		itemType.setSpecificationSource(reference(item.getSpecificationSource()));
 		itemType.setStatus(itemStatus(item.getStatus()));
 		itemType.setUuid(item.getUuid().toString());
+		
+		itemType.getAdditionInformation().clear();
 		for (RE_AdditionInformation additionInfo : item.getAdditionInformation()) {
 			itemType.getAdditionInformation().add(additionInformation(additionInfo));			
 		}
+		
+		itemType.getClarificationInformation().clear();
 		for (RE_ClarificationInformation clarificationInfo : item.getClarificationInformation()) {
 			itemType.getClarificationInformation().add(clarificationInformation(clarificationInfo));
 		}
+		
+		itemType.getAmendmentInformation().clear();
 		for (RE_AmendmentInformation amendmentInfo : item.getAmendmentInformation()) {
 			itemType.getAmendmentInformation().add(amendmentInformation(amendmentInfo));
 		}
+		
+		itemType.getAlternativeExpressions().clear();
 		for (RE_AlternativeExpression alternativeExpression : item.getAlternativeExpressions()) {
 			itemType.getAlternativeExpressions().add(alternativeExpression(alternativeExpression));
 		}
+		
+		itemType.getFieldOfApplication().clear();
 		for (RE_FieldOfApplication field : item.getFieldOfApplication()) {
 			itemType.getFieldOfApplication().add(fieldOfApplication(field));
 		}
+		
+		itemType.getPredecessor().clear();
 		for (RE_RegisterItem predecessor : item.getPredecessors()) {
 			itemType.getPredecessor().add(registerItem(predecessor.getUuid()));
 		}
+		
+		itemType.getSuccessor().clear();
 		for (RE_RegisterItem successor : item.getSuccessors()) {
 			itemType.getSuccessor().add(registerItem(successor.getUuid()));
 		}
 
-		result.setRE_RegisterItem(grgObjectFactory.createRE_RegisterItem(itemType));
+		JAXBElement<RE_RegisterItem_Type> jaxbElement = grgObjectFactory.createRE_RegisterItem(itemType);
+		result.setRE_RegisterItem(jaxbElement);
 		return result;
 	}
 
@@ -860,7 +946,7 @@ public class IsoXml
 		return result;
 	}
 	
-	public static RE_ItemClass_PropertyType itemClass(RE_ItemClass itemClass) {
+	public RE_ItemClass_PropertyType itemClass(RE_ItemClass itemClass) {
 		RE_ItemClass_PropertyType result = grgObjectFactory.createRE_ItemClass_PropertyType();
 		
 		if (itemClass == null) {
@@ -928,7 +1014,7 @@ public class IsoXml
 	 * @param urlPattern e.g. "https://localhost:8080/register/%s" where %s is a placeholder for the register's UUID
 	 * @return
 	 */
-	public static RE_Register_Type register(RE_Register register, String urlPattern) {
+	public RE_Register_Type register(RE_Register register, String urlPattern) {
 		RE_Register_Type result = grgObjectFactory.createRE_Register_Type();
 		
 		result.setUuid(register.getUuid().toString());
@@ -1005,5 +1091,20 @@ public class IsoXml
 		target.setSponsor(submittingOrganization(pmi.getSponsor().getUuid()));
 		target.setStatus(decisionStatus(pmi.getStatus()));
 		target.setUuid(pmi.getUuid().toString());
+	}
+	
+	public static XMLGregorianCalendar xmlGregorianCalendar(Date date) {
+		if (date == null) return null;
+		
+		GregorianCalendar c = new GregorianCalendar();
+		c.setTime(date);
+		XMLGregorianCalendar xmlDate;
+
+		try {
+			return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
 	}
 }
