@@ -34,47 +34,66 @@
  */
 package de.geoinfoffm.registry.core.model.iso19115;
 
+import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
+
+import org.hibernate.envers.Audited;
+
+import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
+
 
 
 /**
  * Mode in which the data is represented
  * @created 10-Sep-2013 19:43:20
  */
-public enum CI_PresentationFormCode {
+@XmlRootElement(name = "CI_PresentationFormCode", namespace = "http://www.isotc211.org/2005/gmd")
+@Audited @Embeddable 
+public class CI_PresentationFormCode extends CodeListValue  
+{
+//	/**
+//	 * Piece of written or printed matter that provides a record or evidence of events,
+//	 * an agreement, ownership, identification, etc..
+//	 */
+//	documentDigital,
+//	/**
+//	 * Representation of a map which is printed on paper, photographic material, or
+//	 * other media and can be interpreted directly by the human user
+//	 */
+//	documentHardcopy,
+//	/**
+//	 * Permanent record of the likeness of any natural or man-made features, objects,
+//	 * and activities reproduced on photographic materials.  This image can be
+//	 * acquired through the sensing of visual or any other segment of the
+//	 * electromagnetic spectrum by sensors, such as thermal infrared, and high
+//	 * resolution radar.
+//	 */
+//	imageDigital,
+//	imageHardcopy,
+//	mapDigital,
+//	mapHardcopy,
+//	/**
+//	 * Representation in three dimensions of geospatial data
+//	 */
+//	modelDigital,
+//	modelHardcopy,
+//	/**
+//	 * Vertical cross-section of geospatial data
+//	 */
+//	profileDigital,
+//	profileHardcopy,
+//	tableDigital,
+//	tableHardcopy,
+//	videoDigital,
+//	videoHardcopy,
 
-	/**
-	 * Piece of written or printed matter that provides a record or evidence of events,
-	 * an agreement, ownership, identification, etc..
-	 */
-	documentDigital,
-	/**
-	 * Representation of a map which is printed on paper, photographic material, or
-	 * other media and can be interpreted directly by the human user
-	 */
-	documentHardcopy,
-	/**
-	 * Permanent record of the likeness of any natural or man-made features, objects,
-	 * and activities reproduced on photographic materials.  This image can be
-	 * acquired through the sensing of visual or any other segment of the
-	 * electromagnetic spectrum by sensors, such as thermal infrared, and high
-	 * resolution radar.
-	 */
-	imageDigital,
-	imageHardcopy,
-	mapDigital,
-	mapHardcopy,
-	/**
-	 * Representation in three dimensions of geospatial data
-	 */
-	modelDigital,
-	modelHardcopy,
-	/**
-	 * Vertical cross-section of geospatial data
-	 */
-	profileDigital,
-	profileHardcopy,
-	tableDigital,
-	tableHardcopy,
-	videoDigital,
-	videoHardcopy,
+	public static final CI_PresentationFormCode DOCUMENT_DIGITAL = new CI_PresentationFormCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode", "documentDigital", "documentDigital");
+	
+	protected CI_PresentationFormCode() { }
+	
+	public CI_PresentationFormCode(String codeList, String codeListValue, String code) {
+		super(codeList, codeListValue, code, new QName("http://www.isotc211.org/2005/gmd", "CI_PresentationFormCode", "gmd")); 
+	}
+
 }//end CI_PresentationFormCode

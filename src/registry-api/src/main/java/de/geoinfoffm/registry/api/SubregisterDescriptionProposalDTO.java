@@ -112,7 +112,7 @@ public class SubregisterDescriptionProposalDTO extends RegisterItemProposalDTO
 			CI_OnlineResource uri = new CI_OnlineResource(this.getUniformResourceIdentifier());
 			subregister.setUniformResourceIdentifier(uri);
 			
-			RE_Locale locale = new RE_Locale(this.getOperatingLanguage(), new LanguageCode("", this.getOperatingLanguage(), this.getOperatingLanguage()), this.getOperatingLanguage(), MD_CharacterSetCode.utf8, null);
+			RE_Locale locale = new RE_Locale(this.getOperatingLanguage(), new LanguageCode("", this.getOperatingLanguage(), this.getOperatingLanguage()), this.getOperatingLanguage(), MD_CharacterSetCode.UTF8, null);
 			subregister.setOperatingLanguage(locale);
 			
 			for (UUID itemClassUuid : this.getContainedItemClasses()) {

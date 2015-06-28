@@ -246,13 +246,17 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 	 * @return the alternativeLanguages
 	 */
 	public Set<RE_Locale> getAlternativeLanguages() {
+		if (alternativeLanguages == null) {
+			alternativeLanguages = new HashSet<RE_Locale>();
+		}
+		
 		return alternativeLanguages;
 	}
 
 	/**
 	 * @param alternativeLanguages the alternativeLanguages to set
 	 */
-	public void setAlternativeLanguages(Set<RE_Locale> alternativeLanguages) {
+	protected void setAlternativeLanguages(Set<RE_Locale> alternativeLanguages) {
 		this.alternativeLanguages = alternativeLanguages;
 	}
 

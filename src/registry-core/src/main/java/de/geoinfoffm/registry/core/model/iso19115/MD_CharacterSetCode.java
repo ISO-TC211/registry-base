@@ -34,41 +34,59 @@
  */
 package de.geoinfoffm.registry.core.model.iso19115;
 
+import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
+
+import org.hibernate.envers.Audited;
+
+import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
+
 
 
 /**
  * 
  * @created 11-Sep-2013 09:14:07
  */
-public enum MD_CharacterSetCode {
+@XmlRootElement(name = "MD_CharacterSetCode", namespace = "http://www.isotc211.org/2005/gmd")
+@Audited @Embeddable 
+public class MD_CharacterSetCode extends CodeListValue  
+{
+//	ucs2,
+//	ucs4,
+//	utf7,
+//	utf8,
+//	utf16,
+//	_8859part1,
+//	_8859part2,
+//	_8859part3,
+//	_8859part4,
+//	_8859part5,
+//	_8859part6,
+//	_8859part7,
+//	_8859part8,
+//	_8859part9,
+//	_8859part10,
+//	_8859part11,
+//	_8859part13,
+//	_8859part14,
+//	_8859part15,
+//	_8859part16,
+//	jis,
+//	shiftJIS,
+//	eucJP,
+//	usAscii,
+//	ebcdic,
+//	eucKR,
+//	big5,
+//	GB2312;
+	
+	public static final MD_CharacterSetCode UTF8 = new MD_CharacterSetCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode", "utf8", "utf8");
 
-	ucs2,
-	ucs4,
-	utf7,
-	utf8,
-	utf16,
-	_8859part1,
-	_8859part2,
-	_8859part3,
-	_8859part4,
-	_8859part5,
-	_8859part6,
-	_8859part7,
-	_8859part8,
-	_8859part9,
-	_8859part10,
-	_8859part11,
-	_8859part13,
-	_8859part14,
-	_8859part15,
-	_8859part16,
-	jis,
-	shiftJIS,
-	eucJP,
-	usAscii,
-	ebcdic,
-	eucKR,
-	big5,
-	GB2312;
+	protected MD_CharacterSetCode() { }
+	
+	public MD_CharacterSetCode(String codeList, String codeListValue, String code) {
+		super(codeList, codeListValue, code, new QName("http://www.isotc211.org/2005/gmd", "MD_CharacterSetCode", "gmd")); 
+	}
 
 }//end MD_CharacterSetCode

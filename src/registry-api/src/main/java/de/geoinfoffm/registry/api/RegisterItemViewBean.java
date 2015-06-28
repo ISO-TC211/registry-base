@@ -34,8 +34,7 @@
  */
 package de.geoinfoffm.registry.api;
 
-import static de.geoinfoffm.registry.api.iso.IsoXml.*;
-import static de.geoinfoffm.registry.core.model.Proposal.*;
+import static de.geoinfoffm.registry.api.iso.IsoXmlFactory.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
