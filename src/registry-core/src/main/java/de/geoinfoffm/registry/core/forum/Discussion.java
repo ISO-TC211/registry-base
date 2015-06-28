@@ -53,12 +53,15 @@ import org.hibernate.envers.Audited;
 @Audited @Entity
 public abstract class Discussion extends de.geoinfoffm.registry.core.Entity
 {
-	@OneToMany(mappedBy = "discussion")
+	@OneToMany(mappedBy = "discussion", cascade = { CascadeType.ALL })
 	private List<Post> posts;
 	
 	public Discussion() { }
 
 	public List<Post> getPosts() {
+		if (posts == null) {
+			posts = new ArrayList<Post>();
+		}
 		return posts;
 	}
 
