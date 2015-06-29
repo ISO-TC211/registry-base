@@ -185,7 +185,7 @@ public class ProposalDtoFactory
 				ctor = proposalDtoClass.getDeclaredConstructor();
 			}
 			else {
-				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
+				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
 			}
 		}
 		catch (NoSuchMethodException ex) {
