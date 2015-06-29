@@ -46,19 +46,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
-
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
-import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -117,7 +115,7 @@ public class RegisterItemViewBean
 	private String justification;
 	private String registerManagerNotes;
 	private String controlBodyNotes;
-	private Map<String, String[]> proposedChange;
+	private Map<String, List<String>> proposedChange;
 	private Date proposalDate;
 	private Date dateSubmitted;
 	private RE_Disposition disposition;
@@ -289,7 +287,7 @@ public class RegisterItemViewBean
 		result.setStatus(itemStatus(this.getStatus()));
 		result.setUuid(this.uuid.toString());
 		
-		for (RE_AdditionInformation adnInfo : this.additionInformations) {
+		for (RE_AdditionInformation adnInfo : this.getAdditionInformations()) {
 			result.getAdditionInformation().add(additionInformation(adnInfo));
 		}
 		
@@ -878,14 +876,14 @@ public class RegisterItemViewBean
 	/**
 	 * @return the proposedChange
 	 */
-	public Map<String, String[]> getProposedChange() {
+	public Map<String, List<String>> getProposedChange() {
 		return proposedChange;
 	}
 
 	/**
 	 * @param proposedChange the proposedChange to set
 	 */
-	public void setProposedChange(Map<String, String[]> proposedChange) {
+	public void setProposedChange(Map<String, List<String>> proposedChange) {
 		this.proposedChange = proposedChange;
 	}
 

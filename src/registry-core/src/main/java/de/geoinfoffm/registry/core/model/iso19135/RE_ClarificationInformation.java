@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Access;
@@ -87,7 +88,7 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 	 * @param proposedChanges
 	 * @return
 	 */
-	public static String toJson(Map<String, String[]> proposedChanges) {
+	public static String toJson(Map<String, List<String>> proposedChanges) {
 		StringWriter proposedChangesWriter = new StringWriter();
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -101,10 +102,10 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 		return proposedChangesJson;
 	}
 	
-	public static Map<String, String[]> fromJson(String json) {
+	public static Map<String, List<String>> fromJson(String json) {
 		ObjectMapper jsonMapper = new ObjectMapper();
 		try {
-			Map<String, String[]> proposedChangesMap = jsonMapper.readValue(json, Map.class);
+			Map<String, List<String>> proposedChangesMap = jsonMapper.readValue(json, Map.class);
 			return proposedChangesMap;
 		}
 		catch (IOException e) {
@@ -122,6 +123,10 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 	 */
 	@Override
 	protected void onDispositionAccepted() {
+		applyProposedChanges();
+	}
+
+	public void applyProposedChanges() {
 		String proposedChangesJson = CharacterString.asString(this.getProposedChange());
 		ObjectMapper jsonMapper = new ObjectMapper();
 		try {
@@ -136,11 +141,11 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 				
 				Object newValue;
 				if (pd.getPropertyType().equals(CharacterString.class)) {
-					newValue = new CharacterString((String)proposedChanges.get(property));
+					newValue = new CharacterString((String)getSingleValue(proposedChanges, property));
 					pd.getWriteMethod().invoke(item, newValue);
 				}
 				else if (pd.getPropertyType().equals(String.class)) {
-					newValue = proposedChanges.get(property);
+					newValue = getSingleValue(proposedChanges, property);
 					pd.getWriteMethod().invoke(item, newValue);
 				}
 				else if (Collection.class.isAssignableFrom(pd.getPropertyType())) {
@@ -160,5 +165,23 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage(), e);
 		}
+	}
+
+	private Object getSingleValue(Map<String, Object> proposedChanges, String property) {
+		Object newValue;
+		newValue = proposedChanges.get(property);
+		if (newValue instanceof Collection) {
+			Collection collection = (Collection)newValue;
+			if (collection.size() > 1) {
+				throw new RuntimeException(String.format("Multiple values provided for single-valued property %s", property));
+			}
+			else if (collection.isEmpty()) {
+				newValue = null;
+			}
+			else {
+				newValue = collection.iterator().next();
+			}
+		}
+		return newValue;
 	}
 }//end RE_ClarificationInformation

@@ -69,7 +69,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
  */
 @Access(AccessType.FIELD)
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "_proposalType", discriminatorType = DiscriminatorType.STRING)
 @Audited @javax.persistence.Entity
 public abstract class Proposal extends Entity
 {

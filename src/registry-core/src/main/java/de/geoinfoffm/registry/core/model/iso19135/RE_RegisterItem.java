@@ -682,7 +682,7 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 		return new Retirement(retirementInformation);
 	}
 	
-	public Clarification proposeClarification(Map<String, String[]> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) {
+	public Clarification proposeClarification(Map<String, List<String>> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) {
 		RE_ClarificationInformation clarificationInformation = new RE_ClarificationInformation();
 		clarificationInformation.setItem(this);
 		clarificationInformation.setStatus(RE_DecisionStatus.PENDING);

@@ -295,7 +295,7 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 		if (this.containedItems == null) {
 			this.containedItems = new HashSet<RE_RegisterItem>();
 		}
-		return Collections.unmodifiableSet(containedItems);
+		return this.containedItems;
 	}
 	
 	public Set<RE_RegisterItem> getContainedItems(RE_ItemStatus status) {

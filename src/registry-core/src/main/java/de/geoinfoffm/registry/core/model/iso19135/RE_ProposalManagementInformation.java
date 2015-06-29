@@ -81,7 +81,6 @@ import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Access(AccessType.FIELD)
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "TYPE", discriminatorType = DiscriminatorType.STRING)
 @Audited @javax.persistence.Entity
 public abstract class RE_ProposalManagementInformation extends Entity
 {
@@ -208,7 +207,7 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	/**
 	 * @param dateDisposed the dateDisposed to set
 	 */
-	protected void setDateDisposed(Date dateDisposed) {
+	public void setDateDisposed(Date dateDisposed) {
 		this.dateDisposed = dateDisposed;
 	}
 

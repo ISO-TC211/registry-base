@@ -588,8 +588,8 @@ public class RegisterItemProposalDTO
 		this.originalValues.put(propertyName, value);
 	}
 	
-	public Map<String, String[]> calculateProposedChanges(RE_RegisterItem original) {
-		HashMap<String, String[]> result = new HashMap<String, String[]>();
+	public Map<String, List<String>> calculateProposedChanges(RE_RegisterItem original) {
+		HashMap<String, List<String>> result = new HashMap<String, List<String>>();
 		
 		PropertyDescriptor[] originalProperties = BeanUtils.getPropertyDescriptors(original.getClass());
 		for (PropertyDescriptor originalProperty : originalProperties) {
@@ -610,14 +610,18 @@ public class RegisterItemProposalDTO
 
 					if (!CollectionUtils.isEmpty(originalCollection)) {
 						if (!originalCollection.equals(newCollection)) {
-							result.put(originalProperty.getName(), (String[])newCollection.toArray());
+							List<String> list = new ArrayList<String>();
+							list.addAll(newCollection);
+							result.put(originalProperty.getName(), list);
 							continue;
 						}
 					}
 					
 					if (!CollectionUtils.isEmpty(newCollection)) {
 						if (!newCollection.equals(originalCollection)) {
-							result.put(originalProperty.getName(), (String[])newCollection.toArray(new String[] { }));
+							List<String> list = new ArrayList<String>();
+							list.addAll(newCollection);
+							result.put(originalProperty.getName(), list);
 						}
 					}
 				}
@@ -655,12 +659,16 @@ public class RegisterItemProposalDTO
 			
 			if (originalValue == null) {
 				if (!StringUtils.isEmpty(newValue)) {
-					result.put(originalProperty.getName(), new String[] { newValue });					
+					List<String> list = new ArrayList<String>();
+					list.add(newValue);
+					result.put(originalProperty.getName(), list);					
 				}
 			}
 			else {
 				if (!originalValue.equals(newValue)) {
-					result.put(originalProperty.getName(), new String[] { newValue });
+					List<String> list = new ArrayList<String>();
+					list.add(newValue);
+					result.put(originalProperty.getName(), list);
 				}
 			}
 			
