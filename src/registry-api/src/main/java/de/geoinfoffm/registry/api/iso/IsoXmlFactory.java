@@ -510,6 +510,14 @@ public class IsoXmlFactory
 			return result;
 		}
 		
+		RE_RegisterItem_Type itemType = registerItem0(item);
+
+		JAXBElement<RE_RegisterItem_Type> jaxbElement = grgObjectFactory.createRE_RegisterItem(itemType);
+		result.setRE_RegisterItem(jaxbElement);
+		return result;
+	}
+
+	public RE_RegisterItem_Type registerItem0(RE_RegisterItem item) {
 		RegisterItemViewBean viewBean = viewBeanFactory.getViewBean(item);
 		RE_RegisterItem_Type itemType = viewBean.toXmlType(dtoFactory);
 		
@@ -558,10 +566,7 @@ public class IsoXmlFactory
 		for (RE_RegisterItem successor : item.getSuccessors()) {
 			itemType.getSuccessor().add(registerItem(successor.getUuid()));
 		}
-
-		JAXBElement<RE_RegisterItem_Type> jaxbElement = grgObjectFactory.createRE_RegisterItem(itemType);
-		result.setRE_RegisterItem(jaxbElement);
-		return result;
+		return itemType;
 	}
 
 	public static URL_PropertyType url(String url) {
