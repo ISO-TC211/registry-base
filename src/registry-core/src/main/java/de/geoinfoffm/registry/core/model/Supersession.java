@@ -47,7 +47,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.envers.Audited;
@@ -72,7 +72,7 @@ public class Supersession extends ProposalGroup
 	@JoinTable(name = "Supersession_SupersedingItems", joinColumns = @JoinColumn(name = "supersessionId"))
 	private List<RE_RegisterItem> supersedingItems;
 	
-	@OneToOne
+	@ManyToOne
 	private RE_Register targetRegister;
 	
 	@NotNull
