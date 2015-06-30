@@ -2,11 +2,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.geoinfoffm.registry</groupId>
 	<artifactId>registry-parent</artifactId>
-	<version>2.1-SNAPSHOT</version>
+	<version>2.1</version>
 	<packaging>pom</packaging>
 	<properties>
 		<java.version>1.7</java.version>
-		<registry.version>2.1-SNAPSHOT</registry.version>
 		<org.springframework-version>4.1.6.RELEASE</org.springframework-version>
 		<org.springframework.security-version>3.2.7.RELEASE</org.springframework.security-version>
 		<org.springframework.data-version>1.7.2.RELEASE</org.springframework.data-version>
@@ -27,22 +26,22 @@
 			<dependency>
 				<groupId>de.geoinfoffm.registry</groupId>
 				<artifactId>registry-core</artifactId>
-				<version>${registry.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>de.geoinfoffm.registry</groupId>
 				<artifactId>registry-persistence</artifactId>
-				<version>${registry.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>de.geoinfoffm.registry</groupId>
 				<artifactId>registry-api</artifactId>
-				<version>${registry.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>de.geoinfoffm.registry</groupId>
 				<artifactId>registry-client-base</artifactId>
-				<version>${registry.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 	        <dependency>
 	            <groupId>org.springframework</groupId>
