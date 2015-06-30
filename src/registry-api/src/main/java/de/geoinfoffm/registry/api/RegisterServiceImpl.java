@@ -46,6 +46,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +88,9 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	
 	@Autowired
 	private RoleService roleService;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	private Map<UUID, String> registerNamesCache;
 	
@@ -147,12 +153,14 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 		CI_ResponsibleParty contact = new CI_ResponsibleParty(owner.getName(), registerOwner.getName(), "Register owner", CI_RoleCode.OWNER);
 		owner.setContact(contact);
 		result.setOwner(owner);
+		entityManager.persist(owner);
 		
 		RE_RegisterManager manager = new RE_RegisterManager();
 		manager.setName(registerManager.getName());
 		CI_ResponsibleParty managerContact = new CI_ResponsibleParty(manager.getName(), registerManager.getName(), "Register manager", CI_RoleCode.CUSTODIAN);
 		manager.setContact(managerContact);
 		result.setManager(manager);
+		entityManager.persist(manager);
 		
 		if (setter != null) {
 			setter.run(result);
