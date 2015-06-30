@@ -1,5 +1,36 @@
 /**
- * 
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
  */
 package de.geoinfoffm.registry.api;
 
@@ -25,6 +56,8 @@ import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
@@ -35,16 +68,16 @@ import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.soap.Addition_Type;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
 public class RegisterItemProposalDTO
 {	
 	// Used to reference existing items
 	private UUID referencedItemUuid;
+	private UUID parentItemUuid;
 	
 	private UUID itemUuid;
 	private UUID proposalUuid;
@@ -60,6 +93,8 @@ public class RegisterItemProposalDTO
 	private String controlBodyNotes;
 	private ProposalType proposalType;
 	
+	private boolean markedForDeletion;
+	
 	private final Map<String, String[]> originalValues = new HashMap<String, String[]>();
 	
 	private final Set<UUID> supersededItems = new HashSet<UUID>();
@@ -67,6 +102,7 @@ public class RegisterItemProposalDTO
 	private final Set<UUID> existingSupersedingItems = new HashSet<UUID>();
 	
 //	private final List<RegisterItemProposalDTO> dependentItems = new ArrayList<RegisterItemProposalDTO>();
+	private final Set<RegisterItemProposalDTO> dependentProposals = new HashSet<>();
 	
 	public RegisterItemProposalDTO() {
 		itemUuid = UUID.randomUUID();
@@ -118,6 +154,10 @@ public class RegisterItemProposalDTO
 		initializeFromAdditionType(proposal);
 	}
 	
+	public RegisterItemProposalDTO(AbstractRegisterItemProposal_Type itemDetails) {
+		initializeFromItemDetails(itemDetails);
+	}
+	
 	protected void initializeFromItem(RE_RegisterItem_Type proposedItem) {
 		if (proposedItem.getItemClass() == null) {
 			throw new IllegalArgumentException("Proposed item must reference an item class");
@@ -141,12 +181,32 @@ public class RegisterItemProposalDTO
 			throw new IllegalArgumentException("Proposed item must reference an item class or contain an item class description");
 		}
 	}
-	
+
+	protected void initializeFromItemDetails(AbstractRegisterItemProposal_Type itemDetails) {
+		if (itemDetails.getItemClassUuid() == null) {
+			throw new IllegalArgumentException("Proposed item must reference an item class");
+		}
+
+		this.setName(itemDetails.getName());
+		this.setDefinition(itemDetails.getDefinition());
+		if (itemDetails.getDescription() != null) {
+			this.setDescription(itemDetails.getDescription());
+		}
+		
+		if (!StringUtils.isEmpty(itemDetails.getItemClassUuid())) {
+			// Item class is referenced by uuid
+			this.setItemClassUuid(UUID.fromString(itemDetails.getItemClassUuid()));
+		}
+		else {
+			throw new IllegalArgumentException("Proposed item must reference an item class or contain an item class description");
+		}
+	}
+
 	protected void initializeFromAdditionType(Addition_Type addition) {
 		this.setProposalType(ProposalType.ADDITION);
 
-		RE_RegisterItem_Type proposedItem = addition.getProposedItem().getRE_RegisterItem().getValue();
-		initializeFromItem(proposedItem);
+		AbstractRegisterItemProposal_Type itemDetails = addition.getItemDetails().getAbstractRegisterItemProposal().getValue();
+		initializeFromItemDetails(itemDetails);
 
 		this.setTargetRegisterUuid(UUID.fromString(addition.getTargetRegisterUuid()));
 		this.setJustification(addition.getJustification());
@@ -178,7 +238,12 @@ public class RegisterItemProposalDTO
 //		initializeFromItem(retirement.getRetiredItemUuid());
 //	}
 	
-	public RegisterItemProposalDTO(Proposal proposal) {
+	public RegisterItemProposalDTO(Proposal proposal, ProposalDtoFactory factory) {
+		this.proposalUuid = proposal.getUuid();
+		for (Proposal dependentProposal : proposal.getDependentProposals()) {
+			this.getDependentProposals().add(factory.getProposalDto(dependentProposal));
+		}
+		
 		if (proposal instanceof SimpleProposal) {
 			initializeFromSimpleProposal((SimpleProposal)proposal);
 		}
@@ -256,6 +321,9 @@ public class RegisterItemProposalDTO
 	public void loadAdditionalValues(RE_RegisterItem item) {
 		
 	}
+	
+	public void loadDependentProposalDetails(Collection<RegisterItemProposalDTO> dependentProposals) {
+	}
 
 	public UUID getReferencedItemUuid() {
 		return referencedItemUuid;
@@ -265,6 +333,14 @@ public class RegisterItemProposalDTO
 		this.referencedItemUuid = referencedItemUuid;
 	}
 	
+	public UUID getParentItemUuid() {
+		return parentItemUuid;
+	}
+
+	public void setParentItemUuid(UUID parentItemUuid) {
+		this.parentItemUuid = parentItemUuid;
+	}
+
 	public UUID getUuid() {
 		return itemUuid;
 	}
@@ -445,6 +521,14 @@ public class RegisterItemProposalDTO
 		this.proposalType = proposalType;
 	}
 	
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
+	}
+
 	/**
 	 * @return the proposedChanges
 	 */
@@ -630,8 +714,15 @@ public class RegisterItemProposalDTO
 		newSupersedingItems.remove(itemUuid);
 	}
 
-	public List<RegisterItemProposalDTO> getDependentProposals() {
-//		return dependentItems;
+	public Set<RegisterItemProposalDTO> getDependentProposals() {
+		return dependentProposals;
+	}
+
+	public List<RegisterItemProposalDTO> getAggregateDependencies() {
+		return Arrays.asList();
+	}
+	
+	public List<RegisterItemProposalDTO> getCompositeDependencies() {
 		return Arrays.asList();
 	}
 	

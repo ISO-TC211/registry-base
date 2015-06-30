@@ -1,7 +1,44 @@
+/**
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package de.geoinfoffm.registry.api;
 
+import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 import static org.springframework.security.acls.domain.BasePermission.*;
 
+import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,22 +53,27 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.UnauthorizedException;
+import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.DelegationRepository;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalRepository;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
-import de.geoinfoffm.registry.persistence.ProposalRepository;
+import de.geoinfoffm.registry.core.security.RegistryUserUtils;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
@@ -51,13 +93,19 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private OrganizationRepository orgRepository;
 
 	@Autowired
-	private OrganizationService orgService;
+	protected OrganizationService orgService;
 
+	@Autowired
+	protected RegisterService registerService;
+	
 	@Autowired
 	private RegistryUserRepository userRepository;
 
 	@Autowired
 	private DelegationRepository delegationRepository;
+	
+	@Autowired
+	private ControlBodyDiscoveryStrategy cbStrategy;
 
 	@Autowired
 	private ProposalRepository proposalRepository;
@@ -92,7 +140,19 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return (RegistryUser)principal;
 		}
 		else {
-			throw new RuntimeException("Current principal is not a registry user");
+			String mailAddress;
+			if (principal instanceof Principal) {
+				Principal p = (Principal)principal;
+				mailAddress = p.getName();
+			}
+			else {
+				mailAddress = principal.toString();
+			}
+			RegistryUser user = userRepository.findByEmailAddressIgnoreCase(mailAddress);
+			if (user == null) {
+				throw new RuntimeException("Current principal is not a registry user");
+			}
+			return user;
 		}
 	}
 	
@@ -548,14 +608,12 @@ public class RegistrySecurityImpl implements RegistrySecurity
 
 	@Override
 	public String getRegisterManagerTodoCount() {
-		RegistryUser currentUser = this.getCurrentUser();
-		
 		if (!hasAnyRoleWith(MANAGER_ROLE_PREFIX)) {
 			return null;
 		}
 		else {
-			RE_SubmittingOrganization sponsor = currentUser.getOrganization().getSubmittingOrganization();
-			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, Proposal.STATUS_UNDER_REVIEW);
+			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
+			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(sponsor, STATUS_UNDER_REVIEW);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
@@ -571,7 +629,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			List<Proposal> proposals = proposalRepository.findByStatusAndGroupIsNull(Proposal.STATUS_IN_APPROVAL_PROCESS);
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(STATUS_IN_APPROVAL_PROCESS);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
@@ -579,6 +637,98 @@ public class RegistrySecurityImpl implements RegistrySecurity
 				return null;
 			}
 		}
+	}
+
+	@Override
+	public boolean isControlBody(UUID proposalUuid) {
+		Proposal proposal = proposalRepository.findOne(proposalUuid);
+		Assert.notNull(proposal);
+		
+		for (Authorization auth : cbStrategy.findControlBodyAuthorizations(proposal)) {
+			if (hasRole(auth.getRole().getName())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void assertIsTrue(boolean expression) throws UnauthorizedException {
+		if (!expression) {
+			throw new UnauthorizedException("You are not authorized to access this resource.");
+		}
+	}
+	
+	@Override
+	public boolean maySubmitTo(RE_Register register) {
+		return this.maySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public boolean maySubmitToAll(Collection<RE_Register> registers) {
+		if (registers.isEmpty()) {
+			return false;
+		}
+		
+		for (RE_Register register : registers) {
+			if (!maySubmitTo(register)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	@Override
+	public boolean maySubmitTo(UUID targetRegisterUuid) {
+		return hasEntityRelatedRole(SUBMITTER_ROLE_PREFIX, targetRegisterUuid);
+	}
+
+	@Override
+	public void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException {
+		assertIsTrue(maySubmitTo(targetRegisterUuid));
+	}
+
+	@Override
+	public void assertMaySubmitTo(RE_Register register) throws UnauthorizedException {
+		this.assertMaySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public void assertMaySubmitToAll(RE_Register... registers) throws UnauthorizedException {
+		for (RE_Register register : registers) {
+			this.assertMaySubmitTo(register);
+		}
+	}
+
+	@Override
+	public boolean isSubmitter() {
+		return hasRoleWith(SUBMITTER_ROLE_PREFIX);
+	}
+
+	@Override
+	public void assertIsSubmitter() throws UnauthorizedException {
+		if (!isSubmitter()) {
+			throw new UnauthorizedException("You are not authorized to access this resource.");
+		}
+	}
+
+	@Override
+	public boolean mayAppeal(Proposal proposal) {
+		Organization suborg = orgRepository.findBySubmittingOrganization(proposal.getSponsor());
+		for (RE_Register targetRegister : proposal.getAffectedRegisters()) {
+			if (!mayActOnBehalf(suborg, registerService.getSubmitterRole(targetRegister))) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	@Override
+	public void assertMayAppeal(Proposal proposal) throws UnauthorizedException {
+		assertIsTrue(mayAppeal(proposal));
 	}
 
 }

@@ -1,3 +1,37 @@
+/**
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package de.geoinfoffm.registry.api;
 
 import static de.geoinfoffm.registry.core.security.RegistrySecurity.*;
@@ -11,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.jws.WebService;
-
 import org.isotc211.iso19135.RE_SubmittingOrganization_Type;
 import org.isotc211.iso19139.metadata.CI_ResponsibleParty_Type;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +52,10 @@ import org.springframework.security.acls.domain.GrantedAuthoritySid;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.security.acls.model.Permission;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.AuthorizationRepository;
@@ -37,24 +69,21 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
-import de.geoinfoffm.registry.core.model.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.model.iso19115.CI_ResponsibleParty;
 import de.geoinfoffm.registry.core.model.iso19115.CI_RoleCode;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistryPermission;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
-import de.geoinfoffm.registry.soap.CreateOrganizationRequest;
 
 /**
  * Service operations for {@link Organization}s in the GDI-DE Registry.
  * 
  * @author Florian Esser
  */
-@Service
-@WebService(endpointInterface = "de.bund.bkg.gdide.registry.ws.Organization")
 @ItemClassService("Organization")
 public class OrganizationServiceImpl 
 extends AbstractApplicationService<Organization, OrganizationRepository>
@@ -94,7 +123,7 @@ implements OrganizationService
 	private AuthorizationRepository authRepository;
 	
 	@Autowired
-	private DelegationRepository delegationRepository;
+	protected DelegationRepository delegationRepository;
 	
 	@Autowired
 	private RoleService roleService;
@@ -147,19 +176,30 @@ implements OrganizationService
 			suborg = suborgRepository.findOne(UUID.fromString(organization.getSubmittingOrganization().getUuidref()));
 		}
 		
-		Organization org = new Organization(organization.getName(), suborg);
+		Organization org = new Organization(organization.getName(), organization.getShortName(), suborg);
 		
 		org = repository().save(org);
 		
-		// Create point of contact role for new organization
-		Role pocRole = this.createOrganizationRelatedRole(POINTOFCONTACT_ROLE_PREFIX + org.getUuid().toString(), org);
-		repository().appendAces(org, Arrays.asList(READ, WRITE, ADMINISTRATION), new GrantedAuthoritySid(pocRole.getName()), true);
-
-		// Create membership role for new organization
-		Role memberRole = this.createOrganizationRelatedRole(ORGANIZATIONMEMBER_ROLE_PREFIX + org.getUuid().toString(), org);
-		repository().appendAce(org, READ, new GrantedAuthoritySid(pocRole.getName()), true);
+		createPointOfContactRole(org);
+		createMembershipRole(org);
 
 		return org;
+	}
+
+	private OrganizationRelatedRole createPointOfContactRole(Organization organization) {
+		// Create point of contact role for new organization
+		OrganizationRelatedRole pocRole = this.createOrganizationRelatedRole(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString(), organization);
+		repository().appendAces(organization, Arrays.asList(READ, WRITE, ADMINISTRATION), new GrantedAuthoritySid(pocRole.getName()), true);
+		
+		return pocRole;
+	}
+
+	private OrganizationRelatedRole createMembershipRole(Organization organization) {
+		// Create membership role for new organization
+		OrganizationRelatedRole membershipRole = this.createOrganizationRelatedRole(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString(), organization);
+		repository().appendAce(organization, READ, new GrantedAuthoritySid(membershipRole.getName()), true);
+		
+		return membershipRole;
 	}
 	
 	@Override
@@ -174,7 +214,9 @@ implements OrganizationService
 			throw new NullPointerException("Cannot update non-existent organization");
 		}
 		
-		security.assertMayWrite(current);
+		if (!security.isAdmin()) {
+			security.assertIsLoggedIn();
+		}
 		
 		if (org.getName() != null && !org.getName().isEmpty()) {
 			current.setName(org.getName());
@@ -232,6 +274,19 @@ implements OrganizationService
 	}
 
 	@Override
+	public Map<UUID, Object[]> getDescriptions() {
+		Map<UUID, Object[]> result = new HashMap<UUID, Object[]>();
+		
+		List<Object[]> objects = repository().getOrganizationNames();
+		
+		for (Object[] object : objects) {
+			result.put((UUID)object[0], object);
+		}
+		
+		return result;
+	}
+
+	@Override
 	public Delegation delegate(RegistryUser user, Role role, Organization organization) throws UnauthorizedException {
 		if (!security.isAdmin() && !security.mayActOnBehalf(organization, this.getPointOfContactRole(organization))) {
 			throw new UnauthorizedException(String.format("You are not allowed to delegate role '%s' on behalf of organization '%s'", role.getName(), organization.getName()));
@@ -252,6 +307,10 @@ implements OrganizationService
 
 	@Override
 	public Delegation getOrCreateDelegationRequest(RegistryUser user, Role role, Organization organization) throws UnauthorizedException {
+		Assert.notNull(user, "User must not be null");
+		Assert.notNull(role, "Role must not be null");
+		Assert.notNull(organization, "Organization must not be null");
+		
 		Delegation delegation = findDelegation(user, role, organization); 
 		if (delegation == null) {
 			delegation = new Delegation(user, role, organization);
@@ -356,13 +415,23 @@ implements OrganizationService
 	@Override
 	public OrganizationRelatedRole getPointOfContactRole(Organization organization) {
 		Assert.notNull(organization, "Organization must be provided");
-		return (OrganizationRelatedRole)roleService.findByName(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString());
+		OrganizationRelatedRole pocRole = (OrganizationRelatedRole)roleService.findByName(POINTOFCONTACT_ROLE_PREFIX + organization.getUuid().toString());
+		if (pocRole == null) {
+			pocRole = createPointOfContactRole(organization);
+		}
+		
+		return pocRole;
 	}
 
 	@Override
 	public OrganizationRelatedRole getMembershipRole(Organization organization) {
 		Assert.notNull(organization, "Organization must be provided");
-		return (OrganizationRelatedRole)roleService.findByName(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString());
+		OrganizationRelatedRole membershipRole = (OrganizationRelatedRole)roleService.findByName(ORGANIZATIONMEMBER_ROLE_PREFIX + organization.getUuid().toString());
+		if (membershipRole == null) {
+			membershipRole = createMembershipRole(organization);
+		}
+		
+		return membershipRole;
 	}
 
 	@Override

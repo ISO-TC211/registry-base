@@ -1,14 +1,47 @@
 /**
- * 
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
  */
 package de.geoinfoffm.registry.api;
 
 import java.beans.PropertyDescriptor;
+import java.math.BigInteger;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +63,7 @@ import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  * 
  */
 @Component
@@ -45,6 +78,9 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 	
 	@Autowired
 	private RegisterRepository registerRepository;
+	
+	@Autowired
+	private RegisterItemService itemService;
 
 	protected ApplicationContext context;
 	
@@ -78,11 +114,22 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 					result.setItemClass(itemClass);
 					result.setName(proposal.getName());
 					result.setDefinition(proposal.getDefinition());
-//					result.addAdditionInformation(additionInformation);
+					result.setDescription(proposal.getDescription());
 					result.setStatus(RE_ItemStatus.NOT_VALID);
 					result.setRegister(targetRegister);
 					
 					proposal.setAdditionalValues(result, entityManager);
+					
+					// The following call could lead to the entity being saved prematurely.
+					// To prevent a ConstraintException, set a random negative value here.
+					result.setItemIdentifier(BigInteger.valueOf(-RandomUtils.nextInt()));
+					
+					BigInteger maxIdentifier = itemService.findMaxItemIdentifier();
+					if (maxIdentifier == null) {
+						maxIdentifier = BigInteger.ZERO;
+					}
+					result.setItemIdentifier(maxIdentifier.add(BigInteger.ONE));
+
 //				}
 				
 				return result;

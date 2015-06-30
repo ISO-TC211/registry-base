@@ -1,11 +1,44 @@
 /**
- * 
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
  */
 package de.geoinfoffm.registry.core.model;
 
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -15,6 +48,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
 
@@ -25,18 +59,13 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 
 /**
- * @author Florian.Esser
+ * @author Florian Esser
  *
  */
+@Access(AccessType.FIELD)
 @Audited @javax.persistence.Entity
 public class Appeal extends Entity
 {
-	public enum AppealDisposition {
-		PENDING,
-		ACCEPTED,
-		NOT_ACCEPTED
-	}
-	
 	@OneToOne
 	private Proposal appealedProposal;
 	
@@ -44,20 +73,15 @@ public class Appeal extends Entity
 	@NotNull
 	private Date appealDate;
 	
-	@Embedded
-	@AttributeOverride(name = "value", column = @Column(name = "situation"))
 	@NotNull
-	private CharacterString situation;
+	@Column(columnDefinition = "text")
+	private String situation;
 	
-	@Embedded
-	@AttributeOverride(name = "value", column = @Column(name = "justification"))
-	@NotNull
-	private CharacterString justification;
+	@Column(columnDefinition = "text")
+	private String justification;
 	
-	@Embedded
-	@AttributeOverride(name = "value", column = @Column(name = "impact"))
-	@NotNull
-	private CharacterString impact;
+	@Column(columnDefinition = "text")
+	private String impact;
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
@@ -72,9 +96,9 @@ public class Appeal extends Entity
 	
 	public Appeal(Proposal appealedProposal, String justification, String situation, String impact) {
 		this.setAppealDate(Calendar.getInstance().getTime());
-		this.setJustification(new CharacterString(justification));
-		this.setSituation(new CharacterString(situation));
-		this.setImpact(new CharacterString(impact));
+		this.setJustification(justification);
+		this.setSituation(situation);
+		this.setImpact(impact);
 		this.setDisposition(AppealDisposition.PENDING);
 		this.setAppealedProposal(appealedProposal);						
 	}
@@ -82,13 +106,11 @@ public class Appeal extends Entity
 	public void accept(Date dispositionDate) throws IllegalOperationException {
 		this.setDisposition(AppealDisposition.ACCEPTED);
 		this.setDispositionDate(dispositionDate);
-		appealedProposal.accept();
 	}
 	
 	public void reject(Date dispositionDate) throws IllegalOperationException {
 		this.setDisposition(AppealDisposition.NOT_ACCEPTED);
 		this.setDispositionDate(dispositionDate);
-		appealedProposal.conclude();	
 	}
 
 	/**
@@ -122,42 +144,42 @@ public class Appeal extends Entity
 	/**
 	 * @return the situation
 	 */
-	public CharacterString getSituation() {
+	public String getSituation() {
 		return situation;
 	}
 
 	/**
 	 * @param situation the situation to set
 	 */
-	public void setSituation(CharacterString situation) {
+	public void setSituation(String situation) {
 		this.situation = situation;
 	}
 
 	/**
 	 * @return the justification
 	 */
-	public CharacterString getJustification() {
+	public String getJustification() {
 		return justification;
 	}
 
 	/**
 	 * @param justification the justification to set
 	 */
-	public void setJustification(CharacterString justification) {
+	public void setJustification(String justification) {
 		this.justification = justification;
 	}
 
 	/**
 	 * @return the impact
 	 */
-	public CharacterString getImpact() {
+	public String getImpact() {
 		return impact;
 	}
 
 	/**
 	 * @param impact the impact to set
 	 */
-	public void setImpact(CharacterString impact) {
+	public void setImpact(String impact) {
 		this.impact = impact;
 	}
 

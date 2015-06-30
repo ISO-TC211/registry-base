@@ -1,10 +1,43 @@
 /**
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
  * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+ 
+ *     * Redistributions in binary form must reproduce the above 
+ *     	 copyright notice, this list of conditions and the following 
+ *       disclaimer in the documentation and/or other materials 
+ *       provided with the distribution.
+ 
+ *     * The names "German Federal Agency for Cartography and Geodesy", 
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE", 
+ *       "GDI-DE Registry" and the names of other contributors must not 
+ *       be used to endorse or promote products derived from this 
+ *       software without specific prior written permission.
+ *       
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN 
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT, 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+ * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.client.web;
+package de.geoinfoffm.registry.api;
 
+import static de.geoinfoffm.registry.api.iso.IsoXml.*;
 import static de.geoinfoffm.registry.core.model.Proposal.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Collections;
@@ -20,14 +53,20 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBElement;
+
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
+import org.isotc211.iso19135.RE_RegisterItem_Type;
+import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.geoinfoffm.registry.core.model.Appeal;
-import de.geoinfoffm.registry.core.model.Appeal.AppealDisposition;
+import de.geoinfoffm.registry.core.model.AppealDisposition;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalChangeRequest;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -42,13 +81,18 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
- * @author Florian.Esser
+ * The class RegisterItemViewBean.
  *
+ * @author Florian Esser
  */
 public class RegisterItemViewBean
 {	
+	protected static final org.isotc211.iso19139.common.ObjectFactory gcoObjectFactory = new org.isotc211.iso19139.common.ObjectFactory();
+	protected static final org.isotc211.iso19135.ObjectFactory grgObjectFactory = new org.isotc211.iso19135.ObjectFactory();
+
 	private UUID uuid;
 	private Class<?> itemClass;
 	
@@ -68,6 +112,8 @@ public class RegisterItemViewBean
 
 	private boolean isProposal;
 	private boolean isProposalGroup;
+	private boolean hasParent;
+	private boolean hasDependentProposals;
 	private ProposalType proposalType;
 	private String justification;
 	private String registerManagerNotes;
@@ -77,44 +123,62 @@ public class RegisterItemViewBean
 	private Date dateSubmitted;
 	private RE_Disposition disposition;
 	private RE_DecisionStatus decisionStatus;
+	private Date dateAccepted;
+	private Date dateAmended;
 	private boolean isAppealed;
 	
 	private UUID proposalUuid;
 	private Class<?> proposalClass;
 	private String proposalStatus;
 	
+	private ProposalChangeRequest pendingChangeRequest;
+	
 	private AppealDisposition appealDisposition;
 	
 	private UUID sponsorUuid;
 	private String sponsorName;
 	
-	private final Set<RegisterItemViewBean> supersededItems = new HashSet<RegisterItemViewBean>(); 
+	private ProposalWorkflowManager workflowManager;
+	
+	@JsonIgnore
+	private final Set<RegisterItemViewBean> supersededItems = new HashSet<RegisterItemViewBean>();
+	@JsonIgnore
 	private final Set<RegisterItemViewBean> supersedingItems = new HashSet<RegisterItemViewBean>(); 
 	
 	private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 	
+	@JsonIgnore
 	private final Set<RE_AdditionInformation> additionInformations = new LinkedHashSet<RE_AdditionInformation>();
+	@JsonIgnore
 	private final Set<RE_AmendmentInformation> amendmentInformations = new LinkedHashSet<RE_AmendmentInformation>();
+	@JsonIgnore
 	private final Set<RE_ClarificationInformation> clarificationInformations = new LinkedHashSet<RE_ClarificationInformation>();
 
 	private final Map<UUID, String> predecessors = new LinkedHashMap<UUID, String>(); 
 	private final Map<UUID, String> successors = new LinkedHashMap<UUID, String>(); 
 	
-	private UUID proposalGroupUuid;
+	private UUID parentProposalUuid;
 	private final Set<RegisterItemViewBean> memberProposals = new HashSet<RegisterItemViewBean>();
 
-	public RegisterItemViewBean(RE_RegisterItem item) {
+	protected RegisterItemViewBean(RE_RegisterItem item) {
 		this(item, true);
 	}
 
-	public RegisterItemViewBean(RE_RegisterItem item, boolean loadDetails) {
+	protected RegisterItemViewBean(RE_RegisterItem item, boolean loadDetails) {
 		initializeFromItem(item, loadDetails);
 	}
 
-	public RegisterItemViewBean(Proposal proposal) {
-		this.setEditable(proposal.isEditable());
-		if (proposal.hasGroup()) {
-			this.setProposalGroupUuid(proposal.getGroup().getUuid());
+	protected RegisterItemViewBean(Proposal proposal) {
+		if (proposal.hasParent()) {
+			this.setParentProposalUuid(proposal.getParent().getUuid());
+			this.hasParent = true;
+		}
+		
+		if (proposal.hasDependentProposals()) {
+			for (Proposal dependentProposal : proposal.getDependentProposals()) {
+				this.getMemberProposals().add(new RegisterItemViewBean(dependentProposal));
+			}
+			this.hasDependentProposals = true;
 		}
 		
 		this.setDateSubmitted(proposal.getDateSubmitted());
@@ -130,23 +194,132 @@ public class RegisterItemViewBean
 		}
 	}
 
-	public RegisterItemViewBean(SimpleProposal proposal) {
+	protected RegisterItemViewBean(SimpleProposal proposal) {
 		initializeFromSimpleProposal(proposal);
 	}
 	
-	public RegisterItemViewBean(Appeal appeal) {
+	protected RegisterItemViewBean(Appeal appeal) {
 		initializeFromAppeal(appeal);
 	}
 	
-	public RegisterItemViewBean(Supersession supersession) {
+	protected RegisterItemViewBean(Supersession supersession) {
 		initializeFromSupersession(supersession);
 	}
+
+	public static RegisterItemViewBean forAppeal(Appeal appeal, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(appeal);
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
 	
+	public static RegisterItemViewBean forItem(RE_RegisterItem item, boolean loadDetails, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(item, loadDetails);
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
+	
+	public static <T extends RegisterItemViewBean> T forItem(RE_RegisterItem item, boolean loadDetails, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
+		T result;
+		try {
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { item, loadDetails }, new Class<?>[] { RE_RegisterItem.class, Boolean.class });
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+		result.setWorkflowManager(workflowManager);
+		
+		return result;
+	}
+
+	
+	public static RegisterItemViewBean forProposal(Proposal proposal, ProposalWorkflowManager workflowManager) {
+		RegisterItemViewBean result = new RegisterItemViewBean(proposal);
+		result.setWorkflowManager(workflowManager);
+		result.setEditable(workflowManager.isEditable(proposal));
+		
+		return result;
+	}
+
+	public static <T extends RegisterItemViewBean> T forProposal(Proposal proposal, Class<T> viewBeanType, ProposalWorkflowManager workflowManager) {
+		T result;
+		try {
+			result = ConstructorUtils.invokeConstructor(viewBeanType, new Object[] { proposal }, new Class<?>[] { Proposal.class });
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+		result.setWorkflowManager(workflowManager);
+		result.setEditable(workflowManager.isEditable(proposal));
+		
+		return result;
+	}
+
+	protected void setWorkflowManager(ProposalWorkflowManager workflowManager) {
+		this.workflowManager = workflowManager;
+	}
+
 	/**
 	 * May be overwritten by extending classes
 	 */
-	protected void addAdditionalProperties(RE_RegisterItem item) {
+	protected void addAdditionalProperties(RE_RegisterItem item, boolean loadDetails) {
 		// does nothing here
+	}
+	
+	public RE_RegisterItem_Type toXmlType(ProposalDtoFactory dtoFactory) {
+		RE_RegisterItem_Type result = this.createXmlType(dtoFactory);
+		this.setXmlValues(result);
+		
+		return result;
+	}
+	
+	protected RE_RegisterItem_Type createXmlType(ProposalDtoFactory proposalDtoFactory) {
+		return proposalDtoFactory.getXmlType(this.getItemClassName());
+	}
+	
+	public void setXmlValues(RE_RegisterItem_Type result) {
+		result.setDateAccepted(date(this.getDateAccepted()));
+		result.setDateAmended(date(this.getDateAmended()));
+		result.setDefinition(characterString(this.getDefinition()));
+		result.setDescription(characterString(this.getDescription()));
+		result.setItemClass(itemClass(this.getItemClassUuid()));
+		result.setItemIdentifier(integer(this.getItemIdentifier()));
+		result.setName(characterString(this.getName()));
+		// result.setSpecificationSource(...);  // TODO
+		result.setStatus(itemStatus(this.getStatus()));
+		result.setUuid(this.uuid.toString());
+		
+		for (RE_AdditionInformation adnInfo : this.additionInformations) {
+			result.getAdditionInformation().add(additionInformation(adnInfo));
+		}
+		
+		for (RE_ClarificationInformation cnInfo : this.getClarificationInformations()) {
+			result.getClarificationInformation().add(clarificationInformation(cnInfo));
+		}
+		
+		for (RE_AmendmentInformation amtInfo : this.getAmendmentInformations()) {
+			result.getAmendmentInformation().add(amendmentInformation(amtInfo));
+		}
+
+		// TODO
+//		for (RE_AlternativeExpression altExp : this.getAlternativeExpressions()) {
+//			
+//		}
+		
+		// TODO
+//		result.getFieldOfApplication().add(...)
+		
+		for (UUID predecessorUuid : this.getPredecessors().keySet()) {
+			result.getPredecessor().add(registerItem(predecessorUuid));
+		}
+		
+		for (UUID successorUuid : this.getSuccessors().keySet()) {
+			result.getSuccessor().add(registerItem(successorUuid));
+		}
+		
+		// TODO
+//		result.getSpecificationLineage().add(...)
 	}
 
 	/**
@@ -173,6 +346,9 @@ public class RegisterItemViewBean
 		this.isProposal = false;
 		this.setAppealed(false);
 		
+		this.dateAccepted = item.getDateAccepted();
+		this.dateAmended = item.getDateAmended();
+		
 		if (loadDetails) {
 			for (RE_AdditionInformation ai : item.getAdditionInformation()) {
 				if (ai.isFinal()) {
@@ -194,7 +370,7 @@ public class RegisterItemViewBean
 			}
 		}
 		
-		this.addAdditionalProperties(item);
+		this.addAdditionalProperties(item, loadDetails);
 }
 	
 	private void initializeFromProposalManagementInformation(RE_ProposalManagementInformation proposal) {
@@ -254,7 +430,7 @@ public class RegisterItemViewBean
 	private void initializeFromGroup(ProposalGroup group) {
 		this.setProposalUuid(group.getUuid());
 		this.setProposalClass(group.getClass());
-		this.setName(group.getName());
+		this.setName(group.getTitle());
 
 		this.setProposalStatus(group.getStatus());
 
@@ -278,7 +454,7 @@ public class RegisterItemViewBean
 		
 		this.setProposalUuid(supersession.getUuid());
 		this.proposalClass = supersession.getClass();
-		this.setName(supersession.getName());
+		this.setName(supersession.getTitle());
 		this.setRegisterUuid(supersession.getTargetRegister().getId());
 		
 		if (!supersession.getSupersessionParts().isEmpty()) {
@@ -476,6 +652,22 @@ public class RegisterItemViewBean
 		this.decisionStatus = decisionStatus;
 	}
 
+	public Date getDateAccepted() {
+		return dateAccepted;
+	}
+
+	public void setDateAccepted(Date dateAccepted) {
+		this.dateAccepted = dateAccepted;
+	}
+
+	public Date getDateAmended() {
+		return dateAmended;
+	}
+
+	public void setDateAmended(Date dateAmended) {
+		this.dateAmended = dateAmended;
+	}
+
 	/**
 	 * @return the itemClassUuid
 	 */
@@ -517,6 +709,22 @@ public class RegisterItemViewBean
 
 	public void setProposalGroup(boolean isProposalGroup) {
 		this.isProposalGroup = isProposalGroup;
+	}
+
+	public boolean hasParent() {
+		return hasParent;
+	}
+
+	public void setHasParent(boolean hasParent) {
+		this.hasParent = hasParent;
+	}
+
+	public boolean hasDependentProposals() {
+		return hasDependentProposals;
+	}
+
+	public void setHasDependentProposals(boolean hasDependentProposals) {
+		this.hasDependentProposals = hasDependentProposals;
 	}
 
 	/**
@@ -616,6 +824,14 @@ public class RegisterItemViewBean
 	 */
 	public void setProposalStatus(String proposalStatus) {
 		this.proposalStatus = proposalStatus;
+	}
+
+	public ProposalChangeRequest getPendingChangeRequest() {
+		return pendingChangeRequest;
+	}
+
+	public void setPendingChangeRequest(ProposalChangeRequest pendingChangeRequest) {
+		this.pendingChangeRequest = pendingChangeRequest;
 	}
 
 	/**
@@ -803,12 +1019,12 @@ public class RegisterItemViewBean
 		this.registerUuid = registerUuid;
 	}
 
-	public UUID getProposalGroupUuid() {
-		return proposalGroupUuid;
+	public UUID getParentProposalUuid() {
+		return parentProposalUuid;
 	}
 	
-	public void setProposalGroupUuid(UUID uuid) {
-		this.proposalGroupUuid = uuid;
+	public void setParentProposalUuid(UUID uuid) {
+		this.parentProposalUuid = uuid;
 	}
 
 	public Set<RegisterItemViewBean> getMemberProposals() {
@@ -831,41 +1047,42 @@ public class RegisterItemViewBean
 
 	@JsonIgnore
 	public boolean isNotSubmitted() {
-		return this.getProposalStatus().equals(STATUS_NOT_SUBMITTED);
+		return !workflowManager.isSubmitted(this.proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isUnderReview() {
-		return this.getProposalStatus().equals(STATUS_UNDER_REVIEW);
+		return workflowManager.isUnderReview(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isPending() {
-		return this.getProposalStatus().equals(STATUS_IN_APPROVAL_PROCESS);
+		return workflowManager.isPending(proposalStatus);
 	}
 	
 	@JsonIgnore
 	public boolean isAppealable() {
-		return this.getProposalStatus().equals(STATUS_APPEALABLE) && !this.isAppealed();
+		return workflowManager.isAppealable(proposalStatus) && !this.isAppealed();
 	}
 	
 	@JsonIgnore
 	public boolean isWithdrawable() {
-		return isPending() || isUnderReview();
+		return workflowManager.isWithdrawable(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isFinished() {
-		return this.getProposalStatus().equals(STATUS_FINISHED);
+		return workflowManager.isFinal(proposalStatus);
 	}
 
 	@JsonIgnore
 	public boolean isWithdrawn() {
-		return this.getDisposition().equals(RE_Disposition.WITHDRAWN);
+		return workflowManager.isWithdrawn(proposalStatus);
+//		return this.getDisposition().equals(RE_Disposition.WITHDRAWN);
 	}
 
 	public boolean isValid() {
-		return RE_ItemStatus.VALID.equals(this.getStatus());
+		return RE_ItemStatus.VALID.name().equals(this.getStatus());
 	}
 	
 	@JsonIgnore

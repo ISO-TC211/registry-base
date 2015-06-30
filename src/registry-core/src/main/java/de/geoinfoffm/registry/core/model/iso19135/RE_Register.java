@@ -1,3 +1,37 @@
+/**
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package de.geoinfoffm.registry.core.model.iso19135;
 
 import java.util.ArrayList;
@@ -33,6 +67,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -66,7 +101,7 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 	@Basic(optional = false)
 	@Column(columnDefinition = "text")
 	private String name;
-
+	
 	@XmlElement(name = "contentSummary", namespace = "http://www.isotc211.org/2005/grg", required = true, type = CharacterString.class)
 	@XmlJavaTypeAdapter(CharacterStringAdapter.class)
 	@Column(columnDefinition = "text")
@@ -341,57 +376,34 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 		if (this.containedItemClasses == null) {
 			this.containedItemClasses = new LinkedHashSet<RE_ItemClass>();
 		}
-		
-		List<RE_ItemClass> temp = new ArrayList<RE_ItemClass>();
-		temp.addAll(this.containedItemClasses);
-		
-		Collections.sort(temp, new Comparator<RE_ItemClass>() {
-			@Override
-			public int compare(RE_ItemClass o1, RE_ItemClass o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
-	
-		Set<RE_ItemClass> result = new LinkedHashSet<RE_ItemClass>();
-		result.addAll(temp);
-		
-		return result;
+
+		return this.containedItemClasses;
 	}
 
 	/**
 	 * @param containedItemClass the containedItemClass to set
 	 */
-	public void setContainedItemClasses(Set<RE_ItemClass> containedItemClasses) {
+	protected void setContainedItemClasses(Set<RE_ItemClass> containedItemClasses) {
 		this.containedItemClasses = containedItemClasses;
 	}
 	
-	public void addContainedItemClass(RE_ItemClass containedItemClass) {
-		if (this.containedItemClasses == null) {
-			this.containedItemClasses = new LinkedHashSet<RE_ItemClass>();
-		}
-		this.containedItemClasses.add(containedItemClass);
-	}
-
 	/**
 	 * @return the submitter
 	 */
 	@Transactional(readOnly = true)
 	public Set<RE_SubmittingOrganization> getSubmitter() {
+		if (this.submitter == null) {
+			this.submitter = new HashSet<RE_SubmittingOrganization>();
+		}
+
 		return submitter;
 	}
 
 	/**
 	 * @param submitter the submitter to set
 	 */
-	public void setSubmitter(Set<RE_SubmittingOrganization> submitter) {
+	protected void setSubmitter(Set<RE_SubmittingOrganization> submitter) {
 		this.submitter = submitter;
-	}
-	
-	public void addSubmitter(RE_SubmittingOrganization submitter) {
-		if (this.submitter == null) {
-			this.submitter = new HashSet<RE_SubmittingOrganization>();
-		}
-		this.submitter.add(submitter);
 	}
 	
 	/**

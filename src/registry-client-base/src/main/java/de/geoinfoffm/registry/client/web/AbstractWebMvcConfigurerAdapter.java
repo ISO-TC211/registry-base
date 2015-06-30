@@ -1,3 +1,37 @@
+/**
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     	 notice, this list of conditions and the following disclaimer.
+
+ *     * Redistributions in binary form must reproduce the above
+ *     	 copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE GERMAN
+ * FEDERAL AGENCY FOR CARTOGRAPHY AND GEODESY BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package de.geoinfoffm.registry.client.web;
 
 import java.util.List;
@@ -17,8 +51,10 @@ import org.springframework.data.repository.support.DomainClassConverter;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewInterceptor;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -31,16 +67,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.thymeleaf.extras.springsecurity3.dialect.SpringSecurityDialect;
-import org.thymeleaf.spring3.SpringTemplateEngine;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
-import de.geoinfoffm.registry.api.RegisterService;
-import de.geoinfoffm.registry.api.RegisterServiceImpl;
 import de.geoinfoffm.registry.core.HibernateAwareObjectMapper;
-import de.geoinfoffm.registry.core.ItemClassRegistry;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
-import de.geoinfoffm.registry.persistence.RegisterRepository;
 
 public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 
 {
@@ -93,19 +125,31 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 		resolver.setFallbackPageable(new PageRequest(1, 5));
 		argumentResolvers.add(resolver);
 	}
+	
+	public AbstractHttpMessageConverter<?> jaxbConverter() {
+		return new Jaxb2RootElementHttpMessageConverter();
+	}
 
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		MappingJackson2HttpMessageConverter jsonMapper = new MappingJackson2HttpMessageConverter();
 		jsonMapper.setObjectMapper(new HibernateAwareObjectMapper());
 		converters.add(jsonMapper);
+		
+		converters.add(jaxbConverter());
 	}
 
 	@Bean(name = "localeResolver")
 	public LocaleResolver localeResolver() {
 		CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
 		cookieLocaleResolver.setCookieName("siteLanguage");
-		cookieLocaleResolver.setCookiePath("/");
+
+		String basePath = ClientConfiguration.getBasePath();
+		if (!basePath.endsWith("/")) {
+			basePath = basePath + "/";
+		}
+		cookieLocaleResolver.setCookiePath(basePath);
+
 		cookieLocaleResolver.setDefaultLocale(defaultLocale());
 		return cookieLocaleResolver;
 	}
@@ -214,20 +258,4 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 //		return new RegistrySecurity();
 //	}
 
-	@Autowired
-	@Bean
-	public RegisterService registerService(RegisterRepository registerRepository) {
-		return new RegisterServiceImpl(registerRepository);
-	}
-	
-	@Bean
-	public ViewBeanFactory viewBeanFactory() {
-		return new ViewBeanFactory();
-	}
-	
-	@Autowired
-	@Bean
-	public ProposalDtoFactory proposalDtoFactory(ItemClassRegistry registry) {
-		return new ProposalDtoFactory(registry);
-	}
 }

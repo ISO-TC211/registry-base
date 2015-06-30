@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.geoinfoffm.registry</groupId>
   <artifactId>registry-client-base</artifactId>
-  <version>HEAD-SNAPSHOT</version>
+  <version>2.0</version>
 	<properties>
 		<java-version>1.7</java-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
@@ -139,35 +139,9 @@
 <!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
-			<artifactId>thymeleaf-spring3</artifactId>
+			<artifactId>thymeleaf-spring4</artifactId>
 			<version>2.1.2.RELEASE</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.cxf</groupId> -->
-<!-- 			<artifactId>cxf-api</artifactId> -->
-<!-- 			<version>2.7.7</version> -->
-<!-- 			<scope>compile</scope> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.cxf</groupId> -->
-<!-- 			<artifactId>cxf-rt-frontend-jaxws</artifactId> -->
-<!-- 			<version>2.7.7</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.cxf</groupId> -->
-<!-- 			<artifactId>cxf-rt-transports-http</artifactId> -->
-<!-- 			<version>2.7.7</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.cxf</groupId> -->
-<!-- 			<artifactId>cxf-rt-transports-http-jetty</artifactId> -->
-<!-- 			<version>2.7.7</version> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.jetty</groupId> -->
-<!-- 			<artifactId>jetty-webapp</artifactId> -->
-<!-- 			<version>9.1.0.RC0</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-expression</artifactId>
@@ -178,19 +152,9 @@
 			<artifactId>spring-oxm</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.xml.ws</groupId>
-			<artifactId>jaxws-rt</artifactId>
-			<version>2.2.8-promoted-b131</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.webflow</groupId>
 			<artifactId>spring-webflow</artifactId>
 			<version>2.3.2.RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>org.thymeleaf.extras</groupId>
-			<artifactId>thymeleaf-extras-springsecurity3</artifactId>
-			<version>2.1.0.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -205,7 +169,7 @@
 		<dependency>
 			<groupId>de.geoinfoffm.registry</groupId>
 			<artifactId>registry-api</artifactId>
-			<version>HEAD-SNAPSHOT</version>
+			<version>2.0</version>
 		</dependency>
 	</dependencies>
     <build>
