@@ -2,11 +2,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.geoinfoffm.registry</groupId>
 	<artifactId>registry-parent</artifactId>
-	<version>2.1</version>
+	<version>2.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
 		<java.version>1.7</java.version>
-		<registry.version>2.1</registry.version>
+		<registry.version>2.2-SNAPSHOT</registry.version>
 		<org.springframework-version>4.1.6.RELEASE</org.springframework-version>
 		<org.springframework.security-version>3.2.7.RELEASE</org.springframework.security-version>
 		<org.springframework.data-version>1.7.2.RELEASE</org.springframework.data-version>
