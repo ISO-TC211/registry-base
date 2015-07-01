@@ -1,26 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.geoinfoffm.registry</groupId>
+	<parent>
+        <groupId>de.geoinfoffm.registry</groupId>
+        <artifactId>registry-parent</artifactId>
+        <version>2.1</version>
+        <relativePath>../..</relativePath>
+    </parent>
 	<artifactId>registry-api</artifactId>
-	<version>2.0</version>
 	<properties>
 		<java-version>1.7</java-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>		
-		<org.springframework-version>4.0.2.RELEASE</org.springframework-version>
-		<org.aspectj-version>1.6.10</org.aspectj-version>
-		<org.slf4j-version>1.6.6</org.slf4j-version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>de.geoinfoffm.registry</groupId>
 			<artifactId>registry-core</artifactId>
-			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.geoinfoffm.registry</groupId>
 			<artifactId>registry-persistence</artifactId>
-			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -48,6 +47,11 @@
 			<artifactId>jaxb-xjc</artifactId>
 			<version>2.2.11</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>${net.sf.ehcache-version}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -87,8 +91,8 @@
 			                <xsdOptions>
 			                    <xsdOption>
 			                    	<extension>true</extension>
-<!-- 			                        <xsd>src/main/resources/schema/service.xsd</xsd> -->
-<!-- 			                        <bindingFile>src/main/resources/schema/bindings.xjb</bindingFile> -->
+ 			                   <!-- <xsd>src/main/resources/schema/service.xsd</xsd> --> 
+ 			                   <!-- <bindingFile>src/main/resources/schema/bindings.xjb</bindingFile> --> 
 			                        <xsd>${registry.schema.xsd}</xsd>
 			                        <bindingFile>${registry.schema.bindingFile}</bindingFile>
 			                    </xsdOption>

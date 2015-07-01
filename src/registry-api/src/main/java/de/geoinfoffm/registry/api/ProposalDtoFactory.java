@@ -87,7 +87,8 @@ public class ProposalDtoFactory
 	public RegisterItemProposalDTO getProposalDto(AbstractProposal_Type proposal) {
 		RegisterItemProposalDTO result = null;
 		if (proposal instanceof Addition_Type) {
-			result = this.getProposalDto(((Addition_Type)proposal).getItemDetails().getAbstractRegisterItemProposal().getValue());
+			Addition_Type addition = (Addition_Type)proposal;
+			result = this.getProposalDto(addition.getItemDetails().getAbstractRegisterItemProposal().getValue());
 			
 			result.setJustification(proposal.getJustification());
 			result.setRegisterManagerNotes(proposal.getRegisterManagerNotes());
@@ -184,7 +185,7 @@ public class ProposalDtoFactory
 				ctor = proposalDtoClass.getDeclaredConstructor();
 			}
 			else {
-				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
+				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
 			}
 		}
 		catch (NoSuchMethodException ex) {

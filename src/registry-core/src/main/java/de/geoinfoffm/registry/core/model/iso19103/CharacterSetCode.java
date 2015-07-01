@@ -34,6 +34,19 @@
  */
 package de.geoinfoffm.registry.core.model.iso19103;
 
-public class CharacterSetCode extends CodeList 
+import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
+
+import org.hibernate.envers.Audited;
+
+@XmlRootElement(name = "MD_CharacterSetCode", namespace = "http://www.isotc211.org/2005/gmd")
+@Audited @Embeddable 
+public class CharacterSetCode extends CodeListValue 
 {
+	protected CharacterSetCode() { }
+	
+	public CharacterSetCode(String codeList, String codeListValue, String code) {
+		super(codeList, codeListValue, code, new QName("http://www.isotc211.org/2005/gmd", "MD_CharacterSetCode", "gmd")); 
+	}
 }

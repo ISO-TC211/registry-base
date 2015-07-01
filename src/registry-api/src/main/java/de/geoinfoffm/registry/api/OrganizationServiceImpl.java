@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.isotc211.iso19135.RE_SubmittingOrganization_Type;
 import org.isotc211.iso19139.metadata.CI_ResponsibleParty_Type;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +136,9 @@ implements OrganizationService
 	
 	@Autowired
 	private RegistrySecurity security;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	@Autowired
 	public OrganizationServiceImpl(OrganizationRepository repository) {
@@ -158,6 +164,7 @@ implements OrganizationService
 					null,
 					CI_RoleCode.USER);
 			suborg = new RE_SubmittingOrganization(organization.getName(), party);
+			entityManager.persist(suborg);
 		}
 		else if (!organization.getSubmittingOrganization().isSetUuidref()) {
 			RE_SubmittingOrganization_Type suborgValue = organization.getSubmittingOrganization().getRE_SubmittingOrganization();

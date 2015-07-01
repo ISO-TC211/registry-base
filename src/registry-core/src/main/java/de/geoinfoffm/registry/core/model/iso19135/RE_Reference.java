@@ -42,6 +42,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.OneToOne;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.hibernate.envers.Audited;
 
@@ -61,6 +63,14 @@ public class RE_Reference extends de.geoinfoffm.registry.core.Entity
 	@Embedded
 	public CharacterString itemIdentifierAtSource;
 
+	@XmlElement(name = "similarity", namespace = "http://www.isotc211.org/2005/grg")
+	@AttributeOverrides({
+		@AttributeOverride(name = "codeList", column = @Column(name = "similarity_codelist")),
+		@AttributeOverride(name = "codeListValue", column = @Column(name = "similarity_codelistvalue")),
+		@AttributeOverride(name = "codeSpace", column = @Column(name = "similarity_codespace")),
+		@AttributeOverride(name = "value", column = @Column(name = "similarity_value")),
+		@AttributeOverride(name = "qname", column = @Column(name = "similarity_qname")),
+	})
 	public RE_SimilarityToSource similarity;
 
 	@AttributeOverride(name = "value", column = @Column(name = "referenceText", length = 2000))

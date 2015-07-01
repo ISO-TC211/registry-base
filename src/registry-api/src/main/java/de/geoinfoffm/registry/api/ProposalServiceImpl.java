@@ -52,6 +52,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -324,6 +325,12 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		else {
 			throw new InvalidProposalException("Either name or UUID of item class must be provided");
 		}
+
+		// check target register
+		final UUID targetRegisterUuid = proposal.getTargetRegisterUuid();
+		final RE_Register targetRegister = registerRepository.findOne(targetRegisterUuid);
+		if(!targetRegister.getContainedItemClasses().contains(itemClass))
+			throw new InvalidProposalException(String.format("item of itemclass '%s' is not allowed in target register '%s'.",itemClass.getName(),targetRegister.getName()));
 		
 		RE_SubmittingOrganization sponsor = submittingOrgRepository.findOne(proposal.getSponsorUuid());
 		if (sponsor == null) {
@@ -603,11 +610,15 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			item.setDescription(changedItem.getDescription());
 		}
 		else if (proposal instanceof Clarification) {
-			Map<String, String[]> proposedChanges = new HashMap<String, String[]>();
+			Map<String, List<String>> proposedChanges = new HashMap<String, List<String>>();
 			for (ProposedChange_PropertyType change : ((Clarification_Type)proposalDto).getProposedChange()) {
 				if (!change.isSetProposedChange()) continue;
-				
-				proposedChanges.put(change.getProposedChange().getProperty(), new String[] { change.getProposedChange().getNewValue().getCharacterString().toString() });
+
+				List<String> newValues = new ArrayList<String>();
+				for (CharacterString_PropertyType newValue : change.getProposedChange().getNewValue()) {
+					newValues.add(newValue.getCharacterString().getValue().toString());
+				}
+				proposedChanges.put(change.getProposedChange().getProperty(), newValues);
 			}
 			String proposedChangesJson = RE_ClarificationInformation.toJson(proposedChanges);
 			((Clarification)proposal).setProposedChange(proposedChangesJson);
@@ -776,7 +787,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeClarification(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem, java.util.Map, java.lang.String, de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization)
 	 */
 	@Override
-	public Clarification createClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges,
+	public Clarification createClarification(RE_RegisterItem item, Map<String, List<String>> proposedChanges,
 			String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException {
 		
 		Clarification proposal = item.proposeClarification(proposedChanges, justification, registerManagerNotes, controlBodyNotes, sponsor);

@@ -67,7 +67,9 @@ public interface RegistryUserService extends ApplicationService<RegistryUser>
 	RegistryUser registerUser(CreateRegistryUserRequest request, CreateOrganizationRequest newOrganizationDetails) throws UserRegistrationException, UnauthorizedException;
 	RegistryUser updateUser(RegistryUserUpdateDTO userData) throws UpdateUserException;
 	boolean confirmUser(String emailAddress, UUID token);
-	
+	public void requestPasswordReset(String emailAddress);
+	public abstract void resetPassword(String emailAddress, String token, String newPassword);
+
 	RegistryUser findByEmailAddress(String emailAddress);
 	boolean isEmailAddressAvailable(String emailAddress);
 

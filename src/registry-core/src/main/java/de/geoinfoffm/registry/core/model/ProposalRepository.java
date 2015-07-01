@@ -66,7 +66,11 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	Page<Proposal> findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.dateSubmitted IS NOT NULL AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(@Param("search") String search, Pageable pageable);
-	
+
+	Page<Proposal> findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsTrue(Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.dateSubmitted IS NOT NULL AND p.parent IS NULL AND p.isConcluded = true AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsTrue(@Param("search") String search, Pageable pageable);
+
 	List<Proposal> findBySponsorAndStatusAndDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor, String status);
 
 	List<Proposal> findByParentIsNullAndIsConcludedIsFalse();

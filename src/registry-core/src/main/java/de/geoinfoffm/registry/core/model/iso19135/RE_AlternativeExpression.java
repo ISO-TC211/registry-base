@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.core.model.iso19135;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -44,6 +45,7 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import org.hibernate.envers.Audited;
@@ -72,8 +74,11 @@ public class RE_AlternativeExpression extends de.geoinfoffm.registry.core.Entity
 	private CharacterString description;
 
 	@ElementCollection
-	@AttributeOverride(name = "value", column = @Column(name = "fieldOfApplication", length = 2000))
-	private Set<CharacterString> fieldOfApplication;
+	@AttributeOverrides({
+		@AttributeOverride(name = "name", column = @Column(name = "fieldOfApplication_name")),
+		@AttributeOverride(name = "description", column = @Column(name = "fieldOfApplication_description"))
+	})
+	private Set<RE_FieldOfApplication> fieldOfApplication;
 
 	@OneToOne
 	private RE_Locale locale;
@@ -127,14 +132,17 @@ public class RE_AlternativeExpression extends de.geoinfoffm.registry.core.Entity
 	/**
 	 * @return the fieldOfApplication
 	 */
-	public Set<CharacterString> getFieldOfApplication() {
+	public Set<RE_FieldOfApplication> getFieldOfApplication() {
+		if (fieldOfApplication == null) {
+			fieldOfApplication = new HashSet<>();
+		}
 		return fieldOfApplication;
 	}
 
 	/**
 	 * @param fieldOfApplication the fieldOfApplication to set
 	 */
-	public void setFieldOfApplication(Set<CharacterString> fieldOfApplication) {
+	protected void setFieldOfApplication(Set<RE_FieldOfApplication> fieldOfApplication) {
 		this.fieldOfApplication = fieldOfApplication;
 	}
 

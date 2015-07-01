@@ -107,16 +107,7 @@ public class ClientConfiguration
 		
 		return basePath;
 	}
-	
-	public static String getMailBaseUrl() {
-		String baseUrl = instance().getProperty("mail.baseUrl", "mail.baseUrl.undefined");
-		if (!baseUrl.endsWith("/")) {
-			baseUrl = baseUrl + "/";
-		}
 		
-		return baseUrl;		
-	}
-	
 	public static boolean isSendConfirmationMails() {
 		return instance().getProperty("signup.sendConfirmationMails", "false").equals("true");
 	}
