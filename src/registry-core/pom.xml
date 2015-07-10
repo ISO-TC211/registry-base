@@ -210,16 +210,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>artifactory-release</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>artifactory-snapshot</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
