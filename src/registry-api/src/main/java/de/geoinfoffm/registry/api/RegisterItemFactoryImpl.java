@@ -55,6 +55,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import de.geoinfoffm.registry.api.converter.BeanConverter;
 import de.geoinfoffm.registry.api.iso.IsoXmlFactory;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.ItemClass;
@@ -71,26 +72,29 @@ import de.geoinfoffm.registry.persistence.RegisterRepository;
  * 
  */
 @Component
-public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends RegisterItemProposalDTO> 
-implements RegisterItemFactory<I, P>, ApplicationContextAware
+public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends RegisterItemProposalDTO>
+		implements RegisterItemFactory<I, P>, ApplicationContextAware
 {
 	@Autowired
 	private ItemClassRegistry registry;
-	
+
 	@Autowired
 	private ItemClassRepository itemClassRepository;
-	
+
 	@Autowired
 	private RegisterRepository registerRepository;
-	
+
 	@Autowired
 	private RegisterItemService itemService;
 
 	protected ApplicationContext context;
-	
+
 	@PersistenceContext
 	protected EntityManager entityManager;
 
+	@Autowired
+	private BeanConverter beanConverter;
+	
 	public RegisterItemFactoryImpl() {
 	}
 
@@ -99,7 +103,7 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 		if (!item.isSetItemClass()) {
 			throw new RuntimeException("item has no itemClass");
 		}
-		
+
 		UUID itemClassUuid;
 		if (item.getItemClass().isSetUuidref()) {
 			itemClassUuid = UUID.fromString(item.getItemClass().getUuidref());
@@ -108,7 +112,7 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 			itemClassUuid = UUID.fromString(item.getItemClass().getRE_ItemClass().getUuid());
 		}
 		else {
-			throw new RuntimeException("item has no itemClass");			
+			throw new RuntimeException("item has no itemClass");
 		}
 		RE_ItemClass itemClass = itemClassRepository.findOne(itemClassUuid);
 		Assert.notNull(itemClass);
@@ -118,13 +122,13 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 			result = instantiateItem(itemClass, UUID.fromString(item.getUuid()));
 		}
 		else {
-			result = instantiateItem(itemClass); 
+			result = instantiateItem(itemClass);
 		}
 		if (result != null) {
 			setItemValues(result, item, itemClass);
 		}
-		
-		return result;		
+
+		return result;
 	}
 
 	@Override
@@ -133,13 +137,13 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 		Assert.notNull(itemClass);
 		RE_Register targetRegister = registerRepository.findOne(proposal.getTargetRegisterUuid());
 		Assert.notNull(targetRegister);
-		
+
 		I result = instantiateItem(itemClass);
 		if (result != null) {
 			setItemValues(result, proposal, itemClass);
 			result.setRegister(targetRegister);
 		}
-		
+
 		return result;
 	}
 
@@ -163,17 +167,18 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 						setUuidMethod.setAccessible(true);
 						setUuidMethod.invoke(result, uuid);
 					}
-					catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+							| InvocationTargetException e) {
 						throw new RuntimeException(e.getMessage(), e);
 					}
 				}
 				return result;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	protected void setItemValues(I item, RE_RegisterItem_Type xmlItem, RE_ItemClass itemClass) {
 		item.setItemClass(itemClass);
 		item.setName(xmlItem.getName().getCharacterString().getValue().toString());
@@ -189,6 +194,9 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 			item.setDateAmended(IsoXmlFactory.date(xmlItem.getDateAmended()));
 		}
 		item.setItemIdentifier(xmlItem.getItemIdentifier().getInteger());
+
+		// set additional values, copy additional values from xml bean to model bean
+		beanConverter.updateModelBeanFromXmlBean(item, xmlItem,true,true);
 	}
 
 	protected void setItemValues(I item, P proposal, RE_ItemClass itemClass) {
@@ -197,14 +205,14 @@ implements RegisterItemFactory<I, P>, ApplicationContextAware
 		item.setDefinition(proposal.getDefinition());
 		item.setDescription(proposal.getDescription());
 		item.setStatus(RE_ItemStatus.NOT_VALID);
-		
+
 		proposal.setAdditionalValues(item, entityManager);
-		
-		// The following call to findMaxitemIdentifer() leads to the result 
-		// entity being saved prematurely. To prevent a ConstraintException, 
+
+		// The following call to findMaxitemIdentifer() leads to the result
+		// entity being saved prematurely. To prevent a ConstraintException,
 		// set a random negative value here.
 		item.setItemIdentifier(BigInteger.valueOf(-RandomUtils.nextInt()));
-		
+
 		BigInteger maxIdentifier = itemService.findMaxItemIdentifier();
 		if (maxIdentifier == null) {
 			maxIdentifier = BigInteger.ZERO;

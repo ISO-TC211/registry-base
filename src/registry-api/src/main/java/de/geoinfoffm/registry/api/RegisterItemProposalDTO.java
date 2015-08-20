@@ -111,7 +111,6 @@ public class RegisterItemProposalDTO
 	
 	protected RegisterItemProposalDTO(String itemClassName) {
 		this();
-		
 		this.itemClassName = itemClassName;
 	}
 	
@@ -738,7 +737,8 @@ public class RegisterItemProposalDTO
 	protected List<RegisterItemProposalDTO> findDependentProposals(RegisterItemProposalDTO... dtos) {
 		List<RegisterItemProposalDTO> dependentProposals = new ArrayList<RegisterItemProposalDTO>();
 		for (RegisterItemProposalDTO dto : dtos) {
-			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+//			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+			if (dto != null && dto.getReferencedItemUuid() == null) {
 				dependentProposals.add(dto);
 			}
 		}
