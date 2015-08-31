@@ -45,6 +45,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.eclipse.persistence.internal.jpa.EntityManagerFactoryProvider;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -72,8 +73,7 @@ import de.geoinfoffm.registry.persistence.RegisterRepository;
  * 
  */
 @Component
-public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends RegisterItemProposalDTO>
-		implements RegisterItemFactory<I, P>, ApplicationContextAware
+public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends RegisterItemProposalDTO> implements RegisterItemFactory<I, P>, ApplicationContextAware
 {
 	@Autowired
 	private ItemClassRegistry registry;
@@ -94,12 +94,17 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 
 	@Autowired
 	private BeanConverter beanConverter;
-	
+
 	public RegisterItemFactoryImpl() {
 	}
 
 	@Override
 	public I createRegisterItem(RE_RegisterItem_Type item) {
+		return createRegisterItem(item, null);
+	}
+
+	@Override
+	public I createRegisterItem(final RE_RegisterItem_Type item, final EntityUnitOfWork unitOfWork) {
 		if (!item.isSetItemClass()) {
 			throw new RuntimeException("item has no itemClass");
 		}
@@ -114,10 +119,10 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 		else {
 			throw new RuntimeException("item has no itemClass");
 		}
-		RE_ItemClass itemClass = itemClassRepository.findOne(itemClassUuid);
+		final RE_ItemClass itemClass = itemClassRepository.findOne(itemClassUuid);
 		Assert.notNull(itemClass);
 
-		I result;
+		final I result;
 		if (item.isSetUuid()) {
 			result = instantiateItem(itemClass, UUID.fromString(item.getUuid()));
 		}
@@ -125,9 +130,21 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 			result = instantiateItem(itemClass);
 		}
 		if (result != null) {
-			setItemValues(result, item, itemClass);
+			if (unitOfWork == null) {
+				setItemValues(result, item, itemClass, unitOfWork);
+			}
+			else {
+				unitOfWork.registerNew(result);
+				unitOfWork.registerRunnable(result, new Runnable() {
+					@Override
+					public void run() {
+						setItemValues(result, item, itemClass,unitOfWork);
+//						entityManager.merge(result);
+					}
+				});
+			}
+//			entityManager.merge(result);
 		}
-
 		return result;
 	}
 
@@ -167,8 +184,7 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 						setUuidMethod.setAccessible(true);
 						setUuidMethod.invoke(result, uuid);
 					}
-					catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-							| InvocationTargetException e) {
+					catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						throw new RuntimeException(e.getMessage(), e);
 					}
 				}
@@ -179,7 +195,7 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 		return null;
 	}
 
-	protected void setItemValues(I item, RE_RegisterItem_Type xmlItem, RE_ItemClass itemClass) {
+	protected void setItemValues(I item, RE_RegisterItem_Type xmlItem, RE_ItemClass itemClass, EntityUnitOfWork unitOfWork) {
 		item.setItemClass(itemClass);
 		item.setName(xmlItem.getName().getCharacterString().getValue().toString());
 		item.setDefinition(xmlItem.getDefinition().getCharacterString().getValue().toString());
@@ -195,8 +211,9 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 		}
 		item.setItemIdentifier(xmlItem.getItemIdentifier().getInteger());
 
-		// set additional values, copy additional values from xml bean to model bean
-		beanConverter.updateModelBeanFromXmlBean(item, xmlItem,true,true);
+		// set additional values, copy additional values from xml bean to model
+		// bean
+		beanConverter.updateModelBeanFromXmlBean(item, xmlItem, unitOfWork, true, true);
 	}
 
 	protected void setItemValues(I item, P proposal, RE_ItemClass itemClass) {
@@ -221,12 +238,15 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 	}
 
 	// private Map<String, Object> getBeans() {
-	// GenericApplicationContext applicationContext = new GenericApplicationContext();
-	// ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(applicationContext, false);
+	// GenericApplicationContext applicationContext = new
+	// GenericApplicationContext();
+	// ClassPathBeanDefinitionScanner scanner = new
+	// ClassPathBeanDefinitionScanner(applicationContext, false);
 	// scanner.addIncludeFilter(new AnnotationTypeFilter(ItemClass.class));
 	// scanner.scan("de.geoinfoffm.registry", "de.bund.bkg.gdide.registry");
 	// applicationContext.refresh();
-	// Map<String, Object> beans = applicationContext.getBeansWithAnnotation(ItemClass.class);
+	// Map<String, Object> beans =
+	// applicationContext.getBeansWithAnnotation(ItemClass.class);
 	// return beans;
 	// }
 
@@ -248,4 +268,5 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.context = applicationContext;
 	}
+
 }
