@@ -38,10 +38,12 @@ import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 import static org.springframework.security.acls.domain.BasePermission.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.acls.AclPermissionEvaluator;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
@@ -55,6 +57,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Authorization;
@@ -63,20 +66,24 @@ import de.geoinfoffm.registry.core.model.DelegationRepository;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalRepository;
+import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
+import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
-import de.geoinfoffm.registry.core.security.RegistryUserUtils;
 import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
+	private static final Logger logger = LoggerFactory.make();
+
 	@Autowired
 	private MutableAclService aclService;
 	
@@ -622,14 +629,28 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
-			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndParentIsNullAndIsConcludedIsFalse(sponsor, STATUS_UNDER_REVIEW);
-			if (!proposals.isEmpty()) {
-				return Integer.toString(proposals.size());
+			List<RE_Register> managedRegisters = new ArrayList<>();
+			for (Role role : this.getCurrentUser().getRoles()) {
+				if (role.getName().startsWith(MANAGER_ROLE_PREFIX)) {
+					if (role instanceof RegisterRelatedRole) {
+						managedRegisters.add(((RegisterRelatedRole)role).getRegister());
+					}
+					else {
+						throw new RuntimeException(String.format("Role type '%s' not yet implemented", role.getClass().getCanonicalName()));
+					}
+				}
 			}
-			else {
-				return null;
-			}
+			
+			int count = 0;
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(ProposalWorkflowManager.STATUS_UNDER_REVIEW);
+			logger.trace("getRegisterManagerTodoCount() - Found {} possible proposals for {}", proposals.size(), this.getCurrentUser().getEmailAddress());
+			for (Proposal proposal : proposals) {
+				if (this.hasEntityRelatedRoleForAny(MANAGER_ROLE_PREFIX, proposal.getAffectedRegisters())) {
+					count++;
+				}
+			}				
+			
+			return (count > 0) ? Integer.toString(count) : null;
 		}
 	}
 
