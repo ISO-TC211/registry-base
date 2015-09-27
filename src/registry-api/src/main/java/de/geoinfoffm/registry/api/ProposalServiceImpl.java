@@ -977,6 +977,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		ProposalGroup result = new ProposalGroup(containedProposals);
 		result.setSponsor(sponsor);
 		
+		proposalWorkflowManager.initialize(result);
+		
 		result = proposalRepository.save(result); 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
 
@@ -987,7 +989,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	public ProposalGroup createProposalGroup(String name, List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
 		ProposalGroup result = new ProposalGroup(containedProposals, name);
 		result.setSponsor(sponsor);
-		
+
+		proposalWorkflowManager.initialize(result);
+
 		result = proposalRepository.save(result); 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
 
