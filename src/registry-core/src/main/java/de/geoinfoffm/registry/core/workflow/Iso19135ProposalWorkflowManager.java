@@ -212,7 +212,7 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 
 	@Override
 	public boolean isEditable(Proposal proposal) {
-		return !isFinal(proposal) && isUnderReview(proposal); 
+		return !isSubmitted(proposal) || (!isFinal(proposal) && isUnderReview(proposal)); 
 	}
 
 	@Override
