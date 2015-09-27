@@ -293,6 +293,16 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	}
 	
 	@Override
+	public <E extends Entity> boolean hasEntityRelatedRoleForAny(String rolePrefix, Collection<E> entities) {
+		boolean hasAny = false;
+		for (E entity : entities) {
+			hasAny |= hasEntityRelatedRole(rolePrefix, entity);
+		}
+		
+		return hasAny;
+	}
+
+	@Override
 	public <E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities) {
 		if (rolePrefices == null || rolePrefices.isEmpty() || entities == null || entities.isEmpty()) {
 			return false;

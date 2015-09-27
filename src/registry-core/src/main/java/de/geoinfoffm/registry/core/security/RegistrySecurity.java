@@ -149,6 +149,7 @@ public interface RegistrySecurity
 	String entityRole(String rolePrefix, UUID entityId);
 
 	<E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities);
+	<E extends Entity> boolean hasEntityRelatedRoleForAny(String rolePrefix, Collection<E> entities);
 
 	<E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, List<E> entities);
 
