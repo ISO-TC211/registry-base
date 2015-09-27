@@ -45,7 +45,6 @@ import org.springframework.data.repository.query.Param;
 
 import de.geoinfoffm.registry.core.EntityRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
-import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
@@ -83,8 +82,13 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 
 	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false)")
 	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND ((p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false))")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("classes") List<Class<?>> excludedClasses, Pageable pageable);
+	
 	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search)) AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search)))")
 	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("search") String search, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND ((p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search)) AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))))")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("search") String search, @Param("classes") List<Class<?>> excludedClasses, Pageable pageable);
 
 	List<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor);
 	Page<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor, Pageable pageable);
@@ -94,6 +98,12 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 
 	@Query("SELECT p FROM Proposal p WHERE p.sponsor = :sponsor AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("search") String search, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false")
+	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, @Param("search") String search, Pageable pageable);
 
 	@Query("SELECT p FROM SimpleProposal p WHERE p.sponsor = :sponsor AND p.proposalManagementInformation.item.itemClass = :itemClass AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<SimpleProposal> findSimpleProposalBySponsorAndItemClassAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("itemClass") RE_ItemClass itemClass, @Param("search") String search, Pageable pageable);
