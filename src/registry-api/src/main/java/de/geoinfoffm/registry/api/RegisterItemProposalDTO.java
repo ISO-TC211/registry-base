@@ -63,6 +63,7 @@ import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -159,6 +160,13 @@ public class RegisterItemProposalDTO
 		initializeFromItemDetails(itemDetails);
 	}
 	
+	private void initializeFromGroup(ProposalGroup group) {
+		this.setName(group.getTitle());
+		this.setProposalUuid(group.getUuid());
+		this.setProposalType(ProposalType.GROUP);
+		this.setSponsorUuid(group.getSponsor().getUuid());
+	}
+
 	protected void initializeFromItem(RE_RegisterItem_Type proposedItem) {
 		if (proposedItem.getItemClass() == null) {
 			throw new IllegalArgumentException("Proposed item must reference an item class");
@@ -250,6 +258,9 @@ public class RegisterItemProposalDTO
 		}
 		else if (proposal instanceof Supersession) {
 			initializeFromSupersession((Supersession)proposal);
+		}
+		else if (proposal instanceof ProposalGroup) {
+			initializeFromGroup((ProposalGroup)proposal);
 		}
 	}
 	
