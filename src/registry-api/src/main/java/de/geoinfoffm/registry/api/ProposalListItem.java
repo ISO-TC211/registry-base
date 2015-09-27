@@ -37,7 +37,9 @@ package de.geoinfoffm.registry.api;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.context.MessageSource;
@@ -78,6 +80,7 @@ public class ProposalListItem
 	private boolean isAppealed;
 	private String targetRegister;
 	private RE_Disposition disposition;
+	private Map<String, String> additionalData;
 	
 	private MessageSource messages;
 	private Locale locale;
@@ -209,6 +212,15 @@ public class ProposalListItem
 
 	public void setDisposition(RE_Disposition disposition) {
 		this.disposition = disposition;
+	}
+	
+	@JsonProperty
+	public Map<String, String> getAdditionalData() {
+		if (this.additionalData == null) {
+			this.additionalData = new HashMap<>();
+		}
+		
+		return additionalData;
 	}
 
 	@JsonProperty
