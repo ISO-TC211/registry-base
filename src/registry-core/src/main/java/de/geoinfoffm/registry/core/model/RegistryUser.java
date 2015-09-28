@@ -111,7 +111,7 @@ public class RegistryUser extends Actor implements UserDetails
 
 	@NotNull
 	private Boolean isActive;
-
+	
 	@Transient
 	private boolean isMembershipApproved;
 
@@ -271,7 +271,7 @@ public class RegistryUser extends Actor implements UserDetails
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return this.isActive();
+		return this.isActive() && this.isMembershipApproved();
 	}
 
 	@Override

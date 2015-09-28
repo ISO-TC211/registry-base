@@ -45,8 +45,11 @@ import org.springframework.security.provisioning.GroupManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.geoinfoffm.registry.core.model.Authorization;
+import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
+import de.geoinfoffm.registry.core.security.RegistrySecurity;
 
 public class RegistryUserDetailsManager implements UserDetailsManager, GroupManager
 {
@@ -62,6 +65,20 @@ public class RegistryUserDetailsManager implements UserDetailsManager, GroupMana
 		RegistryUser user = userRepository.findByEmailAddressIgnoreCase(username.toLowerCase());
 		if (user == null) {
 			throw new UsernameNotFoundException("user not found");
+		}
+		
+		if (user.hasRole(RegistrySecurity.ADMIN_ROLE)) {
+			user.setMembershipApproved(true);
+		}
+		else {
+			for (Authorization auth : user.getAuthorizations()) {
+				if (!auth.getRole().getName().startsWith(RegistrySecurity.ORGANIZATIONMEMBER_ROLE_PREFIX)) continue;
+				
+				if (auth instanceof Delegation) {
+					Delegation delegation = (Delegation)auth;
+					user.setMembershipApproved(delegation.isApproved());
+				}
+			}
 		}
 
 		return user;
