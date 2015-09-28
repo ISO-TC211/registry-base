@@ -184,4 +184,5 @@ public interface RegistrySecurity
 	public abstract String getPointOfContactTodoCount();
 	public abstract String getRegisterManagerTodoCount();
 	public abstract String getControlBodyTodoCount();
+	public abstract String getRegisterOwnerTodoCount();
 }

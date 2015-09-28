@@ -669,6 +669,37 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			}
 		}
 	}
+	
+	@Override 
+	public String getRegisterOwnerTodoCount() {
+		if (!hasAnyRoleWith(OWNER_ROLE_PREFIX)) {
+			return null;
+		}
+		else {
+			List<RE_Register> pwnedRegisters = new ArrayList<>();
+			for (Role role : this.getCurrentUser().getRoles()) {
+				if (role.getName().startsWith(OWNER_ROLE_PREFIX)) {
+					if (role instanceof RegisterRelatedRole) {
+						pwnedRegisters.add(((RegisterRelatedRole)role).getRegister());
+					}
+					else {
+						throw new RuntimeException(String.format("Role type '%s' not yet implemented", role.getClass().getCanonicalName()));
+					}
+				}
+			}
+			
+			int count = 0;
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(ProposalWorkflowManager.STATUS_APPEALED);
+			logger.trace("getRegisterOwnerTodoCount() - Found {} possible proposals for {}", proposals.size(), this.getCurrentUser().getEmailAddress());
+			for (Proposal proposal : proposals) {
+				if (this.hasEntityRelatedRoleForAny(OWNER_ROLE_PREFIX, proposal.getAffectedRegisters())) {
+					count++;
+				}
+			}				
+			
+			return (count > 0) ? Integer.toString(count) : null;
+		}		
+	}
 
 	@Override
 	public boolean isControlBody(UUID proposalUuid) {
