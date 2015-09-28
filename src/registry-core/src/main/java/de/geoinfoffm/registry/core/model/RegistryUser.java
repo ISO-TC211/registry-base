@@ -112,6 +112,9 @@ public class RegistryUser extends Actor implements UserDetails
 	@NotNull
 	private Boolean isActive;
 
+	@Transient
+	private boolean isMembershipApproved;
+
 	@Type(type = "pg-uuid")	
 	private UUID confirmationToken;
 	
@@ -298,5 +301,12 @@ public class RegistryUser extends Actor implements UserDetails
 		return this.confirmationToken == null;
 	}
 	
+	public boolean isMembershipApproved() {
+		return this.isMembershipApproved;
+	}
+	
+	public void setMembershipApproved(boolean isApproved) {
+		this.isMembershipApproved = isApproved;
+	}
 	
 }
