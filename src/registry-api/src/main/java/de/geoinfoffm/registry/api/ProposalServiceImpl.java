@@ -739,7 +739,18 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	@Override
 	public Appeal appealProposal(Proposal proposal, String justification, String situation, String impact) throws InvalidProposalException, IllegalOperationException {
 		Assert.notNull(proposal, "Cannot appeal null proposal");
-		Appeal appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
+		
+		List<Appeal> appeals = appealRepository.findByAppealedProposal(proposal);
+		Appeal appeal;
+		if (appeals.isEmpty()) {
+			appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
+		}
+		else {
+			appeal = appeals.get(0);
+			appeal.setJustification(justification);
+			appeal.setImpact(impact);
+			appeal.setSituation(situation);
+		}
 
 		appeal = appealRepository.save(appeal);
 		
@@ -1008,7 +1019,13 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Appeal findAppeal(Proposal proposal) {
-		return appealRepository.findByAppealedProposal(proposal);
+		List<Appeal> appeals = appealRepository.findByAppealedProposal(proposal);
+		if (appeals.isEmpty()) {
+			return null;
+		}
+		else {
+			return appeals.get(0);
+		}
 	}
 
 	/* (non-Javadoc)
