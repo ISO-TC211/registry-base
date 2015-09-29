@@ -41,6 +41,7 @@ import static org.springframework.security.acls.domain.BasePermission.*;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -226,17 +227,27 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 
 	@Override
 	public Map<UUID, String> getContainedItemClasses(UUID registerUuid) {
-		Map<UUID, String> result = new LinkedHashMap<UUID, String>();
-		
 		RE_Register register = repository().findOne(registerUuid);
 		if (register == null) {
 			logger.error("No register with UUID {} exists", registerUuid);
-			return result;
+			return new HashMap<>();
 		}
+		
+		return this.getContainedItemClasses(register);
+	}
+	
+	public Map<UUID, String> getContainedItemClasses(RE_Register register) {
+		Map<UUID, String> result = new LinkedHashMap<UUID, String>();
+
 		for (RE_ItemClass itemClass : register.getContainedItemClasses()) {
 			result.put(itemClass.getUuid(), itemClass.getName());
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public boolean containsItemClass(RE_Register register, String itemClassName) {
+		return this.getContainedItemClasses(register).containsValue(itemClassName);
 	}
 }

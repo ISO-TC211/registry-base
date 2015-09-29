@@ -62,6 +62,7 @@ public interface RegisterService extends ApplicationService<RE_Register>
 //	public Map<UUID, String> getCachedItemClasses(UUID registerUuid);
 	
 	public Map<UUID, String> getContainedItemClasses(UUID registerUuid);
+	public boolean containsItemClass(RE_Register register, String itemClassName);
 	
 //	public BigInteger nextItemIdentifier();
 	
