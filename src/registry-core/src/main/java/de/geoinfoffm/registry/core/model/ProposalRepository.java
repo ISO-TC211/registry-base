@@ -111,11 +111,19 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	Page<Proposal> findBySponsorAndStatusAndParentIsNull(RE_SubmittingOrganization sponsor, String status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.sponsor = :sponsor AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findBySponsorAndStatusAndParentIsNull(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("status") String status, @Param("search") String search, Pageable pageable);
-	
+
+	List<Proposal> findByStatus(String status);
+	Page<Proposal> findByStatus(String status, Pageable pageable);
+
 	List<Proposal> findByStatusAndParentIsNull(String status);
 	Page<Proposal> findByStatusAndParentIsNull(String status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusAndParentIsNull(@Param("status") String status, @Param("search") String search, Pageable pageable);
+
+	List<Proposal> findByStatusIn(Collection<String> status);
+	Page<Proposal> findByStatusIn(Collection<String> status, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByStatusIn(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
 
 	List<Proposal> findByStatusInAndParentIsNull(Collection<String> status);
 	Page<Proposal> findByStatusInAndParentIsNull(Collection<String> status, Pageable pageable);

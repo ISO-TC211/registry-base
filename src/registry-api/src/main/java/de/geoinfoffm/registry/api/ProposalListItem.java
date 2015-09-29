@@ -57,7 +57,9 @@ import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
@@ -105,6 +107,23 @@ public class ProposalListItem
 			SimpleProposal sp = (SimpleProposal)proposal;
 			this.itemClassName = sp.getItemClassName();
 		}
+		else if (proposal instanceof Supersession) {
+			Supersession supersession = (Supersession)proposal;
+			RE_ItemClass itemClass = null;
+			for (RE_RegisterItem supersededItem : supersession.getSupersededItems()) {
+				if (itemClass == null) {
+					itemClass = supersededItem.getItemClass();
+				}
+				else if (!itemClass.equals(supersededItem.getItemClass())) {
+					itemClass = null;
+					break;
+				}
+			}
+			if (itemClass != null) {
+				this.itemClassName = itemClass.getName();
+			}
+		}
+		
 		this.proposalStatus = proposal.getStatus();
 		
 		this.proposalType = proposal.getClass().getName();
