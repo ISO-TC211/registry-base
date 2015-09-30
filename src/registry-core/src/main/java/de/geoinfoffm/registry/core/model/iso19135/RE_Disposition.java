@@ -56,6 +56,5 @@ import javax.xml.bind.annotation.XmlType;
 public enum RE_Disposition {
 	@XmlEnumValue("withdrawn") WITHDRAWN,
 	@XmlEnumValue("accepted") ACCEPTED,
- @XmlEnumValue("notAccepted")
-	NOT_ACCEPTED,
+	@XmlEnumValue("notAccepted") NOT_ACCEPTED,
 }
