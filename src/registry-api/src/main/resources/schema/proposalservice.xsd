@@ -132,6 +132,7 @@
 					<xs:element name="supersededItemUuid" type="xs:string" maxOccurs="unbounded"/>
 					<!-- use uuidref attribute to reference existing items -->
 					<xs:element name="supersedingItem" type="regsoap:RegisterItemProposal_PropertyType" maxOccurs="unbounded"/>
+					<xs:element name="amendmentInformation" type="grg:RE_AmendmentInformation_PropertyType" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
