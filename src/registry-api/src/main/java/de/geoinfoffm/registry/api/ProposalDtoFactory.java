@@ -179,18 +179,16 @@ public class ProposalDtoFactory
 			throw new RuntimeException(e.getMessage(), e);
 		}
 
-		Constructor<?> ctor=null;
+		Constructor<?> ctor = null;
 		try {
 			if (argumentType == null || argumentType.equals(Void.class)) {
 				ctor = proposalDtoClass.getDeclaredConstructor();
 			}
-			if(ctor==null)
-			{
+			if (ctor == null) {
 				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
 			}
-			if(ctor==null)
-			{
-				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType,ProposalDtoFactory.class);
+			if (ctor == null) {
+				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException ex) {
