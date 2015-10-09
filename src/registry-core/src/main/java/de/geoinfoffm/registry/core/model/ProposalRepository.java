@@ -45,6 +45,7 @@ import org.springframework.data.repository.query.Param;
 
 import de.geoinfoffm.registry.core.EntityRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
@@ -115,8 +116,12 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	List<Proposal> findByStatus(String status);
 	Page<Proposal> findByStatus(String status, Pageable pageable);
 
-	List<Proposal> findByStatusAndParentIsNull(String status);
+	List<Proposal> findByStatusAndParentIsNull(String status);	
+	
 	Page<Proposal> findByStatusAndParentIsNull(String status, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
+	List<Proposal> findByStatusAndParentIsNull(@Param("status") String status, @Param("search") String search);
 	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusAndParentIsNull(@Param("status") String status, @Param("search") String search, Pageable pageable);
 
@@ -130,4 +135,10 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusInAndParentIsNull(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
 	
+	@Query("SELECT DISTINCT p.parent FROM Proposal p WHERE p.status = :status AND p.uuid IN (SELECT sp.uuid FROM SimpleProposal sp WHERE sp.parent IS NOT NULL AND sp.status = :status AND sp.targetRegister = :targetRegister) OR p.uuid IN (SELECT part.parent.uuid FROM SupersessionPart part WHERE part.status = :status AND part.parent.group IS NOT NULL AND part.targetRegister = :targetRegister)")
+	List<ProposalGroup> findGroupsByTargetRegister(@Param("targetRegister") RE_Register targetRegister, @Param("status") String status);
+
+	@Query("SELECT DISTINCT p.parent FROM Proposal p WHERE p.status = :status AND p.uuid IN (SELECT sp.uuid FROM SimpleProposal sp WHERE sp.parent IS NOT NULL AND sp.status = :status AND sp.targetRegister = :targetRegister AND (LOWER(sp.parent.title) LIKE LOWER(:search))) OR p.uuid IN (SELECT part.parent.uuid FROM SupersessionPart part WHERE part.status = :status AND part.parent.parent IS NOT NULL AND part.targetRegister = :targetRegister AND (LOWER(part.parent.parent.title) LIKE LOWER(:search)))")
+	List<ProposalGroup> findGroupsByTargetRegister(@Param("targetRegister") RE_Register targetRegister, @Param("status") String status, @Param("search") String search);
+
 }

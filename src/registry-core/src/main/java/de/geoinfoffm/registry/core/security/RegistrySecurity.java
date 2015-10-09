@@ -45,6 +45,7 @@ import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
@@ -181,8 +182,10 @@ public interface RegistrySecurity
 
 	boolean isLoggedIn();
 
-	public abstract String getPointOfContactTodoCount();
-	public abstract String getRegisterManagerTodoCount();
-	public abstract String getControlBodyTodoCount();
-	public abstract String getRegisterOwnerTodoCount();
+	String getPointOfContactTodoCount();
+	String getRegisterManagerTodoCount();
+	String getControlBodyTodoCount();
+	String getRegisterOwnerTodoCount();
+	
+	List<ProposalGroup> findGroupsByTargetRegisters(List<RE_Register> registers, String status);
 }

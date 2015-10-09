@@ -670,6 +670,14 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		}
 	}
 	
+	public List<ProposalGroup> findGroupsByTargetRegisters(List<RE_Register> registers, String status) {
+		List<ProposalGroup> groups = new ArrayList<ProposalGroup>();
+		for (RE_Register cbRegister : registers) {
+			groups.addAll(proposalRepository.findGroupsByTargetRegister(cbRegister, status));
+		}
+		return groups;
+	}
+
 	@Override 
 	public String getRegisterOwnerTodoCount() {
 		if (!hasAnyRoleWith(OWNER_ROLE_PREFIX)) {
