@@ -71,10 +71,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 @Audited @javax.persistence.Entity
 public class ProposalGroup extends Proposal
 {
-	@OneToMany(mappedBy = "group", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-//	@JoinTable(name = "ProposalGroup_Proposals", joinColumns = @JoinColumn(name = "groupId"), inverseJoinColumns = @JoinColumn(name = "proposalId"))
-	private final List<Proposal> proposals = new ArrayList<Proposal>();
-	
 	@Transient
 	private NameBuildingStrategy nameBuildingStrategy;
 	
@@ -98,8 +94,8 @@ public class ProposalGroup extends Proposal
 		this(strategy);
 		
 		for (P proposal : proposals) {
-			proposal.setGroup(this);
-			this.proposals.add(proposal);
+			proposal.setParent(this);
+			this.getProposals().add(proposal);
 		}
 		
 		this.setTitle(buildName());		
@@ -109,35 +105,26 @@ public class ProposalGroup extends Proposal
 		this();
 		
 		this.setProposals(new ArrayList<Proposal>());
-		this.proposals.addAll(proposals);
+		this.getProposals().addAll(proposals);
 		
 		this.setTitle(name);
-	}
-
-	@Override
-	public void submit(Date submissionDate) throws IllegalOperationException {
-		super.submit(submissionDate);
-		
-		for (Proposal proposal : this.proposals) {
-			proposal.submit(submissionDate);
-		}
 	}
 
 	/**
 	 * @return the proposals
 	 */
 	public List<Proposal> getProposals() {
-		return Collections.unmodifiableList(proposals);
+		return this.getDependentProposals();
 	}
 
 	/**
 	 * @param proposals the proposals to set
 	 */
 	protected void setProposals(List<Proposal> proposals) {
-		this.proposals.clear();
+		this.getDependentProposals().clear();
 		for (Proposal proposal : proposals) {
-			this.proposals.add(proposal);
-			proposal.setGroup(this);
+			this.getDependentProposals().add(proposal);
+			proposal.setParent(this);
 		}
 	}
 
@@ -163,22 +150,6 @@ public class ProposalGroup extends Proposal
 	}
 
 	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#getSponsor()
-	 */
-	@Override
-	public RE_SubmittingOrganization getSponsor() {
-		return getProposals().get(0).getSponsor();
-	}
-
-	@Override
-	public void setSponsor(RE_SubmittingOrganization sponsor) {
-		this.sponsor = sponsor;
-		for (Proposal proposal : this.proposals) {
-			proposal.setSponsor(sponsor);
-		}
-	}
-
-	/* (non-Javadoc)
 	 * @see de.geoinfoffm.registry.core.model.Proposal#getStatus()
 	 */
 	@Override
@@ -186,133 +157,29 @@ public class ProposalGroup extends Proposal
 		return getProposals().get(0).getDecisionStatus();
 	}
 	
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#review(java.util.Date)
-	 */
-	@Override
-	public void review(Date reviewDate) throws IllegalOperationException {
-		this.setStatus(STATUS_IN_APPROVAL_PROCESS);
-		for (Proposal proposal : getProposals()) {
-			proposal.review(reviewDate);
-		}
-	}	
-
-	@Override
-	public void accept() throws IllegalOperationException {
-		this.setConcluded(true);
-		this.setStatus(STATUS_FINISHED);
-		for (Proposal proposal : getProposals()) {
-			proposal.accept();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#accept()
-	 */
-	@Override
-	public void accept(String controlBodyDecisionEvent) throws IllegalOperationException {
-		this.setConcluded(true);
-		this.setStatus(STATUS_FINISHED);
-		for (Proposal proposal : getProposals()) {
-			proposal.accept(controlBodyDecisionEvent);
-		}
-	}
-
-
-	@Override
-	public void reject() throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALABLE);
-		for (Proposal proposal : getProposals()) {
-			proposal.reject();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#reject()
-	 */
-	@Override
-	public void reject(String controlBodyDecisionEvent) throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALABLE);
-		for (Proposal proposal : getProposals()) {
-			proposal.reject(controlBodyDecisionEvent);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#withdraw()
-	 */
-	@Override
-	public void withdraw() throws IllegalOperationException {
-		this.setStatus(STATUS_WITHDRAWN);
-		for (Proposal proposal : getProposals()) {
-			proposal.withdraw();
-		}
-	}
-	
-	@Override
-	public void delete() throws IllegalOperationException {
-		for (Proposal proposal : getProposals()) {
-			proposal.delete();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#conclude()
-	 */
-	@Override
-	public void conclude() throws IllegalOperationException {
-		for (Proposal proposal : getProposals()) {
-			proposal.conclude();
-		}
-		
-		this.setStatus(STATUS_FINISHED);
-		this.setConcluded(true);
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#appeal()
-	 */
-	@Override
-	public Appeal appeal(String justification, String impact, String situation) throws IllegalOperationException {
-		this.setStatus(STATUS_APPEALED);		
-		return new Appeal(this, justification, situation, impact);
-	}
-	
 	public void addProposal(Proposal proposal) throws IllegalOperationException {
-		if (proposal.getGroup() != null && !proposal.getGroup().getUuid().equals(this.getUuid())) {
-			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getGroup().getUuid()));
+		if (proposal.hasParent() && !proposal.getParent().getUuid().equals(this.getUuid())) {
+			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getParent().getUuid()));
 		}
-		this.proposals.add(proposal);
-		proposal.setGroup(this);
+		this.getProposals().add(proposal);
+		proposal.setParent(this);
 	}
 	
 	public void removeProposal(Proposal proposal) {
-		if (this.proposals == null) {
+		if (this.getProposals() == null) {
 			return;
 		}
 		
-		this.proposals.remove(proposal);
-		proposal.setGroup(null);
+		this.getProposals().remove(proposal);
+		proposal.setParent(null);
 	}
 	
 	public void removeProposals(Collection<Proposal> proposals) {
-		if (this.proposals == null) {
+		if (this.getProposals() == null) {
 			return;
 		}
 		
-		this.proposals.removeAll(proposals);
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isReviewed()
-	 */
-	@Override
-	public boolean isReviewed() {
-		if (this.proposals == null || this.proposals.isEmpty()) {
-			return false;
-		}
-		
-		return getProposals().get(0).isReviewed();
+		this.getProposals().removeAll(proposals);
 	}
 
 	/* (non-Javadoc)
@@ -320,59 +187,11 @@ public class ProposalGroup extends Proposal
 	 */
 	@Override
 	public boolean isContainedIn(RE_Register register) {
-		if (this.proposals == null || this.proposals.isEmpty()) {
+		if (this.getProposals() == null || this.getProposals().isEmpty()) {
 			return false;
 		}
 
 		return getProposals().get(0).isContainedIn(register);
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isUnderReview()
-	 */
-	@Override
-	public boolean isUnderReview() {
-		if (this.proposals == null || this.proposals.isEmpty()) {
-			return false;
-		}
-
-		return getProposals().get(0).isUnderReview();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isPending()
-	 */
-	@Override
-	public boolean isPending() {
-		if (this.proposals == null || this.proposals.isEmpty()) {
-			return false;
-		}
-
-		return getProposals().get(0).isPending();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isTentative()
-	 */
-	@Override
-	public boolean isTentative() {
-		if (this.proposals == null || this.proposals.isEmpty()) {
-			return false;
-		}
-
-		return getProposals().get(0).isTentative();
-	}
-
-	/* (non-Javadoc)
-	 * @see de.geoinfoffm.registry.core.model.Proposal#isFinal()
-	 */
-	@Override
-	public boolean isFinal() {
-		if (this.proposals == null || this.proposals.isEmpty()) {
-			return false;
-		}
-
-		return getProposals().get(0).isFinal();
 	}
 	
 	@Override
@@ -386,7 +205,7 @@ public class ProposalGroup extends Proposal
 	}
 	
 	public String buildName() {
-		return nameBuildingStrategy.buildName(this.proposals);
+		return nameBuildingStrategy.buildName(this.getProposals());
 	}
 	
 	public static class SimpleNameBuildingStrategy implements NameBuildingStrategy {
@@ -421,5 +240,12 @@ public class ProposalGroup extends Proposal
 			return nameBuilder;
 		}
 
+	}
+
+	@Override
+	public void delete() throws IllegalOperationException {
+		for (Proposal proposal : this.getProposals()) {
+			proposal.delete();
+		}
 	}
 }

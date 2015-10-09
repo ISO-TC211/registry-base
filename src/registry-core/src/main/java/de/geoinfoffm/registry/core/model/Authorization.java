@@ -66,7 +66,7 @@ public class Authorization extends de.geoinfoffm.registry.core.Entity
 	@ManyToOne(optional = false)
 	private Actor actor;
 	
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.PERSIST)
 	private Role role;
 	
 	protected Authorization() {

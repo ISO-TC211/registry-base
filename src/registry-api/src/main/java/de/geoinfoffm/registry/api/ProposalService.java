@@ -67,7 +67,7 @@ public interface ProposalService extends ApplicationService<Proposal>
 	Proposal propose(RegisterItemProposalDTO proposal) throws InvalidProposalException, ItemNotFoundException, IllegalOperationException;
 	Addition createAdditionProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException;
 	Retirement createRetirement(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
-	Clarification createClarification(RE_RegisterItem item, Map<String, String[]> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
+	Clarification createClarification(RE_RegisterItem item, Map<String, List<String>> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException;
 	Supersession createSupersession(Set<RE_RegisterItem> supersededItems, Set<RegisterItemProposalDTO> successors, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException, InvalidProposalException;
 	ProposalGroup createProposalGroup(List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException;
 	ProposalGroup createProposalGroup(String name, List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException;

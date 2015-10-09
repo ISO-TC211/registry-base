@@ -36,9 +36,12 @@ package de.geoinfoffm.registry.core;
 
 public interface RegistryInitializer
 {
+	public static final String STATUS_NOT_INITIALIZING = "NOT_INITIALIZING";
+	public static final String STATUS_INITIALIZING = "INITIALIZING";
+	public static final String STATUS_DONE = "DONE";
 
-	public void loadExampleData() throws Exception;
-
-	public void initializeRegistry() throws Exception;
-
+	void initializeRegistry() throws Exception;
+	
+	String log();
+	String status();
 }

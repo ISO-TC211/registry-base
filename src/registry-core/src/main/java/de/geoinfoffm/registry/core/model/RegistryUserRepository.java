@@ -34,7 +34,7 @@
  */
 package de.geoinfoffm.registry.core.model;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.springframework.stereotype.Repository;
 
@@ -49,7 +49,7 @@ import de.geoinfoffm.registry.core.EntityRepository;
 @Repository
 public interface RegistryUserRepository extends EntityRepository<RegistryUser>
 {
-	public RegistryUser findByName(String name);
-	public RegistryUser findByEmailAddressIgnoreCase(String emailAddress);
-	public List<RegistryUser> findByOrganization(Organization organization);
+	RegistryUser findByName(String name);
+	RegistryUser findByEmailAddressIgnoreCase(String emailAddress);
+	Collection<RegistryUser> findByOrganization(Organization organization);
 }

@@ -37,11 +37,16 @@ package de.geoinfoffm.registry.core.model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.geoinfoffm.registry.core.model.iso19135.InvalidProposalException;
 import de.geoinfoffm.registry.core.model.iso19135.ProposalManagementInformationRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AdditionInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AmendmentInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ClarificationInformation;
+import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
+import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
  * @author Florian Esser
@@ -51,7 +56,10 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 public class ProposalFactory implements Proposal.Factory
 {
 	@Autowired
-	private ProposalManagementInformationRepository pmiRepository; 
+	private ProposalManagementInformationRepository pmiRepository;
+	
+	@Autowired
+	private ProposalWorkflowManager workflowManager;
 	
 	/* (non-Javadoc)
 	 * @see de.geoinfoffm.registry.core.model.Proposal.Factory#createProposal(de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation)
@@ -76,4 +84,28 @@ public class ProposalFactory implements Proposal.Factory
 
 		return null;
 	}
+	
+	public Addition createAddition(RE_RegisterItem proposedItem, RE_SubmittingOrganization sponsor, String justification,
+			String registerManagerNotes, String controlBodyNotes) throws InvalidProposalException {
+
+		RE_AdditionInformation additionInformation = new RE_AdditionInformation();
+		// The dateProposed property must not be set here because the proposal
+		// process will not start before the proposal was reviewed by the 
+		// register manager (see sec. 6.2.6.3 of ISO 19135).
+		// Due to technical considerations the proposal management record is created
+		// at this point in time 
+		additionInformation.setSponsor(sponsor);
+		additionInformation.setStatus(RE_DecisionStatus.PENDING);
+		additionInformation.setJustification(justification);
+		additionInformation.setRegisterManagerNotes(registerManagerNotes);
+		additionInformation.setControlBodyNotes(controlBodyNotes);
+		additionInformation.setItem(proposedItem);
+		
+		Addition result = new Addition(additionInformation);
+		
+		workflowManager.initialize(result);
+		
+		return result;
+	}
+
 }

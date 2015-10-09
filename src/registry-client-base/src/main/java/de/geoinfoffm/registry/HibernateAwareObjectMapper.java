@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, bespire UG (haftungsbeschränkt)
+ * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -7,17 +7,17 @@
  * are met:
  *     * Redistributions of source code must retain the above copyright
  *     	 notice, this list of conditions and the following disclaimer.
- *
+
  *     * Redistributions in binary form must reproduce the above
  *     	 copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- *
- *     * The names "bespire", "DGIWG", "DFDD", "FAD" and the names of 
- *       other contributors must not and the names of other
- *       contributors must not be used to endorse or promote products
- *       derived from this software without specific prior written 
- *       permission.
+
+ *     * The names "German Federal Agency for Cartography and Geodesy",
+ *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ *       "GDI-DE Registry" and the names of other contributors must not
+ *       be used to endorse or promote products derived from this
+ *       software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -32,45 +32,14 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.bespire.registry.core;
+package de.geoinfoffm.registry;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 
-import org.hibernate.envers.Audited;
-
-import de.geoinfoffm.registry.core.model.Proposal;
-import de.geoinfoffm.registry.core.model.Role;
-
-/**
- * 
- * @author Florian Esser
- *
- */
-@Access(AccessType.FIELD)
-@Audited @Entity
-public class ProposalRelatedRole extends Role
+public class HibernateAwareObjectMapper extends ObjectMapper
 {
-	private static final long serialVersionUID = -42056590196592155L;
-	
-	@ManyToOne(optional = false)
-	private Proposal proposal;
-
-	public ProposalRelatedRole() {
-	}
-
-	public ProposalRelatedRole(String name) {
-		super(name);
-	}
-
-	public Proposal getProposal() {
-		return proposal;
-	}
-
-	public void setProposal(Proposal proposal) {
-		this.proposal = proposal;
-	}
-
+    public HibernateAwareObjectMapper() {
+        registerModule(new Hibernate4Module());
+    }
 }

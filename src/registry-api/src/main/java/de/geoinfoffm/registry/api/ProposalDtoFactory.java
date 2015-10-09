@@ -49,9 +49,9 @@ import org.springframework.util.StringUtils;
 import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
+import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.ItemClassConfiguration;
 import de.geoinfoffm.registry.core.ItemClassRegistry;
-//import de.geoinfoffm.registry.core.model.HierarchicalProposal;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -87,7 +87,8 @@ public class ProposalDtoFactory
 	public RegisterItemProposalDTO getProposalDto(AbstractProposal_Type proposal) {
 		RegisterItemProposalDTO result = null;
 		if (proposal instanceof Addition_Type) {
-			result = this.getProposalDto(((Addition_Type)proposal).getItemDetails().getAbstractRegisterItemProposal().getValue());
+			Addition_Type addition = (Addition_Type)proposal;
+			result = this.getProposalDto(addition.getItemDetails().getAbstractRegisterItemProposal().getValue());
 			
 			result.setJustification(proposal.getJustification());
 			result.setRegisterManagerNotes(proposal.getRegisterManagerNotes());
@@ -115,17 +116,14 @@ public class ProposalDtoFactory
 		else if (proposal instanceof Supersession) {
 			return getProposalDto((Supersession)proposal);
 		}
-//		else if (proposal instanceof HierarchicalProposal) {
-//			HierarchicalProposal group = (HierarchicalProposal)proposal;
-//			if (group.getPrimaryProposal() != null) {
-//				return getProposalDto(group.getPrimaryProposal());
-//			}
-//			else {
-//				throw new RuntimeException("Missing primary proposal");
-//			}
-//		}
 		else if (proposal instanceof ProposalGroup) {
-			throw new RuntimeException("Not yet implemented");
+			ProposalGroup group = (ProposalGroup)proposal;
+			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group, this);
+			for (Proposal containedProposal : group.getProposals()) {
+				groupDto.getDependentProposals().add(getProposalDto(containedProposal));
+			}
+			
+			return groupDto;
 		}
 		else {
 			throw new RuntimeException("Not yet implemented");
@@ -134,11 +132,11 @@ public class ProposalDtoFactory
 
 	public RegisterItemProposalDTO getProposalDto(SimpleProposal proposal) {
 		RE_ItemClass itemClass = proposal.getItem().getItemClass();
-		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal);		
+		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal, Entity.unproxify(this));		
 	}
 	
 	public RegisterItemProposalDTO getProposalDto(Supersession supersession) {
-		return new RegisterItemProposalDTO(supersession);
+		return new RegisterItemProposalDTO(supersession, this);
 	}
 
 	private Constructor<?> findConstructor(RE_ItemClass itemClass) {
@@ -154,7 +152,7 @@ public class ProposalDtoFactory
 				defaultConstructor = RegisterItemProposalDTO.class.getConstructor();
 			}
 			else {
-				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType);
+				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException | SecurityException e) {
@@ -162,12 +160,14 @@ public class ProposalDtoFactory
 		}
 
 		if (config == null) {
-			logger.debug("Item class registry contains no configuration for item class {} (UUID: {})", itemClass.getName(), itemClass.getUuid());
+			logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			logger.error("Item class registry contains no configuration for item class {} (UUID: {}). Missing @ItemClass annotation?", itemClass.getName(), itemClass.getUuid());
+			logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			return defaultConstructor;
 		}
 
 		String proposalDtoClassName = config.getDtoClass();
-		logger.debug("Item class configuration define class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
+		logger.debug("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
 		Class<?> proposalDtoClass;		
 		try {
 			proposalDtoClass = this.getClass().getClassLoader().loadClass(proposalDtoClassName);
@@ -179,13 +179,16 @@ public class ProposalDtoFactory
 			throw new RuntimeException(e.getMessage(), e);
 		}
 
-		Constructor<?> ctor;
+		Constructor<?> ctor = null;
 		try {
 			if (argumentType == null || argumentType.equals(Void.class)) {
 				ctor = proposalDtoClass.getDeclaredConstructor();
 			}
-			else {
+			if (ctor == null) {
 				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
+			}
+			if (ctor == null) {
+				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException ex) {

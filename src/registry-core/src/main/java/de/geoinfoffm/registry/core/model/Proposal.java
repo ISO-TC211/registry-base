@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.core.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -45,15 +46,15 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.envers.Audited;
+import org.slf4j.Logger;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
@@ -68,24 +69,20 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
  */
 @Access(AccessType.FIELD)
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "_proposalType", discriminatorType = DiscriminatorType.STRING)
 @Audited @javax.persistence.Entity
 public abstract class Proposal extends Entity
 {
-	public static final String STATUS_NOT_SUBMITTED = "NOT_SUBMITTED";
-	public static final String STATUS_UNDER_REVIEW = "UNDER_REVIEW";
-	public static final String STATUS_IN_APPROVAL_PROCESS = "IN_APPROVAL_PROCESS";
-	public static final String STATUS_APPEALABLE = "APPEALABLE";
-	public static final String STATUS_APPEALED = "APPEALED";
-	public static final String STATUS_FINISHED = "FINISHED";
-	public static final String STATUS_WITHDRAWN = "WITHDRAWN";
+	private static final Logger logger = LoggerFactory.make();
 	
 	@Column(columnDefinition = "text")
 	private String title;
 
 	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	private ProposalGroup group;
+	private Proposal parent;
 	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "parent")
+	private List<Proposal> dependentProposals;
+
 	private String status;
 	
 	@ManyToOne
@@ -104,79 +101,75 @@ public abstract class Proposal extends Entity
 	
 	public abstract boolean isContainedIn(RE_Register register);
 	
-	public void submit(Date submissionDate) throws IllegalOperationException {
-		this.setDateSubmitted(submissionDate);
-		this.setStatus(STATUS_UNDER_REVIEW);
+	public void accept() throws IllegalOperationException {
+		
 	}
 	
-	public abstract void review(Date reviewDate) throws IllegalOperationException;
-	public abstract void accept() throws IllegalOperationException;
-	public abstract void accept(String controlBodyDecisionEvent) throws IllegalOperationException;
-	public abstract void reject() throws IllegalOperationException;
-	public abstract void reject(String controlBodyDecisionEvent) throws IllegalOperationException;	
-	public abstract void withdraw() throws IllegalOperationException;
-	public abstract void conclude() throws IllegalOperationException;
 	public abstract void delete() throws IllegalOperationException;
-	public abstract Appeal appeal(String justification, String impact, String situation) throws IllegalOperationException;
-	
-	public abstract boolean isUnderReview();
-	public abstract boolean isReviewed();
-	public abstract boolean isPending();
-	public abstract boolean isTentative();
-	public abstract boolean isFinal();
-	
-	public boolean isEditable() {
-		return !this.isFinal() && this.isUnderReview();
-	}
-	
-	public boolean isWithdrawable() {
-		return this.isUnderReview() || this.isPending();
-	}
 
 	protected Proposal() {
-		this.status = STATUS_NOT_SUBMITTED;
+		this.title = "";
 	}
 
 	protected Proposal(String title) {
 		this.setTitle(title);
-		this.status = STATUS_NOT_SUBMITTED;
 	}
 
-	/**
-	 * @return the group
-	 */
-	public ProposalGroup getGroup() {
-		return group;
+	public Proposal getParent() {
+		return parent;
 	}
 
+	public void setParent(Proposal parent) {
+		this.parent = parent;
+	}
+
+	public boolean hasDependentProposals() {
+		return !this.getDependentProposals().isEmpty();
+	}
+
+	public List<Proposal> getDependentProposals() {
+		if (dependentProposals == null) {
+			dependentProposals = new ArrayList<Proposal>();
+		}
+		return dependentProposals;
+	}
+	
+	public void setDependentProposals(List<Proposal> dependentProposals) {
+		this.dependentProposals = dependentProposals;
+	}
+	
 	public String getTitle() {
 		return title;
 	}
+	
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	/**
-	 * @param group the group to set
-	 */
-	public void setGroup(ProposalGroup group) {
-		this.group = group;
-	}
-
-	public boolean hasGroup() {
-		return this.getGroup() != null;
+	
+	public boolean hasParent() {
+		return this.getParent() != null;
 	}
 	
 	public String getStatus() {
 		return status;
 	}
 	public void setStatus(String status) {
+		logger.trace(String.format(">>> Changing status of proposal '%s' from '%s' to '%s'", this.getUuid(), this.status, status));
 		this.status = status;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setStatus(status);
+		}
 	}
 	public RE_SubmittingOrganization getSponsor() {
 		return sponsor;
 	}
 
-	public abstract void setSponsor(RE_SubmittingOrganization sponsor);
+	public void setSponsor(RE_SubmittingOrganization sponsor) {
+		this.sponsor = sponsor;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setSponsor(sponsor);
+		}
+	}
 
 	public boolean isSubmitted() {
 		return dateSubmitted != null;
@@ -188,15 +181,26 @@ public abstract class Proposal extends Entity
 	
 	public void setDateSubmitted(Date dateSubmitted) {
 		this.dateSubmitted = dateSubmitted;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setDateSubmitted(dateSubmitted);
+		}
 	}
 
 	public Boolean isConcluded() {
 		return isConcluded;
 	}
+	
 	public void setConcluded(Boolean isConcluded) {
 		this.isConcluded = isConcluded;
+		for (Proposal dependentProposal : this.getDependentProposals()) {
+			dependentProposal.setConcluded(isConcluded);
+		}
 	}
-
+	
+	public boolean isEditable() {
+		return true;
+	}
+	
 	public interface Factory {
 		Proposal createProposal(RE_ProposalManagementInformation proposalManagementInformation);
 	}

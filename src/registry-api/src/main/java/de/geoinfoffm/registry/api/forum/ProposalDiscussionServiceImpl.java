@@ -28,7 +28,6 @@ import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
 
-@Service
 public class ProposalDiscussionServiceImpl extends AbstractApplicationService<ProposalDiscussion, ProposalDiscussionRepository> implements ProposalDiscussionService
 {
 	@Autowired

@@ -39,7 +39,7 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
-import org.thymeleaf.spring3.view.ThymeleafViewResolver;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 
 public class RegistryClientViewResolver extends ThymeleafViewResolver
 {

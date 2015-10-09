@@ -40,6 +40,7 @@ import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -67,7 +68,7 @@ public class Post extends de.geoinfoffm.registry.core.Entity
 	@JoinColumn(name = "discussion_id")
 	private Discussion discussion;
 	
-	@ManyToOne
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Post parentPost;
 	
 	@OneToMany(mappedBy = "parentPost")

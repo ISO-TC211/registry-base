@@ -41,6 +41,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -64,6 +65,10 @@ public class BasePathUrlAuthenticationFailureHandler extends SimpleUrlAuthentica
 		}
 		else {
 			failureUrl = "/login?error&targetUrl=" + URLEncoder.encode(targetUrl, "UTF-8");
+		}
+		
+		if (exception != null && exception instanceof LockedException) {
+			failureUrl += "&reason=accountLocked";
 		}
 		
         logger.debug("Redirecting to " + failureUrl);

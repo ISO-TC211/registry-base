@@ -37,6 +37,8 @@ package de.geoinfoffm.registry.core;
 import java.io.Serializable;
 import java.util.UUID;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -62,19 +64,20 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
  *
  */
 @XmlRootElement
+@Access(AccessType.FIELD)
 @Audited @MappedSuperclass
 public abstract class Entity implements Serializable
 {
 	@XmlID @XmlAttribute(name = "uuid", namespace = "http://www.isotc211.org/2005/gco")
 	@Id
-	@GenericGenerator(name = "system-uuid", strategy = "uuid2")
-	@GeneratedValue(generator = "system-uuid")
+//	@GenericGenerator(name = "system-uuid", strategy = "uuid2")
+//	@GeneratedValue(generator = "system-uuid")
 	@Column(name = "uuid")
 	@Type(type = "pg-uuid")	
 	private UUID uuid;
 	
 	protected Entity() {
-//		this.uuid = UUID.randomUUID();
+		this.uuid = UUID.randomUUID();
 	}
 	
 	/**
@@ -95,6 +98,10 @@ public abstract class Entity implements Serializable
 	 */
 	public UUID getUuid() {
 		return uuid;
+	}
+	
+	protected void setUuid(UUID uuid) {
+		this.uuid = uuid;
 	}
 	
 	public UUID getId() {

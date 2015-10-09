@@ -34,9 +34,21 @@
  */
 package de.geoinfoffm.registry.api;
 
+import org.isotc211.iso19135.RE_RegisterItem_Type;
+
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
 public interface RegisterItemFactory<I extends RE_RegisterItem, P extends RegisterItemProposalDTO>
 {
 	I createRegisterItem(P proposal);
+	
+	I createRegisterItem(RE_RegisterItem_Type item);
+
+	/**
+	 * don't set values, but collect {@link Runnable} so that caller can invoke execution of set values at an appropiate time. 
+	 * @param item
+	 * @param setValueRunnableColector
+	 * @return
+	 */
+	I createRegisterItem(RE_RegisterItem_Type item, EntityUnitOfWork unitOfWork);
 }

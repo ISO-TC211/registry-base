@@ -41,9 +41,11 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -93,10 +95,11 @@ public class RE_ItemClass extends de.geoinfoffm.registry.core.Entity
 
 	@XmlElement(name = "alternativeNames", namespace = "http://www.isotc211.org/2005/grg")
 	@XmlPath("alternativeNames/grg:RE_AlternativeName")
-	@ElementCollection
-	@AttributeOverrides({
-		@AttributeOverride(name = "name", column = @Column(name ="alternativeName_name"))
-	})
+	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+	@JoinTable(name = "RE_ItemClass_AlternativeNames",
+	   joinColumns = @JoinColumn(name="itemClassId"),
+	   inverseJoinColumns = @JoinColumn(name="alternativeNameId")
+	)
 	private Set<RE_AlternativeName> alternativeNames;
 
 	@JsonBackReference
@@ -179,6 +182,9 @@ public class RE_ItemClass extends de.geoinfoffm.registry.core.Entity
 	}
 	
 	public Set<RE_RegisterItem> getDescribedItem() {
+		if (describedItem == null) {
+			describedItem = new HashSet<RE_RegisterItem>();
+		}
 		return describedItem;
 	}
 

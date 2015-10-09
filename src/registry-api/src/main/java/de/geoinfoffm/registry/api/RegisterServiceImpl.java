@@ -41,11 +41,16 @@ import static org.springframework.security.acls.domain.BasePermission.*;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -54,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.RegistersChangedEvent;
 import de.geoinfoffm.registry.core.model.Actor;
@@ -79,8 +85,13 @@ public class RegisterServiceImpl
 extends AbstractApplicationService<RE_Register, RegisterRepository> 
 implements RegisterService, ApplicationListener<RegistersChangedEvent>
 {
+	private static final Logger logger = LoggerFactory.make();
+	
 	@Autowired
 	private RoleService roleService;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	private Map<UUID, String> registerNamesCache;
 	
@@ -143,12 +154,14 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 		CI_ResponsibleParty contact = new CI_ResponsibleParty(owner.getName(), registerOwner.getName(), "Register owner", CI_RoleCode.OWNER);
 		owner.setContact(contact);
 		result.setOwner(owner);
+		entityManager.persist(owner);
 		
 		RE_RegisterManager manager = new RE_RegisterManager();
 		manager.setName(registerManager.getName());
 		CI_ResponsibleParty managerContact = new CI_ResponsibleParty(manager.getName(), registerManager.getName(), "Register manager", CI_RoleCode.CUSTODIAN);
 		manager.setContact(managerContact);
 		result.setManager(manager);
+		entityManager.persist(manager);
 		
 		if (setter != null) {
 			setter.run(result);
@@ -157,10 +170,10 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 		result = repository().save(result);
 
 		// Create roles for new register
-		Role managerRole = roleService.createRole(MANAGER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role ownerRole = roleService.createRole(OWNER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role submitterRole = roleService.createRole(SUBMITTER_ROLE_PREFIX + result.getUuid().toString(), result);
-		Role controlBodyRole = roleService.createRole(CONTROLBODY_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role managerRole = roleService.getOrCreateRole(MANAGER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role ownerRole = roleService.getOrCreateRole(OWNER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role submitterRole = roleService.getOrCreateRole(SUBMITTER_ROLE_PREFIX + result.getUuid().toString(), result);
+		Role controlBodyRole = roleService.getOrCreateRole(CONTROLBODY_ROLE_PREFIX + result.getUuid().toString(), result);
 		
 		registerOwner.assignRole(ownerRole);
 		registerManager.assignRole(managerRole);
@@ -214,13 +227,27 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 
 	@Override
 	public Map<UUID, String> getContainedItemClasses(UUID registerUuid) {
-		Map<UUID, String> result = new LinkedHashMap<UUID, String>();
-		
 		RE_Register register = repository().findOne(registerUuid);
+		if (register == null) {
+			logger.error("No register with UUID {} exists", registerUuid);
+			return new HashMap<>();
+		}
+		
+		return this.getContainedItemClasses(register);
+	}
+	
+	public Map<UUID, String> getContainedItemClasses(RE_Register register) {
+		Map<UUID, String> result = new LinkedHashMap<UUID, String>();
+
 		for (RE_ItemClass itemClass : register.getContainedItemClasses()) {
 			result.put(itemClass.getUuid(), itemClass.getName());
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public boolean containsItemClass(RE_Register register, String itemClassName) {
+		return this.getContainedItemClasses(register).containsValue(itemClassName);
 	}
 }

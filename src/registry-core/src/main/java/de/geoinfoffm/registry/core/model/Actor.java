@@ -91,6 +91,26 @@ public abstract class Actor extends de.geoinfoffm.registry.core.Entity
 		this.removeAuthorization(auth);
 	}
 	
+	public boolean hasRole(Role role) {
+		for (Authorization auth : this.getAuthorizations()) {
+			if (auth.getRole().equals(role)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean hasRole(String roleName) {
+		for (Authorization auth : this.getAuthorizations()) {
+			if (auth.getRole().getName().equals(roleName)) {
+				return true;
+			}
+		}
+		
+		return false;		
+	}
+	
 	public void addAuthorization(Authorization authorization) {
 		if (this.authorizations == null) {
 			this.authorizations = new HashSet<Authorization>();

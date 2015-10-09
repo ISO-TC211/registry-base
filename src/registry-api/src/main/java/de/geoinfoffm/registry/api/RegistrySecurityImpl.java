@@ -34,12 +34,16 @@
  */
 package de.geoinfoffm.registry.api;
 
+import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 import static org.springframework.security.acls.domain.BasePermission.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.acls.AclPermissionEvaluator;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
@@ -53,6 +57,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Authorization;
@@ -61,18 +66,24 @@ import de.geoinfoffm.registry.core.model.DelegationRepository;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.OrganizationRepository;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalRepository;
+import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.RegistryUserRepository;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.RoleRepository;
+import de.geoinfoffm.registry.core.model.Supersession;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationRepository;
 import de.geoinfoffm.registry.core.security.RegistrySecurity;
-import de.geoinfoffm.registry.core.security.RegistryUserUtils;
+import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 public class RegistrySecurityImpl implements RegistrySecurity 
 {
+	private static final Logger logger = LoggerFactory.make();
+
 	@Autowired
 	private MutableAclService aclService;
 	
@@ -91,6 +102,9 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	@Autowired
 	protected OrganizationService orgService;
 
+	@Autowired
+	protected RegisterService registerService;
+	
 	@Autowired
 	private RegistryUserRepository userRepository;
 
@@ -285,6 +299,16 @@ public class RegistrySecurityImpl implements RegistrySecurity
 		return true;
 	}
 	
+	@Override
+	public <E extends Entity> boolean hasEntityRelatedRoleForAny(String rolePrefix, Collection<E> entities) {
+		boolean hasAny = false;
+		for (E entity : entities) {
+			hasAny |= hasEntityRelatedRole(rolePrefix, entity);
+		}
+		
+		return hasAny;
+	}
+
 	@Override
 	public <E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities) {
 		if (rolePrefices == null || rolePrefices.isEmpty() || entities == null || entities.isEmpty()) {
@@ -605,14 +629,28 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			RE_SubmittingOrganization sponsor = RegistryUserUtils.getUserSponsor(userRepository);
-			List<Proposal> proposals = proposalRepository.findBySponsorAndStatusAndDateSubmittedIsNotNullAndGroupIsNullAndIsConcludedIsFalse(sponsor, Proposal.STATUS_UNDER_REVIEW);
-			if (!proposals.isEmpty()) {
-				return Integer.toString(proposals.size());
+			List<RE_Register> managedRegisters = new ArrayList<>();
+			for (Role role : this.getCurrentUser().getRoles()) {
+				if (role.getName().startsWith(MANAGER_ROLE_PREFIX)) {
+					if (role instanceof RegisterRelatedRole) {
+						managedRegisters.add(((RegisterRelatedRole)role).getRegister());
+					}
+					else {
+						throw new RuntimeException(String.format("Role type '%s' not yet implemented", role.getClass().getCanonicalName()));
+					}
+				}
 			}
-			else {
-				return null;
-			}
+			
+			int count = 0;
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(ProposalWorkflowManager.STATUS_UNDER_REVIEW);
+			logger.trace("getRegisterManagerTodoCount() - Found {} possible proposals for {}", proposals.size(), this.getCurrentUser().getEmailAddress());
+			for (Proposal proposal : proposals) {
+				if (this.hasEntityRelatedRoleForAny(MANAGER_ROLE_PREFIX, proposal.getAffectedRegisters())) {
+					count++;
+				}
+			}				
+			
+			return (count > 0) ? Integer.toString(count) : null;
 		}
 	}
 
@@ -622,7 +660,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			return null;
 		}
 		else {
-			List<Proposal> proposals = proposalRepository.findByStatusAndGroupIsNull(Proposal.STATUS_IN_APPROVAL_PROCESS);
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(STATUS_IN_APPROVAL_PROCESS);
 			if (!proposals.isEmpty()) {
 				return Integer.toString(proposals.size());
 			}
@@ -630,6 +668,37 @@ public class RegistrySecurityImpl implements RegistrySecurity
 				return null;
 			}
 		}
+	}
+	
+	@Override 
+	public String getRegisterOwnerTodoCount() {
+		if (!hasAnyRoleWith(OWNER_ROLE_PREFIX)) {
+			return null;
+		}
+		else {
+			List<RE_Register> pwnedRegisters = new ArrayList<>();
+			for (Role role : this.getCurrentUser().getRoles()) {
+				if (role.getName().startsWith(OWNER_ROLE_PREFIX)) {
+					if (role instanceof RegisterRelatedRole) {
+						pwnedRegisters.add(((RegisterRelatedRole)role).getRegister());
+					}
+					else {
+						throw new RuntimeException(String.format("Role type '%s' not yet implemented", role.getClass().getCanonicalName()));
+					}
+				}
+			}
+			
+			int count = 0;
+			List<Proposal> proposals = proposalRepository.findByStatusAndParentIsNull(ProposalWorkflowManager.STATUS_APPEALED);
+			logger.trace("getRegisterOwnerTodoCount() - Found {} possible proposals for {}", proposals.size(), this.getCurrentUser().getEmailAddress());
+			for (Proposal proposal : proposals) {
+				if (this.hasEntityRelatedRoleForAny(OWNER_ROLE_PREFIX, proposal.getAffectedRegisters())) {
+					count++;
+				}
+			}				
+			
+			return (count > 0) ? Integer.toString(count) : null;
+		}		
 	}
 
 	@Override
@@ -652,6 +721,26 @@ public class RegistrySecurityImpl implements RegistrySecurity
 			throw new UnauthorizedException("You are not authorized to access this resource.");
 		}
 	}
+	
+	@Override
+	public boolean maySubmitTo(RE_Register register) {
+		return this.maySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public boolean maySubmitToAll(Collection<RE_Register> registers) {
+		if (registers.isEmpty()) {
+			return false;
+		}
+		
+		for (RE_Register register : registers) {
+			if (!maySubmitTo(register)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	@Override
 	public boolean maySubmitTo(UUID targetRegisterUuid) {
@@ -661,6 +750,47 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	@Override
 	public void assertMaySubmitTo(UUID targetRegisterUuid) throws UnauthorizedException {
 		assertIsTrue(maySubmitTo(targetRegisterUuid));
+	}
+
+	@Override
+	public void assertMaySubmitTo(RE_Register register) throws UnauthorizedException {
+		this.assertMaySubmitTo(register.getUuid());
+	}
+
+	@Override
+	public void assertMaySubmitToAll(RE_Register... registers) throws UnauthorizedException {
+		for (RE_Register register : registers) {
+			this.assertMaySubmitTo(register);
+		}
+	}
+
+	@Override
+	public boolean isSubmitter() {
+		return hasRoleWith(SUBMITTER_ROLE_PREFIX);
+	}
+
+	@Override
+	public void assertIsSubmitter() throws UnauthorizedException {
+		if (!isSubmitter()) {
+			throw new UnauthorizedException("You are not authorized to access this resource.");
+		}
+	}
+
+	@Override
+	public boolean mayAppeal(Proposal proposal) {
+		Organization suborg = orgRepository.findBySubmittingOrganization(proposal.getSponsor());
+		for (RE_Register targetRegister : proposal.getAffectedRegisters()) {
+			if (!mayActOnBehalf(suborg, registerService.getSubmitterRole(targetRegister))) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	@Override
+	public void assertMayAppeal(Proposal proposal) throws UnauthorizedException {
+		assertIsTrue(mayAppeal(proposal));
 	}
 
 }

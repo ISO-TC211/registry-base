@@ -68,6 +68,8 @@ public interface RegisterItemRepository extends RE_RegisterItemRepository
 	public Set<RE_RegisterItem> findByStatus(RE_ItemStatus status);
 	public Page<RE_RegisterItem> findByStatus(RE_ItemStatus status, Pageable pageable);
 	
+	public Set<RE_RegisterItem> findByItemClass(RE_ItemClass itemClass);
+	
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatus(RE_Register register, RE_ItemClass itemClass, RE_ItemStatus status, Pageable pageable);
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatusIn(RE_Register register, RE_ItemClass itemClass, Collection<RE_ItemStatus> status, Pageable pageable);
 

@@ -51,23 +51,25 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
+import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
-import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
-import de.geoinfoffm.registry.api.soap.Addition_Type;
 
 /**
  * @author Florian Esser
@@ -77,6 +79,7 @@ public class RegisterItemProposalDTO
 {	
 	// Used to reference existing items
 	private UUID referencedItemUuid;
+	private UUID parentItemUuid;
 	
 	private UUID itemUuid;
 	private UUID proposalUuid;
@@ -92,6 +95,8 @@ public class RegisterItemProposalDTO
 	private String controlBodyNotes;
 	private ProposalType proposalType;
 	
+	private boolean markedForDeletion;
+	
 	private final Map<String, String[]> originalValues = new HashMap<String, String[]>();
 	
 	private final Set<UUID> supersededItems = new HashSet<UUID>();
@@ -99,6 +104,7 @@ public class RegisterItemProposalDTO
 	private final Set<UUID> existingSupersedingItems = new HashSet<UUID>();
 	
 //	private final List<RegisterItemProposalDTO> dependentItems = new ArrayList<RegisterItemProposalDTO>();
+	private final Set<RegisterItemProposalDTO> dependentProposals = new HashSet<>();
 	
 	public RegisterItemProposalDTO() {
 		itemUuid = UUID.randomUUID();
@@ -106,7 +112,6 @@ public class RegisterItemProposalDTO
 	
 	protected RegisterItemProposalDTO(String itemClassName) {
 		this();
-		
 		this.itemClassName = itemClassName;
 	}
 	
@@ -154,6 +159,13 @@ public class RegisterItemProposalDTO
 		initializeFromItemDetails(itemDetails);
 	}
 	
+	private void initializeFromGroup(ProposalGroup group) {
+		this.setName(group.getTitle());
+		this.setProposalUuid(group.getUuid());
+		this.setProposalType(ProposalType.GROUP);
+		this.setSponsorUuid(group.getSponsor().getUuid());
+	}
+
 	protected void initializeFromItem(RE_RegisterItem_Type proposedItem) {
 		if (proposedItem.getItemClass() == null) {
 			throw new IllegalArgumentException("Proposed item must reference an item class");
@@ -234,12 +246,20 @@ public class RegisterItemProposalDTO
 //		initializeFromItem(retirement.getRetiredItemUuid());
 //	}
 	
-	public RegisterItemProposalDTO(Proposal proposal) {
+	public RegisterItemProposalDTO(Proposal proposal, ProposalDtoFactory factory) {
+		this.proposalUuid = proposal.getUuid();
+		for (Proposal dependentProposal : proposal.getDependentProposals()) {
+			this.getDependentProposals().add(factory.getProposalDto(dependentProposal));
+		}
+		
 		if (proposal instanceof SimpleProposal) {
 			initializeFromSimpleProposal((SimpleProposal)proposal);
 		}
 		else if (proposal instanceof Supersession) {
 			initializeFromSupersession((Supersession)proposal);
+		}
+		else if (proposal instanceof ProposalGroup) {
+			initializeFromGroup((ProposalGroup)proposal);
 		}
 	}
 	
@@ -312,6 +332,9 @@ public class RegisterItemProposalDTO
 	public void loadAdditionalValues(RE_RegisterItem item) {
 		
 	}
+	
+	public void loadDependentProposalDetails(Collection<RegisterItemProposalDTO> dependentProposals) {
+	}
 
 	public UUID getReferencedItemUuid() {
 		return referencedItemUuid;
@@ -321,6 +344,14 @@ public class RegisterItemProposalDTO
 		this.referencedItemUuid = referencedItemUuid;
 	}
 	
+	public UUID getParentItemUuid() {
+		return parentItemUuid;
+	}
+
+	public void setParentItemUuid(UUID parentItemUuid) {
+		this.parentItemUuid = parentItemUuid;
+	}
+
 	public UUID getUuid() {
 		return itemUuid;
 	}
@@ -501,6 +532,14 @@ public class RegisterItemProposalDTO
 		this.proposalType = proposalType;
 	}
 	
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
+	}
+
 	/**
 	 * @return the proposedChanges
 	 */
@@ -559,8 +598,8 @@ public class RegisterItemProposalDTO
 		this.originalValues.put(propertyName, value);
 	}
 	
-	public Map<String, String[]> calculateProposedChanges(RE_RegisterItem original) {
-		HashMap<String, String[]> result = new HashMap<String, String[]>();
+	public Map<String, List<String>> calculateProposedChanges(RE_RegisterItem original) {
+		HashMap<String, List<String>> result = new HashMap<String, List<String>>();
 		
 		PropertyDescriptor[] originalProperties = BeanUtils.getPropertyDescriptors(original.getClass());
 		for (PropertyDescriptor originalProperty : originalProperties) {
@@ -581,14 +620,18 @@ public class RegisterItemProposalDTO
 
 					if (!CollectionUtils.isEmpty(originalCollection)) {
 						if (!originalCollection.equals(newCollection)) {
-							result.put(originalProperty.getName(), (String[])newCollection.toArray());
+							List<String> list = new ArrayList<String>();
+							list.addAll(newCollection);
+							result.put(originalProperty.getName(), list);
 							continue;
 						}
 					}
 					
 					if (!CollectionUtils.isEmpty(newCollection)) {
 						if (!newCollection.equals(originalCollection)) {
-							result.put(originalProperty.getName(), (String[])newCollection.toArray(new String[] { }));
+							List<String> list = new ArrayList<String>();
+							list.addAll(newCollection);
+							result.put(originalProperty.getName(), list);
 						}
 					}
 				}
@@ -626,12 +669,16 @@ public class RegisterItemProposalDTO
 			
 			if (originalValue == null) {
 				if (!StringUtils.isEmpty(newValue)) {
-					result.put(originalProperty.getName(), new String[] { newValue });					
+					List<String> list = new ArrayList<String>();
+					list.add(newValue);
+					result.put(originalProperty.getName(), list);					
 				}
 			}
 			else {
 				if (!originalValue.equals(newValue)) {
-					result.put(originalProperty.getName(), new String[] { newValue });
+					List<String> list = new ArrayList<String>();
+					list.add(newValue);
+					result.put(originalProperty.getName(), list);
 				}
 			}
 			
@@ -686,15 +733,23 @@ public class RegisterItemProposalDTO
 		newSupersedingItems.remove(itemUuid);
 	}
 
-	public List<RegisterItemProposalDTO> getDependentProposals() {
-//		return dependentItems;
+	public Set<RegisterItemProposalDTO> getDependentProposals() {
+		return dependentProposals;
+	}
+
+	public List<RegisterItemProposalDTO> getAggregateDependencies() {
+		return Arrays.asList();
+	}
+	
+	public List<RegisterItemProposalDTO> getCompositeDependencies() {
 		return Arrays.asList();
 	}
 	
 	protected List<RegisterItemProposalDTO> findDependentProposals(RegisterItemProposalDTO... dtos) {
 		List<RegisterItemProposalDTO> dependentProposals = new ArrayList<RegisterItemProposalDTO>();
 		for (RegisterItemProposalDTO dto : dtos) {
-			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+//			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+			if (dto != null && dto.getReferencedItemUuid() == null) {
 				dependentProposals.add(dto);
 			}
 		}

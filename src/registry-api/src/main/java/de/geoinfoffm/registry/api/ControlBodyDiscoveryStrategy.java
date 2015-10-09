@@ -40,6 +40,7 @@ import de.geoinfoffm.registry.core.model.Authorization;
 import de.geoinfoffm.registry.core.model.Proposal;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
  * The interface ControlBodyDiscoveryStrategy.
@@ -48,6 +49,8 @@ import de.geoinfoffm.registry.core.model.Role;
  */
 public interface ControlBodyDiscoveryStrategy
 {
+	List<Role> findControlBodyRoles(RE_Register register);
 	List<Role> findControlBodyRoles(Proposal proposal);
 	List<Authorization> findControlBodyAuthorizations(Proposal proposal);
+	List<Authorization> findControlBodyAuthorizations(RE_Register register);
 }

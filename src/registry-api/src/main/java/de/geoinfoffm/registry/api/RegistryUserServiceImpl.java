@@ -38,10 +38,14 @@ import static org.springframework.security.acls.domain.BasePermission.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.intercept.RunAsUserToken;
 import org.springframework.security.acls.domain.PrincipalSid;
@@ -51,8 +55,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.geoinfoffm.registry.api.security.PasswordResetRequest;
+import de.geoinfoffm.registry.api.security.PasswordResetRequestRepository;
+import de.geoinfoffm.registry.api.security.PasswordResetRequestedEvent;
 import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
+import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.RegistryUserCreatedEvent;
 import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
@@ -119,6 +127,9 @@ implements RegistryUserService
 
 	@Autowired
 	private RegistryConfiguration registryConfiguration;
+
+	@Autowired
+	private PasswordResetRequestRepository resetRepository;
 
 	private boolean sendConfirmationMails = false;
 
@@ -365,4 +376,61 @@ implements RegistryUserService
 	public void deactivateConfirmationMails() {
 		this.setSendConfirmationMails(false);
 	}
+	
+	@Override
+	public void requestPasswordReset(String emailAddress) {
+		RegistryUser user = repository().findByEmailAddressIgnoreCase(emailAddress);
+		
+		if (user == null) {
+			throw new EntityNotFoundException(String.format("User with e-mail address '%s' does not exist", emailAddress));
+		}
+		
+		if (!user.isConfirmed()) {
+			throw new IllegalOperationException("Cannot request new password for user who has not confirmed e-mail address");
+		}
+
+		String token = RandomStringUtils.random(16, true, true);
+
+		PasswordResetRequest request = resetRepository.findByUser(user);
+		if (request == null) {
+			request = new PasswordResetRequest(user, token, Calendar.getInstance().getTime());
+		}
+		else {
+			request.setToken(token); // invalidates old token
+		}
+		request = resetRepository.save(request);
+		
+		eventPublisher().publishEvent(new PasswordResetRequestedEvent(request));
+	}
+
+	@Override
+	@Transactional
+	public void resetPassword(String emailAddress, String token, String newPassword) {
+		RegistryUser user = repository().findByEmailAddressIgnoreCase(emailAddress);
+		
+		if (user == null) {
+			throw new EntityNotFoundException(String.format("User with e-mail address '%s' does not exist", emailAddress));
+		}
+		
+		if (!user.isConfirmed()) {
+			throw new IllegalOperationException("Cannot reset password for user who has not confirmed e-mail address");
+		}
+		
+		Date now = Calendar.getInstance().getTime();
+
+		PasswordResetRequest request = resetRepository.findByUser(user);
+		if (request == null || !request.getToken().equals(token)) {
+			throw new IllegalOperationException("Cannot reset password: Invalid token");			
+		}
+		
+		if (request.getRequestTimestamp().before(DateUtils.addDays(now, -1))) {
+			resetRepository.delete(request); // Delete old request			
+			resetRepository.flush(); // Prevent following exception from rolling back the delete
+			throw new IllegalOperationException("Cannot reset password: Invalid token");						
+		}
+		
+		user.setPassword(newPassword);
+		repository().save(user);
+		resetRepository.delete(request);
+	}	
 }
