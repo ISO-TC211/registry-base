@@ -47,6 +47,7 @@ import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
@@ -79,6 +80,9 @@ public abstract class SimpleProposal extends Proposal
 	@Column(columnDefinition = "text")
 	private String itemClassName;
 	
+	@ManyToOne
+	private RE_Register targetRegister;
+	
 	protected SimpleProposal() {
 		super();
 	}
@@ -98,6 +102,7 @@ public abstract class SimpleProposal extends Proposal
 		this.setSponsor(proposalManagementInformation.getSponsor());
 		if (proposalManagementInformation.getItem() != null && proposalManagementInformation.getItem().getItemClass() != null) {
 			this.setItemClassName(proposalManagementInformation.getItem().getItemClass().getName());
+			this.setTargetRegister(proposalManagementInformation.getItem().getRegister());
 		}
 	}
 	
@@ -147,6 +152,14 @@ public abstract class SimpleProposal extends Proposal
 
 	public void setItemClassName(String itemClassName) {
 		this.itemClassName = itemClassName;
+	}
+
+	public RE_Register getTargetRegister() {
+		return targetRegister;
+	}
+
+	public void setTargetRegister(RE_Register targetRegister) {
+		this.targetRegister = targetRegister;
 	}
 
 	@Override
