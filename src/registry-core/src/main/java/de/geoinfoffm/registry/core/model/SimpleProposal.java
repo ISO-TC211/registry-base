@@ -43,6 +43,7 @@ import java.util.List;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -75,6 +76,7 @@ public abstract class SimpleProposal extends Proposal
 	private RE_ProposalManagementInformation proposalManagementInformation;
 
 //	@Field(store = Store.YES)
+	@Column(columnDefinition = "text")
 	private String itemClassName;
 	
 	protected SimpleProposal() {
