@@ -106,8 +106,8 @@ public class RE_ItemClass extends de.geoinfoffm.registry.core.Entity
 	@XmlTransient
 	@ManyToMany
 	@JoinTable(name = "RE_Register_ItemClasses",
-	   		   joinColumns = @JoinColumn(name="registerId"),
-	   		   inverseJoinColumns = @JoinColumn(name="itemClassId")
+	   		   joinColumns = @JoinColumn(name="itemClassId"),
+	   		   inverseJoinColumns = @JoinColumn(name="registerId")
 	)
 	private Set<RE_Register> registers;
 	

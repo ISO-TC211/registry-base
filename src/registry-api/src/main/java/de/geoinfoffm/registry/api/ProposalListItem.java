@@ -184,6 +184,10 @@ public class ProposalListItem
 		return messages.getMessage(this.proposalStatus, null, this.proposalStatus, locale);	
 	}
 	
+	public void overrideProposalStatus(String status) {
+		this.proposalStatus = status;
+	}
+
 	@JsonProperty
 	public String getTechnicalProposalStatus() {
 		return this.proposalStatus;
