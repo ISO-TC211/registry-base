@@ -53,17 +53,17 @@ public class CI_DateTypeCode extends CodeListValue
 	/**
 	 * Creation
 	 */
-	public static final CI_RoleCode CREATION = new CI_RoleCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "creation", "creation");
+	public static final CI_DateTypeCode CREATION = new CI_DateTypeCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "creation", "creation");
 
 	/**
 	 * Publication
 	 */
-	public static final CI_RoleCode PUBLICATION = new CI_RoleCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "publication", "publication");
+	public static final CI_DateTypeCode PUBLICATION = new CI_DateTypeCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "publication", "publication");
 
 	/**
 	 * Revision
 	 */
-	public static final CI_RoleCode REVISION = new CI_RoleCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "revision", "revision");
+	public static final CI_DateTypeCode REVISION = new CI_DateTypeCode("http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode", "revision", "revision");
 	
 	protected CI_DateTypeCode() { }
 	

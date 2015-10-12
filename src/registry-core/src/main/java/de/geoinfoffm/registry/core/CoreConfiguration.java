@@ -42,8 +42,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
+import org.apache.velocity.tools.ToolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.ui.velocity.VelocityEngineFactoryBean;
+import org.springframework.ui.velocity.VelocityEngineUtils;
 
 import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 
@@ -157,8 +160,16 @@ public class CoreConfiguration
 		properties.put("resource.loader", "class");
 		properties.put("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 		factory.setVelocityPropertiesMap(properties);
-		
+				
 		return factory.createVelocityEngine();
+	}
+	
+	@Bean
+	public VelocityContext velocityContext() {
+		ToolManager toolMgr = new ToolManager();
+		toolMgr.configure("velocity-tools.xml");
+
+		return new VelocityContext(toolMgr.createContext());
 	}
 	
 	/**
