@@ -2,14 +2,12 @@ package de.geoinfoffm.registry.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.quartz.SchedulerContextAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import de.geoinfoffm.registry.core.Entity;
-import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Proposal;
 
 @Component
