@@ -57,6 +57,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.bespire.PersistentCollectionUtils;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
@@ -619,7 +620,9 @@ public class RegisterItemProposalDTO
 					if (CollectionUtils.isEmpty(originalCollection) && CollectionUtils.isEmpty(newCollection)) continue;
 
 					if (!CollectionUtils.isEmpty(originalCollection)) {
-						if (!originalCollection.equals(newCollection)) {
+						if (!CharSequence.class.isAssignableFrom(CollectionUtils.findCommonElementType(originalCollection))) continue;
+						
+						if (!PersistentCollectionUtils.equals(originalCollection, newCollection)) {
 							List<String> list = new ArrayList<String>();
 							list.addAll(newCollection);
 							result.put(originalProperty.getName(), list);
@@ -628,7 +631,9 @@ public class RegisterItemProposalDTO
 					}
 					
 					if (!CollectionUtils.isEmpty(newCollection)) {
-						if (!newCollection.equals(originalCollection)) {
+						if (!CharSequence.class.isAssignableFrom(CollectionUtils.findCommonElementType(newCollection))) continue;
+
+						if (!PersistentCollectionUtils.equals(newCollection, originalCollection)) {
 							List<String> list = new ArrayList<String>();
 							list.addAll(newCollection);
 							result.put(originalProperty.getName(), list);
