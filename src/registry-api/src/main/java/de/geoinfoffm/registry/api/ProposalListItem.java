@@ -81,9 +81,9 @@ public class ProposalListItem
 	private ProposalChangeRequest pendingChangeRequest;
 	private boolean isAppealed;
 	private String targetRegister;
+	private boolean isSubmitter;
 	private RE_Disposition disposition;
 	private Map<String, String> additionalData;
-	
 	private MessageSource messages;
 	private Locale locale;
 	
@@ -310,6 +310,15 @@ public class ProposalListItem
 		return ProposalGroup.class.getName().equals(this.proposalType);
 	}
 	
+	@JsonProperty
+	public boolean isSubmitter() {
+		return this.isSubmitter;
+	}
+	
+	public void setSubmitter(boolean isSubmitter) {
+		this.isSubmitter = isSubmitter;
+	}
+
 	@JsonProperty
 	public boolean isPendingChangeRequest() {
 		return this.pendingChangeRequest != null;
