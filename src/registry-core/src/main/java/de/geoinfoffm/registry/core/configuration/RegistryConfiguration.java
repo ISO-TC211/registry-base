@@ -78,7 +78,7 @@ public class RegistryConfiguration
 	 */
 	private Properties createDefaultProperties() {
 		Properties properties = new Properties();
-		properties.setProperty(PROPERTY_BASE_PACKAGES, "de.geoinfoffm.registry");
+		properties.setProperty(PROPERTY_BASE_PACKAGES, "de.geoinfoffm.registry,de.bespire.registry");
 		properties.setProperty(PROPERTY_MAIL_ENABLED, "false");
 		properties.setProperty(PROPERTY_MAIL_FROM_NAME, "Registry");
 		properties.setProperty(PROPERTY_MAIL_FROM_ADDRESS, "registry@example.org");

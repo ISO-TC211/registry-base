@@ -78,7 +78,7 @@ import de.geoinfoffm.registry.persistence.jpa.HibernateConfiguration;
  * @author Florian Esser
  *
  */
-@ComponentScan(basePackages = { "de.geoinfoffm.registry" })
+@ComponentScan(basePackages = { "de.bespire.registry", "de.geoinfoffm.registry" })
 @Configuration
 public class ApiConfiguration 
 {
