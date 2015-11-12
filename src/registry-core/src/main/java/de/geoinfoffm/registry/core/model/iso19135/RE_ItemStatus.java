@@ -58,5 +58,6 @@ public enum RE_ItemStatus
 	@XmlEnumValue("notValid") NOT_VALID,
 	@XmlEnumValue("valid") VALID,
 	@XmlEnumValue("superseded") SUPERSEDED,
-	@XmlEnumValue("retired") RETIRED;
+	@XmlEnumValue("retired") RETIRED, 
+	@XmlEnumValue("invalid") INVALID;
 }

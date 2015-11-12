@@ -63,6 +63,7 @@ import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
 
 import de.bespire.LoggerFactory;
+import de.bespire.registry.core.model.Invalidation;
 import de.geoinfoffm.registry.api.soap.AbstractProposal_Type;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
@@ -793,7 +794,20 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 
 		return proposal;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeInvalidation(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem)
+	 */
+	@Override
+	public Invalidation createInvalidation(RE_RegisterItem item, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) throws IllegalOperationException {
+		Invalidation proposal = item.proposeInvalidation(justification, registerManagerNotes, controlBodyNotes, sponsor);
+		proposal = this.saveProposal(proposal);
+		
+		eventPublisher().publishEvent(new ProposalCreatedEvent(proposal));
+
+		return proposal;
+	}
+
 	/* (non-Javadoc)
 	 * @see de.geoinfoffm.registry.api.RegisterItemService#proposeClarification(de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem, java.util.Map, java.lang.String, de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization)
 	 */

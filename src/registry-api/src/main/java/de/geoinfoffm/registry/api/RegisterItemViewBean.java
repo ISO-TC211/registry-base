@@ -393,6 +393,9 @@ public class RegisterItemViewBean
 		else if (proposal instanceof RE_AmendmentInformation && ((RE_AmendmentInformation)proposal).getAmendmentType().equals(RE_AmendmentType.RETIREMENT)) {
 			this.proposalType = ProposalType.RETIREMENT;
 		}
+		else if (proposal instanceof RE_AmendmentInformation && ((RE_AmendmentInformation)proposal).getAmendmentType().equals(RE_AmendmentType.INVALIDATION)) {
+			this.proposalType = ProposalType.INVALIDATION;
+		}
 
 //		this.setProposalStatus(ProposalStatus.UNDER_REVIEW);
 //		if (proposal.isPending()) {

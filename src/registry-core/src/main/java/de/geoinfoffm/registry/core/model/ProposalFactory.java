@@ -37,6 +37,7 @@ package de.geoinfoffm.registry.core.model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.bespire.registry.core.model.Invalidation;
 import de.geoinfoffm.registry.core.model.iso19135.InvalidProposalException;
 import de.geoinfoffm.registry.core.model.iso19135.ProposalManagementInformationRepository;
 import de.geoinfoffm.registry.core.model.iso19135.RE_AdditionInformation;
@@ -79,6 +80,8 @@ public class ProposalFactory implements Proposal.Factory
 					return new Retirement(ai);
 				case SUPERSESSION:
 					return new SupersessionPart(ai);
+				case INVALIDATION:
+					return new Invalidation(ai);
 			}
 		}
 
