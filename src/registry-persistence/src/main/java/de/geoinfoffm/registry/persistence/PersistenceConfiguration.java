@@ -72,10 +72,10 @@ import de.geoinfoffm.registry.persistence.jpa.HibernateConfiguration;
  * @author Florian Esser
  * 
  */
-@ComponentScan(basePackages = { "de.geoinfoffm.registry" })
+@ComponentScan(basePackages = { "de.bespire.registry", "de.geoinfoffm.registry" })
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = "de.geoinfoffm.registry",
+@EnableJpaRepositories(basePackages = { "de.bespire.registry", "de.geoinfoffm.registry" },
 				       repositoryFactoryBeanClass = EntityBackendFactoryBean.class)
 public class PersistenceConfiguration
 {
