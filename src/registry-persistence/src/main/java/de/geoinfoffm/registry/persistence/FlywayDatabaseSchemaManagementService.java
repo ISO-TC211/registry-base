@@ -30,6 +30,10 @@ public class FlywayDatabaseSchemaManagementService implements DatabaseSchemaMang
 		this.flyway = new Flyway();
 		flyway.setDataSource(dataSource); 
 		flyway.setLocations("classpath:de/geoinfoffm/registry/persistence/migration");
+		
+//		flyway.setLocations("classpath:de/geoinfoffm/registry/persistence/migration_test");
+//		flyway.setBaselineOnMigrate(true);
+		
 		initCallbacks();
 	}
 	

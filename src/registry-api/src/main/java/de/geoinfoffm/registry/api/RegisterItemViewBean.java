@@ -437,8 +437,10 @@ public class RegisterItemViewBean
 		
 		this.isProposalGroup = true;
 		this.setProposalType(ProposalType.GROUP);
-		this.setRegisterUuid(group.getAffectedRegisters().get(0).getUuid());
-		this.setRegisterName(group.getAffectedRegisters().get(0).getName());
+		if (!group.getAffectedRegisters().isEmpty()) {
+			this.setRegisterUuid(group.getAffectedRegisters().iterator().next().getUuid());
+			this.setRegisterName(group.getAffectedRegisters().iterator().next().getName());
+		}
 		
 		for (Proposal proposal : group.getProposals()) {
 			RegisterItemViewBean member  = new RegisterItemViewBean(proposal);

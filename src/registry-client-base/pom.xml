@@ -3,7 +3,7 @@
 	<parent>
         <groupId>de.geoinfoffm.registry</groupId>
         <artifactId>registry-parent</artifactId>
-        <version>2.1</version>
+        <version>2.2</version>
         <relativePath>../..</relativePath>
     </parent>
 	<artifactId>registry-client-base</artifactId>
@@ -182,18 +182,6 @@
 			</plugin>
 		</plugins>
     </build>
-	<distributionManagement>
-		<repository>
-			<id>artifactory-release</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>artifactory-snapshot</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

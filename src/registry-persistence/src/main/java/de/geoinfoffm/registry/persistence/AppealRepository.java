@@ -34,6 +34,8 @@
  */
 package de.geoinfoffm.registry.persistence;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -50,7 +52,7 @@ import de.geoinfoffm.registry.core.model.Proposal;
 @Repository
 public interface AppealRepository extends EntityRepository<Appeal>
 {
-	public Appeal findByAppealedProposal(Proposal proposal);
+	public List<Appeal> findByAppealedProposal(Proposal proposal);
 	
 	public Page<Appeal> findByDisposition(AppealDisposition disposition, Pageable pageable);
 	public Page<Appeal> findByDisposition(AppealDisposition disposition, String search, Pageable pageable);

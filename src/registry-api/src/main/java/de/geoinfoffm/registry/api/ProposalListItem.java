@@ -37,7 +37,9 @@ package de.geoinfoffm.registry.api;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.context.MessageSource;
@@ -55,7 +57,9 @@ import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 import de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager;
 
 /**
@@ -77,8 +81,9 @@ public class ProposalListItem
 	private ProposalChangeRequest pendingChangeRequest;
 	private boolean isAppealed;
 	private String targetRegister;
+	private boolean isSubmitter;
 	private RE_Disposition disposition;
-	
+	private Map<String, String> additionalData;
 	private MessageSource messages;
 	private Locale locale;
 	
@@ -102,6 +107,23 @@ public class ProposalListItem
 			SimpleProposal sp = (SimpleProposal)proposal;
 			this.itemClassName = sp.getItemClassName();
 		}
+		else if (proposal instanceof Supersession) {
+			Supersession supersession = (Supersession)proposal;
+			RE_ItemClass itemClass = null;
+			for (RE_RegisterItem supersededItem : supersession.getSupersededItems()) {
+				if (itemClass == null) {
+					itemClass = supersededItem.getItemClass();
+				}
+				else if (!itemClass.equals(supersededItem.getItemClass())) {
+					itemClass = null;
+					break;
+				}
+			}
+			if (itemClass != null) {
+				this.itemClassName = itemClass.getName();
+			}
+		}
+		
 		this.proposalStatus = proposal.getStatus();
 		
 		this.proposalType = proposal.getClass().getName();
@@ -162,6 +184,10 @@ public class ProposalListItem
 		return messages.getMessage(this.proposalStatus, null, this.proposalStatus, locale);	
 	}
 	
+	public void overrideProposalStatus(String status) {
+		this.proposalStatus = status;
+	}
+
 	@JsonProperty
 	public String getTechnicalProposalStatus() {
 		return this.proposalStatus;
@@ -209,6 +235,15 @@ public class ProposalListItem
 
 	public void setDisposition(RE_Disposition disposition) {
 		this.disposition = disposition;
+	}
+	
+	@JsonProperty
+	public Map<String, String> getAdditionalData() {
+		if (this.additionalData == null) {
+			this.additionalData = new HashMap<>();
+		}
+		
+		return additionalData;
 	}
 
 	@JsonProperty
@@ -275,6 +310,15 @@ public class ProposalListItem
 		return ProposalGroup.class.getName().equals(this.proposalType);
 	}
 	
+	@JsonProperty
+	public boolean isSubmitter() {
+		return this.isSubmitter;
+	}
+	
+	public void setSubmitter(boolean isSubmitter) {
+		this.isSubmitter = isSubmitter;
+	}
+
 	@JsonProperty
 	public boolean isPendingChangeRequest() {
 		return this.pendingChangeRequest != null;

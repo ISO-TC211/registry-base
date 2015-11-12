@@ -17,6 +17,7 @@ public interface ProposalWorkflowManager extends WorkflowManager<Proposal>
 	public static final String STATUS_APPEALED = "APPEALED";
 	public static final String STATUS_FINISHED = "FINISHED";
 	public static final String STATUS_WITHDRAWN = "WITHDRAWN";
+	public static final String STATUS_PROCESSING = "PROCESSING";
 
 	void initialize(Proposal proposal) throws IllegalOperationException;
 	void submit(Proposal proposal, Date submissionDate) throws IllegalOperationException;

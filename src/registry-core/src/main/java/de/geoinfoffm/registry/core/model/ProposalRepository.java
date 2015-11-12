@@ -83,8 +83,13 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 
 	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false)")
 	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND ((p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false))")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("classes") List<Class<?>> excludedClasses, Pageable pageable);
+	
 	@Query("SELECT p FROM Proposal p WHERE (p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search)) AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search)))")
 	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("search") String search, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND ((p.sponsor = :sponsor AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search)) AND p.parent IS NULL) OR (p.uuid IN (:uuids) AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))))")
+	Page<Proposal> findResponsibleRepresentativeProposals(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("uuids") Collection<UUID> uuids, @Param("search") String search, @Param("classes") List<Class<?>> excludedClasses, Pageable pageable);
 
 	List<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor);
 	Page<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(RE_SubmittingOrganization sponsor, Pageable pageable);
@@ -95,21 +100,45 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	@Query("SELECT p FROM Proposal p WHERE p.sponsor = :sponsor AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("search") String search, Pageable pageable);
 
+	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false")
+	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, @Param("search") String search, Pageable pageable);
+
 	@Query("SELECT p FROM SimpleProposal p WHERE p.sponsor = :sponsor AND p.proposalManagementInformation.item.itemClass = :itemClass AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<SimpleProposal> findSimpleProposalBySponsorAndItemClassAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("itemClass") RE_ItemClass itemClass, @Param("search") String search, Pageable pageable);
 	
 	Page<Proposal> findBySponsorAndStatusAndParentIsNull(RE_SubmittingOrganization sponsor, String status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.sponsor = :sponsor AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findBySponsorAndStatusAndParentIsNull(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("status") String status, @Param("search") String search, Pageable pageable);
+
+	List<Proposal> findByStatus(String status);
+	Page<Proposal> findByStatus(String status, Pageable pageable);
+
+	List<Proposal> findByStatusAndParentIsNull(String status);	
 	
-	List<Proposal> findByStatusAndParentIsNull(String status);
 	Page<Proposal> findByStatusAndParentIsNull(String status, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
+	List<Proposal> findByStatusAndParentIsNull(@Param("status") String status, @Param("search") String search);
 	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status = :status AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusAndParentIsNull(@Param("status") String status, @Param("search") String search, Pageable pageable);
+
+	List<Proposal> findByStatusIn(Collection<String> status);
+	Page<Proposal> findByStatusIn(Collection<String> status, Pageable pageable);
+	@Query("SELECT p FROM Proposal p WHERE p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findByStatusIn(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
 
 	List<Proposal> findByStatusInAndParentIsNull(Collection<String> status);
 	Page<Proposal> findByStatusInAndParentIsNull(Collection<String> status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.parent IS NULL AND p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusInAndParentIsNull(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
 	
+	@Query("SELECT DISTINCT p.parent FROM Proposal p WHERE p.status = :status AND p.uuid IN (SELECT sp.uuid FROM SimpleProposal sp WHERE sp.parent IS NOT NULL AND sp.status = :status AND sp.targetRegister = :targetRegister) OR p.uuid IN (SELECT part.parent.uuid FROM SupersessionPart part WHERE part.status = :status AND part.parent.parent IS NOT NULL AND part.targetRegister = :targetRegister)")
+	List<ProposalGroup> findGroupsByTargetRegister(@Param("targetRegister") RE_Register targetRegister, @Param("status") String status);
+
+	@Query("SELECT DISTINCT p.parent FROM Proposal p WHERE p.status = :status AND p.uuid IN (SELECT sp.uuid FROM SimpleProposal sp WHERE sp.parent IS NOT NULL AND sp.status = :status AND sp.targetRegister = :targetRegister AND (LOWER(sp.parent.title) LIKE LOWER(:search))) OR p.uuid IN (SELECT part.parent.uuid FROM SupersessionPart part WHERE part.status = :status AND part.parent.parent IS NOT NULL AND part.targetRegister = :targetRegister AND (LOWER(part.parent.parent.title) LIKE LOWER(:search)))")
+	List<ProposalGroup> findGroupsByTargetRegister(@Param("targetRegister") RE_Register targetRegister, @Param("status") String status, @Param("search") String search);
+
 }

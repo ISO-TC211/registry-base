@@ -739,7 +739,18 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	@Override
 	public Appeal appealProposal(Proposal proposal, String justification, String situation, String impact) throws InvalidProposalException, IllegalOperationException {
 		Assert.notNull(proposal, "Cannot appeal null proposal");
-		Appeal appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
+		
+		List<Appeal> appeals = appealRepository.findByAppealedProposal(proposal);
+		Appeal appeal;
+		if (appeals.isEmpty()) {
+			appeal = proposalWorkflowManager.appeal(proposal, justification, impact, situation);
+		}
+		else {
+			appeal = appeals.get(0);
+			appeal.setJustification(justification);
+			appeal.setImpact(impact);
+			appeal.setSituation(situation);
+		}
 
 		appeal = appealRepository.save(appeal);
 		
@@ -977,6 +988,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		ProposalGroup result = new ProposalGroup(containedProposals);
 		result.setSponsor(sponsor);
 		
+		proposalWorkflowManager.initialize(result);
+		
 		result = proposalRepository.save(result); 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
 
@@ -987,7 +1000,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	public ProposalGroup createProposalGroup(String name, List<Proposal> containedProposals, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
 		ProposalGroup result = new ProposalGroup(containedProposals, name);
 		result.setSponsor(sponsor);
-		
+
+		proposalWorkflowManager.initialize(result);
+
 		result = proposalRepository.save(result); 
 		eventPublisher().publishEvent(new ProposalCreatedEvent(result));
 
@@ -1004,7 +1019,13 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Appeal findAppeal(Proposal proposal) {
-		return appealRepository.findByAppealedProposal(proposal);
+		List<Appeal> appeals = appealRepository.findByAppealedProposal(proposal);
+		if (appeals.isEmpty()) {
+			return null;
+		}
+		else {
+			return appeals.get(0);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -1091,8 +1112,9 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 * as long as the proposal is not concluded.
 	 * @throws UnauthorizedException 
 	 */
+	@Override
 	@Transactional
-	protected void deleteProposal(Proposal proposal) throws IllegalOperationException, UnauthorizedException {
+	public void deleteProposal(Proposal proposal) throws IllegalOperationException, UnauthorizedException {
 		if (proposal.isConcluded()) {
 			throw new IllegalOperationException("Cannot delete concluded proposal");
 		}

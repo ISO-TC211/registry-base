@@ -45,6 +45,7 @@ import de.geoinfoffm.registry.core.UnauthorizedException;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.Organization;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.RegistryUser;
 import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
@@ -149,6 +150,7 @@ public interface RegistrySecurity
 	String entityRole(String rolePrefix, UUID entityId);
 
 	<E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities);
+	<E extends Entity> boolean hasEntityRelatedRoleForAny(String rolePrefix, Collection<E> entities);
 
 	<E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, List<E> entities);
 
@@ -180,7 +182,10 @@ public interface RegistrySecurity
 
 	boolean isLoggedIn();
 
-	public abstract String getPointOfContactTodoCount();
-	public abstract String getRegisterManagerTodoCount();
-	public abstract String getControlBodyTodoCount();
+	String getPointOfContactTodoCount();
+	String getRegisterManagerTodoCount();
+	String getControlBodyTodoCount();
+	String getRegisterOwnerTodoCount();
+	
+	List<ProposalGroup> findGroupsByTargetRegisters(List<RE_Register> registers, String status);
 }

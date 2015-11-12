@@ -42,6 +42,7 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
@@ -136,7 +137,7 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 * responsible for the resource.
 	 */
 	@XmlElement(name = "citedResponsibleParty", namespace = "http://www.isotc211.org/2005/gmd")
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CI_ResponsibleParty> citedResponsibleParty;
 	/**
 	 * Mode in which the data is represented
@@ -280,6 +281,10 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 * @return the citedResponsibleParty
 	 */
 	public Set<CI_ResponsibleParty> getCitedResponsibleParty() {
+		if (citedResponsibleParty == null) {
+			this.citedResponsibleParty = new HashSet<CI_ResponsibleParty>();
+		}
+			
 		return citedResponsibleParty;
 	}
 

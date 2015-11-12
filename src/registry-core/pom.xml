@@ -4,7 +4,7 @@
 	<parent>
         <groupId>de.geoinfoffm.registry</groupId>
         <artifactId>registry-parent</artifactId>
-        <version>2.1</version>
+        <version>2.2</version>
         <relativePath>../..</relativePath>
     </parent>
 	<artifactId>registry-core</artifactId>
@@ -149,56 +149,11 @@
 			<artifactId>velocity</artifactId>
 			<version>1.7</version>
 		</dependency>
-		
-		<!-- Logging -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${org.slf4j-version}</version>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-tools</artifactId>
+			<version>2.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>${org.slf4j-version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${org.slf4j-version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>${log4j-version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mail</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.jms</groupId>
-					<artifactId>jms</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.jdmk</groupId>
-					<artifactId>jmxtools</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.jmx</groupId>
-					<artifactId>jmxri</artifactId>
-				</exclusion>
-			</exclusions>
-			<scope>runtime</scope>
-		</dependency>
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>javax.inject</groupId> -->
-<!-- 			<artifactId>javax.inject</artifactId> -->
-<!-- 			<version>1</version> -->
-<!-- 		</dependency> -->
-		
 	</dependencies>
 	<repositories>
 		<repository>
@@ -210,16 +165,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>artifactory-release</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>artifactory-snapshot</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>

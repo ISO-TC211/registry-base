@@ -57,12 +57,14 @@ import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.bespire.PersistentCollectionUtils;
 import de.geoinfoffm.registry.api.soap.AbstractRegisterItemProposal_Type;
 import de.geoinfoffm.registry.api.soap.Addition_Type;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Clarification;
 import de.geoinfoffm.registry.core.model.Proposal;
+import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.ProposalType;
 import de.geoinfoffm.registry.core.model.Retirement;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
@@ -111,7 +113,6 @@ public class RegisterItemProposalDTO
 	
 	protected RegisterItemProposalDTO(String itemClassName) {
 		this();
-		
 		this.itemClassName = itemClassName;
 	}
 	
@@ -159,6 +160,13 @@ public class RegisterItemProposalDTO
 		initializeFromItemDetails(itemDetails);
 	}
 	
+	private void initializeFromGroup(ProposalGroup group) {
+		this.setName(group.getTitle());
+		this.setProposalUuid(group.getUuid());
+		this.setProposalType(ProposalType.GROUP);
+		this.setSponsorUuid(group.getSponsor().getUuid());
+	}
+
 	protected void initializeFromItem(RE_RegisterItem_Type proposedItem) {
 		if (proposedItem.getItemClass() == null) {
 			throw new IllegalArgumentException("Proposed item must reference an item class");
@@ -250,6 +258,9 @@ public class RegisterItemProposalDTO
 		}
 		else if (proposal instanceof Supersession) {
 			initializeFromSupersession((Supersession)proposal);
+		}
+		else if (proposal instanceof ProposalGroup) {
+			initializeFromGroup((ProposalGroup)proposal);
 		}
 	}
 	
@@ -609,7 +620,9 @@ public class RegisterItemProposalDTO
 					if (CollectionUtils.isEmpty(originalCollection) && CollectionUtils.isEmpty(newCollection)) continue;
 
 					if (!CollectionUtils.isEmpty(originalCollection)) {
-						if (!originalCollection.equals(newCollection)) {
+						if (!CharSequence.class.isAssignableFrom(CollectionUtils.findCommonElementType(originalCollection))) continue;
+						
+						if (!PersistentCollectionUtils.equals(originalCollection, newCollection)) {
 							List<String> list = new ArrayList<String>();
 							list.addAll(newCollection);
 							result.put(originalProperty.getName(), list);
@@ -618,7 +631,9 @@ public class RegisterItemProposalDTO
 					}
 					
 					if (!CollectionUtils.isEmpty(newCollection)) {
-						if (!newCollection.equals(originalCollection)) {
+						if (!CharSequence.class.isAssignableFrom(CollectionUtils.findCommonElementType(newCollection))) continue;
+
+						if (!PersistentCollectionUtils.equals(newCollection, originalCollection)) {
 							List<String> list = new ArrayList<String>();
 							list.addAll(newCollection);
 							result.put(originalProperty.getName(), list);
@@ -738,7 +753,8 @@ public class RegisterItemProposalDTO
 	protected List<RegisterItemProposalDTO> findDependentProposals(RegisterItemProposalDTO... dtos) {
 		List<RegisterItemProposalDTO> dependentProposals = new ArrayList<RegisterItemProposalDTO>();
 		for (RegisterItemProposalDTO dto : dtos) {
-			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+//			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
+			if (dto != null && dto.getReferencedItemUuid() == null) {
 				dependentProposals.add(dto);
 			}
 		}

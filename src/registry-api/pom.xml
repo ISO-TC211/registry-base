@@ -4,7 +4,7 @@
 	<parent>
         <groupId>de.geoinfoffm.registry</groupId>
         <artifactId>registry-parent</artifactId>
-        <version>2.1</version>
+        <version>2.2</version>
         <relativePath>../..</relativePath>
     </parent>
 	<artifactId>registry-api</artifactId>
@@ -35,12 +35,31 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${org.springframework-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ws</groupId>
 			<artifactId>spring-ws-core</artifactId>
 			<version>2.1.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.avalon.framework</groupId>
+			<artifactId>avalon-framework-api</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.avalon.framework</groupId>
+			<artifactId>avalon-framework-impl</artifactId>
+			<version>4.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -122,6 +141,34 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+									    <groupId>org.apache.cxf</groupId>
+									    <artifactId>cxf-xjc-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>xsdtojava</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>		
 	</build>
 	<repositories>
 		<repository>
@@ -138,16 +185,4 @@
 <!--             <url>s3://maven.springframework.org/release</url> -->
 <!--         </repository> -->
 	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>artifactory-release</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>artifactory-snapshot</id>
-			<uniqueVersion>true</uniqueVersion>
-			<url>https://artifactory.geoinfoffm.de/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
