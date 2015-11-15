@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,16 +52,20 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 
 import org.hibernate.envers.Audited;
+import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
 @Access(AccessType.FIELD)
 @DiscriminatorValue("RE_ClarificationInformation")
 @Audited @Entity
 public class RE_ClarificationInformation extends RE_ProposalManagementInformation {
+	
+	private static Logger logger = LoggerFactory.make();
 
 	@Embedded
 	@AttributeOverride(name = "value", column = @Column(name = "proposedChange", length = 2000))
@@ -109,8 +114,12 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 			return proposedChangesMap;
 		}
 		catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage(), e);
+			logger.error(">>>> The following JSON string could not be decoded:");
+			logger.error(json);
+			logger.error(">>>> cause:");
+			logger.error(e.getMessage(), e);
+			
+			return new HashMap<String, List<String>>();
 		}
 	}
 
