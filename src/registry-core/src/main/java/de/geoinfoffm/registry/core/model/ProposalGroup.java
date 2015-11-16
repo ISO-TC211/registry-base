@@ -105,7 +105,10 @@ public class ProposalGroup extends Proposal
 		this();
 		
 		this.setProposals(new ArrayList<Proposal>());
-		this.getProposals().addAll(proposals);
+		for (Proposal proposal : proposals) {
+			this.getProposals().add(proposal);
+			proposal.setParent(this);
+		}
 		
 		this.setTitle(name);
 	}
@@ -156,7 +159,7 @@ public class ProposalGroup extends Proposal
 	public RE_DecisionStatus getDecisionStatus() {
 		return getProposals().get(0).getDecisionStatus();
 	}
-	
+
 	public void addProposal(Proposal proposal) throws IllegalOperationException {
 		if (proposal.hasParent() && !proposal.getParent().getUuid().equals(this.getUuid())) {
 			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getParent().getUuid()));
