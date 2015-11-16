@@ -110,11 +110,11 @@
 			                <xsdOptions>
 			                    <xsdOption>
 			                    	<extension>true</extension>
- 			                   <!-- <xsd>src/main/resources/schema/service.xsd</xsd> --> 
- 			                   <!-- <bindingFile>src/main/resources/schema/bindings.xjb</bindingFile> --> 
-			                        <xsd>${registry.schema.xsd}</xsd>
+ 			                   	<xsd>src/main/resources/schema/service.xsd</xsd> 
+ 			                   	<bindingFile>src/main/resources/schema/bindings.xjb</bindingFile>
+<!--			                        <xsd>${registry.schema.xsd}</xsd>
 			                        <bindingFile>${registry.schema.bindingFile}</bindingFile>
-			                    </xsdOption>
+-->			                    </xsdOption>
 			                </xsdOptions>
 			            </configuration>
 			        </execution>
