@@ -172,7 +172,7 @@ public abstract class SimpleProposal extends Proposal
 	}
 	
 	public RE_Register getRegister() {
-		return proposalManagementInformation.getItem().getRegister();
+		return this.targetRegister;
 	}
 	
 	@Override

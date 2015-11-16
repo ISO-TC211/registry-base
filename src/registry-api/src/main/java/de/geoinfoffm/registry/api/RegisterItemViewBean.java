@@ -155,7 +155,7 @@ public class RegisterItemViewBean
 	private final Map<UUID, String> successors = new LinkedHashMap<UUID, String>(); 
 	
 	private UUID parentProposalUuid;
-	private final Set<RegisterItemViewBean> memberProposals = new HashSet<RegisterItemViewBean>();
+	private final Set<UUID> memberProposals = new HashSet<>();
 
 	protected RegisterItemViewBean(RE_RegisterItem item) {
 		this(item, true);
@@ -169,13 +169,6 @@ public class RegisterItemViewBean
 		if (proposal.hasParent()) {
 			this.setParentProposalUuid(proposal.getParent().getUuid());
 			this.hasParent = true;
-		}
-		
-		if (proposal.hasDependentProposals()) {
-			for (Proposal dependentProposal : proposal.getDependentProposals()) {
-				this.getMemberProposals().add(new RegisterItemViewBean(dependentProposal));
-			}
-			this.hasDependentProposals = true;
 		}
 		
 		this.setDateSubmitted(proposal.getDateSubmitted());
@@ -446,8 +439,8 @@ public class RegisterItemViewBean
 		}
 		
 		for (Proposal proposal : group.getProposals()) {
-			RegisterItemViewBean member  = new RegisterItemViewBean(proposal);
-			this.getMemberProposals().add(member);
+//			RegisterItemViewBean member  = new RegisterItemViewBean(proposal);
+			this.getMemberProposals().add(proposal.getUuid());
 		}
 	}
 
@@ -1029,7 +1022,7 @@ public class RegisterItemViewBean
 		this.parentProposalUuid = uuid;
 	}
 
-	public Set<RegisterItemViewBean> getMemberProposals() {
+	public Set<UUID> getMemberProposals() {
 		return memberProposals;
 	}
 
