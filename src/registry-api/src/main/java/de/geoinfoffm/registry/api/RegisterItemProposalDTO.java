@@ -619,6 +619,8 @@ public class RegisterItemProposalDTO
 					if (CollectionUtils.isEmpty(originalCollection) && CollectionUtils.isEmpty(newCollection)) continue;
 
 					if (!CollectionUtils.isEmpty(originalCollection)) {
+						if (!CharSequence.class.isAssignableFrom(CollectionUtils.findCommonElementType(originalCollection))) continue;
+
 						if (!originalCollection.equals(newCollection)) {
 							List<String> list = new ArrayList<String>();
 							list.addAll(newCollection);
