@@ -338,6 +338,10 @@ public abstract class AbstractRegistryInitializer implements RegistryInitializer
 		this.eventPublisher = applicationEventPublisher;
 	}
 
+	protected ApplicationEventPublisher eventPublisher() {
+		return this.eventPublisher;
+	}
+
 	protected void log(String value) {
 		initLog.append(value + "\n");
 		logger.debug(value);
