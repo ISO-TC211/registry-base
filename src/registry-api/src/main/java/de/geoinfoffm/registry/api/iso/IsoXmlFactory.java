@@ -49,6 +49,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.isotc211.iso19135.AbstractRE_ProposalManagementInformation_Type;
 import org.isotc211.iso19135.RE_AdditionInformation_PropertyType;
 import org.isotc211.iso19135.RE_AdditionInformation_Type;
@@ -74,7 +75,6 @@ import org.isotc211.iso19135.RE_ItemStatus_PropertyType;
 import org.isotc211.iso19135.RE_ItemStatus_Type;
 import org.isotc211.iso19135.RE_Locale_PropertyType;
 import org.isotc211.iso19135.RE_Locale_Type;
-import org.isotc211.iso19135.RE_ProposalManagementInformation_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_Type;
 import org.isotc211.iso19135.RE_Reference_PropertyType;
@@ -123,8 +123,11 @@ import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.datetime.joda.JodaDateTimeFormatAnnotationFormatterFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import de.geoinfoffm.registry.api.ProposalDtoFactory;
 import de.geoinfoffm.registry.api.RegisterItemViewBean;
@@ -1107,6 +1110,35 @@ public class IsoXmlFactory
 
 		try {
 			return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+	
+	public static XMLGregorianCalendar xmlGregorianCalendar(String representation) {
+		if (StringUtils.isEmpty(representation)) return null;
+		
+		XMLGregorianCalendar xmlDate;
+		try {
+			if (StringUtils.countOccurrencesOf(representation, "-") == 1 || StringUtils.countOccurrencesOf(representation, ".") == 1) {
+				// ordinal date
+				String delimiter = (representation.contains("-") ? "-" : ".");
+				
+				String year = StringUtils.split(representation, delimiter)[0];
+				int dayOfYear = Integer.parseInt(StringUtils.split(representation, delimiter)[1]);
+				if (dayOfYear < 1) {
+					dayOfYear = 1;
+				}
+				
+				DateTime isoDate = DateTime.parse(String.format("%s%03d", year, dayOfYear), ISODateTimeFormat.basicOrdinalDate());
+				xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(isoDate.toGregorianCalendar());
+			}
+			else {
+				xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(representation);
+			}
+			
+			return xmlDate;
 		}
 		catch (DatatypeConfigurationException e) {
 			throw new RuntimeException(e.getMessage(), e);
