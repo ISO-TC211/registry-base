@@ -191,7 +191,7 @@
 	<jaxb:bindings schemaLocation="xlink/xlink.xsd" 
 		node="/xs:schema">
 		<jaxb:schemaBindings>
-			<jaxb:package name="org.w3.xlink"/>
+			<jaxb:package name="org.w3.xlink.jaxb"/>
 		</jaxb:schemaBindings>
 	</jaxb:bindings>
 
