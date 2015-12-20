@@ -38,8 +38,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.context.MessageSource;
@@ -128,12 +130,16 @@ public class ProposalListItem
 		
 		this.proposalType = proposal.getClass().getName();
 
+		Set<String> targetRegisters = new HashSet<>();
 		StringBuilder targetRegisterBuilder = new StringBuilder();
 		for (RE_Register register : proposal.getAffectedRegisters()) {
+			if (targetRegisters.contains(register.getName())) continue;
+			
 			if (targetRegisterBuilder.length() > 0) {
 				targetRegisterBuilder.append(", ");
 			}
 			targetRegisterBuilder.append(register.getName());
+			targetRegisters.add(register.getName());
 		}
 		this.targetRegister = targetRegisterBuilder.toString();
 
