@@ -72,6 +72,10 @@ public class RegistryConfiguration
 			saveProperties(configuration, CONFIG_FILE);
 		}
 	}
+	
+	public static RegistryConfiguration getInstance() {
+		return new RegistryConfiguration();
+	}
 
 	/**
 	 * @return a default set of properties.
