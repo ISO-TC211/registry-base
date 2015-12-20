@@ -36,7 +36,11 @@ package de.geoinfoffm.registry.api;
 
 import static de.geoinfoffm.registry.core.security.RegistrySecurity.*;
 
-import java.math.BigInteger;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -46,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -54,10 +59,13 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.slf4j.Logger;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
@@ -316,6 +324,17 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	 */
 	@Override
 	public Addition createAdditionProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException {
+		return createAdditionProposal(proposal, new HashMap<RegisterItemProposalDTO, Proposal>());
+	}
+		
+	public Addition createAdditionProposal(RegisterItemProposalDTO proposal, Map<RegisterItemProposalDTO, Proposal> proposalsCreated) throws InvalidProposalException {
+		if (proposalsCreated.containsKey(proposal)) {
+			logger.debug("Using previously created proposal '{}'...", proposalsCreated.get(proposal).getTitle());
+			return (Addition)proposalsCreated.get(proposal);
+		}
+		
+		logger.debug("Creating new ADDITION proposal '{}'...", proposal.getName());
+
 		RE_ItemClass itemClass;
 		if (!StringUtils.isEmpty(proposal.getItemClassName())) {
 			itemClass = itemClassRepository.findByName(proposal.getItemClassName());
@@ -326,12 +345,14 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		else {
 			throw new InvalidProposalException("Either name or UUID of item class must be provided");
 		}
+//		logger.debug(">>> Item class: {}", itemClass.getName());
 
 		// check target register
 		final UUID targetRegisterUuid = proposal.getTargetRegisterUuid();
 		final RE_Register targetRegister = registerRepository.findOne(targetRegisterUuid);
 		if(!targetRegister.getContainedItemClasses().contains(itemClass))
 			throw new InvalidProposalException(String.format("item of itemclass '%s' is not allowed in target register '%s'.",itemClass.getName(),targetRegister.getName()));
+//		logger.debug(">>> Target register: {}", targetRegister.getName());
 		
 		RE_SubmittingOrganization sponsor = submittingOrgRepository.findOne(proposal.getSponsorUuid());
 		if (sponsor == null) {
@@ -344,6 +365,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				throw new InvalidProposalException(String.format("No submitting organization with UUID '%s' found", proposal.getSponsorUuid()));
 			}
 		}
+//		logger.debug(">>> Sponsor: {}", sponsor.getName());
 		
 		BindingResult bindingResult = validateProposal(proposal);
 		if (bindingResult.hasErrors()) {
@@ -351,10 +373,31 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		}
 
 		// Create dependent items and proposal first, so we can satisfy dependencies in the main item
+		logger.debug(">>> Processing aggregate dependencies...");
 		List<Proposal> groupProposals = new ArrayList<Proposal>();
 		for (RegisterItemProposalDTO dependentProposal : proposal.getAggregateDependencies()) {
-			groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
-		}		
+			logger.debug(">>> Found dependency '{}'", dependentProposal.getName());
+			if (proposalsCreated.containsKey(dependentProposal)) {
+				logger.debug(">>> Using previously processed proposal '{}'", proposalsCreated.get(dependentProposal).getTitle());
+//				Addition addition = (Addition)proposalsCreated.get(dependentProposal);
+//				for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(proposal.getClass())) {
+//					setReferenceInPropertyIfNecessary(proposal, dependentProposal, property, addition, new Stack<Class<?>>());
+//				}
+			}
+			else {		
+				groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor, proposalsCreated));
+			}
+		}
+		if (proposal.getName().contains("Lambert")) {
+			new Object();
+		}
+		setReferences(proposal, proposalsCreated, new Stack<Class<?>>());
+		logger.debug(">>> ...done");
+		
+		logger.debug(">>> Updating inter-proposal references...");
+		for (RegisterItemProposalDTO createdProposal : proposalsCreated.keySet()) {
+			setReferences(createdProposal, proposalsCreated, new Stack<Class<?>>());
+		}
 
 		// TODO delegate to service if possible
 		RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> registerItemFactory = 
@@ -367,32 +410,184 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 		Addition addition = proposalFactory.createAddition(item, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
+		logger.debug(">>> Register item '{}' created [uuid={}]", item.getName(), item.getUuid());
 
 		addition = saveProposal(addition, item);
+		proposalsCreated.put(proposal, addition);
+		
+		logger.debug(">>> Processing composite dependencies...");
 		for (RegisterItemProposalDTO dependentProposal : proposal.getCompositeDependencies()) {
 			dependentProposal.setParentItemUuid(addition.getItem().getUuid());
-			groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
+			groupProposals.add(createDependentProposal(dependentProposal, proposal, sponsor, proposalsCreated));
 		}		
+		logger.debug(">>> ...done");
 
 		if (!groupProposals.isEmpty()) {
+			logger.debug(">>> Grouping proposals...");
 			addition.getDependentProposals().addAll(groupProposals);
 			for (Proposal groupProposal : groupProposals) {
 				groupProposal.setParent(addition);
 				proposalRepository.save(groupProposal);
 			}
+			logger.debug(">>> ...done");
 		}
 		
 		eventPublisher().publishEvent(new ProposalCreatedEvent(addition));
 
 		return addition;
 	}
+	
+	private void setReferences(Object target, Map<RegisterItemProposalDTO, Proposal> proposalsCreated, Stack<Class<?>> classes) {
+		for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(target.getClass())) {
+			try {
+				if (property.getName().equals("axes")) {
+					new Object();
+				}
+				if (RegisterItemProposalDTO.class.isAssignableFrom(property.getPropertyType())) {
+					RegisterItemProposalDTO dependentProposal = (RegisterItemProposalDTO)property.getReadMethod().invoke(target);
+					if (dependentProposal != null && dependentProposal.getReferencedItemUuid() == null && proposalsCreated.containsKey(dependentProposal)) {
+						// Set the referencedItemUuid property so that the RegisterItemFactory can reference the correct item
+						Proposal proposal = proposalsCreated.get(dependentProposal);
+						if (proposal instanceof Addition) {
+							Addition addition = (Addition)proposal;
+							dependentProposal.setReferencedItemUuid(addition.getItem().getUuid());
+							logger.debug(">>>>>> Added reference to previously created item '{}' in property '{}' of object '{}'", new Object[] { addition.getItem().getName(), property.getName(), target.toString() });
+							property.getWriteMethod().invoke(target, dependentProposal);
+						}
+					}
+				}
+				else if (Collection.class.isAssignableFrom(property.getPropertyType())) {
+					Field field = ReflectionUtils.findField(target.getClass(), property.getName());
+					if (field != null) {
+						Type t = ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0];
+						if (t instanceof Class) {
+							if (RegisterItemProposalDTO.class.isAssignableFrom((Class)t)) {
+								for (RegisterItemProposalDTO value : (Collection<RegisterItemProposalDTO>)property.getReadMethod().invoke(target)) {
+									if (value != null && value.getReferencedItemUuid() == null && proposalsCreated.containsKey(value)) {
+										// Set the referencedItemUuid property so that the RegisterItemFactory can reference the correct item
+										Proposal proposal = proposalsCreated.get(value);
+										if (proposal instanceof Addition) {
+											Addition addition = (Addition)proposal;
+											value.setReferencedItemUuid(addition.getItem().getUuid());
+											logger.debug(">>>>>> Added reference to previously created item '{}' in property '{}' of object '{}'", new Object[] { addition.getItem().getName(), property.getName(), target.toString() });
+										}
+									}
+								}
+							}
+							else if (!BeanUtils.isSimpleValueType((Class)t) && !UUID.class.equals((Class)t) && !Map.class.isAssignableFrom((Class)t)) {
+								if (property.getName().equals("parameterValues")) {
+									new Object();
+								}
+								for (Object value : (Collection<?>)property.getReadMethod().invoke(target)) {
+									for (PropertyDescriptor subProperty : BeanUtils.getPropertyDescriptors(value.getClass())) {
+										if (!classes.contains(subProperty.getPropertyType())) {
+											classes.push(subProperty.getPropertyType());
+											setReferences(value, proposalsCreated, classes);
+											classes.pop();
+										}
+										else {
+											new Object();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				else if (!BeanUtils.isSimpleProperty(property.getPropertyType()) && !UUID.class.equals(property.getPropertyType()) && !Map.class.isAssignableFrom(property.getPropertyType())) {
+					// Check if property is itself an object that has a property that references the proposal
+					for (PropertyDescriptor subProperty : BeanUtils.getPropertyDescriptors(property.getPropertyType())) {
+						if (!classes.contains(subProperty.getPropertyType())) {
+							Object value = property.getReadMethod().invoke(target);
+							if (value != null) {
+								classes.push(subProperty.getPropertyType());
+								setReferences(value, proposalsCreated, classes);
+								classes.pop();
+							}
+						}
+						else {
+							new Object();
+						}
+					}
+				}
+			}
+			catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+	}
 
-	private Proposal createDependentProposal(RegisterItemProposalDTO proposal, RegisterItemProposalDTO mainProposal, RE_SubmittingOrganization sponsor) throws InvalidProposalException {
+	private void setReferenceInPropertyIfNecessary(Object dto, RegisterItemProposalDTO dependentProposal, PropertyDescriptor property, Addition addition, Stack<Class<?>> classes) {
+		try {
+			if (property.getReadMethod().getDeclaringClass().isAssignableFrom(dto.getClass()) && dependentProposal.getClass().isAssignableFrom(property.getPropertyType()) && property.getReadMethod().invoke(dto) == dependentProposal) {
+				RegisterItemProposalDTO value = (RegisterItemProposalDTO)property.getReadMethod().invoke(dto);
+				// Set the referencedItemUuid property so that the RegisterItemFactory can reference the correct item
+				value.setReferencedItemUuid(addition.getItem().getUuid());
+				logger.debug(">>>>>> Added reference to previously created item '{}' in property '{}' of object '{}'", new Object[] { addition.getItem().getName(), property.getName(), dto.toString() });
+				property.getWriteMethod().invoke(dto, value);
+			}
+			else if (Collection.class.isAssignableFrom(property.getPropertyType())) {
+				if (property.getName().equals("axes")) {
+					new Object();
+				}
+				Field field = ReflectionUtils.findField(dto.getClass(), property.getName());
+				if (field != null) {
+					Type t = ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0];
+					if (t instanceof Class) {
+						if (dependentProposal.getClass().isAssignableFrom((Class)t)) {
+							for (RegisterItemProposalDTO value : (Collection<RegisterItemProposalDTO>)property.getReadMethod().invoke(dto)) {
+								if (value == dependentProposal) {
+									value.setReferencedItemUuid(addition.getItem().getUuid());
+								}
+							}
+						}
+						else if (!BeanUtils.isSimpleValueType((Class)t) && !UUID.class.equals((Class)t) && !Map.class.isAssignableFrom((Class)t)) {
+							if (property.getName().equals("parameterValues")) {
+								new Object();
+							}
+							for (Object value : (Collection<?>)property.getReadMethod().invoke(dto)) {
+								for (PropertyDescriptor subProperty : BeanUtils.getPropertyDescriptors(value.getClass())) {
+									if (!classes.contains(subProperty.getPropertyType())) {
+										classes.push(subProperty.getPropertyType());
+										setReferenceInPropertyIfNecessary(value, dependentProposal, subProperty, addition, classes);
+										classes.pop();
+									}
+									else {
+										new Object();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else if (!BeanUtils.isSimpleProperty(property.getPropertyType()) && !UUID.class.equals(property.getPropertyType()) && !Map.class.isAssignableFrom(property.getPropertyType())) {
+				// Check if property is itself an object that has a property that references the proposal
+				for (PropertyDescriptor subProperty : BeanUtils.getPropertyDescriptors(property.getPropertyType())) {
+					if (!classes.contains(subProperty.getPropertyType())) {
+						classes.push(subProperty.getPropertyType());
+						setReferenceInPropertyIfNecessary(dto, dependentProposal, subProperty, addition, classes);
+						classes.pop();
+					}
+					else {
+						new Object();
+					}
+				}
+			}
+		}
+		catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
+			logger.error(e.getMessage(), e);
+		}
+	}
+
+	private Proposal createDependentProposal(RegisterItemProposalDTO proposal, RegisterItemProposalDTO mainProposal, RE_SubmittingOrganization sponsor, Map<RegisterItemProposalDTO, Proposal> proposalsCreated) throws InvalidProposalException {
 		BindingResult bindingResult;
 		bindingResult = validateProposal(proposal);
 		if (bindingResult.hasErrors()) {
 			throw new InvalidProposalException(bindingResult);
 		}
+		
+		logger.debug(">>> Creating dependent proposal '{}' [uuid={}]", proposal.getName(), proposal.getUuid());
 		
 		proposal.setTargetRegisterUuid(mainProposal.getTargetRegisterUuid());
 		proposal.setSponsorUuid(mainProposal.getSponsorUuid());
@@ -401,12 +596,37 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		
 		List<Proposal> subsubProposals = new ArrayList<Proposal>();
 		for (RegisterItemProposalDTO dependentProposal : proposal.getAggregateDependencies()) {
-			subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
+			if (dependentProposal == proposal) continue;
+			if (proposalsCreated.containsKey(dependentProposal)) {
+				logger.debug(">>> Using previously processed proposal '{}'", proposalsCreated.get(dependentProposal).getTitle());
+				Addition addition = (Addition)proposalsCreated.get(dependentProposal);
+				// Find the property of the proposal that contains the dependent proposal
+				for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(proposal.getClass())) {
+					try {
+						if (dependentProposal.getClass().isAssignableFrom(property.getPropertyType()) && property.getReadMethod().invoke(proposal) == dependentProposal) {
+							RegisterItemProposalDTO value = (RegisterItemProposalDTO)property.getReadMethod().invoke(proposal);
+							// Set the referencedItemUuid property so that the RegisterItemFactory can reference the correct item
+							value.setReferencedItemUuid(addition.getItem().getUuid());
+							property.getWriteMethod().invoke(proposal, value);
+							break;
+						}
+					}
+					catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						logger.error(e.getMessage(), e);
+					}
+				}
+			}
+			else {		
+				subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor, proposalsCreated));
+			}
 		}		
 		
 		// TODO Justification etc. müssen aus ProposalDTO des abhängigen Items kommen!
 
 		RE_ItemClass dependentProposalItemClass = this.findItemClass(proposal);
+		if (dependentProposalItemClass == null) {
+			new Object();
+		}
 		RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO> itemFactory = 
 				(RegisterItemFactory<RE_RegisterItem, RegisterItemProposalDTO>)itemFactoryRegistry.getFactory(dependentProposalItemClass.getName());
 		RE_RegisterItem dependentItem = itemFactory.createRegisterItem(proposal);
@@ -414,18 +634,21 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (dependentItem == null) {
 			throw new NullPointerException(String.format("Factory %s returned null item", itemFactory.getClass().getCanonicalName()));
 		}
+		logger.debug(">>>>> Dependent item '{}' created [uuid={}]", dependentItem.getName(), dependentItem.getUuid());
 		
 		Addition subAddition = proposalFactory.createAddition(dependentItem, sponsor, 
 				proposal.getJustification(), proposal.getRegisterManagerNotes(), proposal.getControlBodyNotes());
 		
 		subAddition = saveProposal(subAddition, dependentItem);
+		
+		proposalsCreated.put(proposal, subAddition);
 
 		// Set the referenced item UUID in the proposal so that it may be referenced the main item
 		proposal.setReferencedItemUuid(subAddition.getItem().getUuid());
 		
 		for (RegisterItemProposalDTO dependentProposal : proposal.getCompositeDependencies()) {
 			dependentProposal.setParentItemUuid(subAddition.getItem().getUuid());
-			subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor));
+			subsubProposals.add(createDependentProposal(dependentProposal, proposal, sponsor, proposalsCreated));
 		}		
 		
 		if (!subsubProposals.isEmpty()) {
@@ -467,6 +690,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		if (proposal == null) {
 			throw new InvalidProposalException(String.format("Referenced proposal with id '%s' does not exist.", proposalDto.getProposalUuid()));
 		}
+		
+		Map<RegisterItemProposalDTO, Proposal> proposalsCreated =  new HashMap<RegisterItemProposalDTO, Proposal>();
 
 		BindingResult bindingResult = validateProposal(proposalDto);
 		if (bindingResult.hasErrors()) {
@@ -513,7 +738,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			
 			for (RegisterItemProposalDTO newSub : newlyDependent) {
 				newSub.setParentItemUuid(proposalDto.getItemUuid());
-				Proposal subProposal = createDependentProposal(newSub, proposalDto, proposal.getSponsor());
+				Proposal subProposal = createDependentProposal(newSub, proposalDto, proposal.getSponsor(), proposalsCreated);
 				subProposal.setParent(proposal);
 				proposal.getDependentProposals().add(subProposal);
 			}
@@ -544,7 +769,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 				for (RegisterItemProposalDTO dependentProposal : proposalDto.getCompositeDependencies()) {
 					if (dependentProposal.getProposalUuid() == null) {
 						dependentProposal.setParentItemUuid(addition.getItem().getUuid());
-						dependentProposals.add(createDependentProposal(dependentProposal, proposalDto, proposal.getSponsor()));
+						dependentProposals.add(createDependentProposal(dependentProposal, proposalDto, proposal.getSponsor(), proposalsCreated));
 					}
 				}
 				
