@@ -781,4 +781,9 @@ public class RegisterItemProposalDTO
 	public boolean isSupersession() {
 		return this.proposalType.equals(ProposalType.SUPERSESSION);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s [name=%s] [type=%s] [class=%s]", this.getItemClassName(), this.getName(), this.getProposalType(), this.getClass().getCanonicalName());
+	}
 }
