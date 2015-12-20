@@ -216,7 +216,7 @@ public abstract class AbstractRegistryInitializer implements RegistryInitializer
 		return ic;
 	}
 
-	public <P extends RegisterItemProposalDTO> RE_RegisterItem registerItem(RE_Register register, RE_ItemClass itemClass, String name,
+	protected <P extends RegisterItemProposalDTO> RE_RegisterItem registerItem(RE_Register register, RE_ItemClass itemClass, String name,
 			BigInteger itemIdentifier, Organization sponsor, Class<P> dtoClass, ParameterizedRunnable<P> paramSetter)
 			throws InvalidProposalException, InstantiationException, IllegalAccessException, UnauthorizedException {
 		P proposal;
@@ -337,7 +337,7 @@ public abstract class AbstractRegistryInitializer implements RegistryInitializer
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
 	}
-
+	
 	protected ApplicationEventPublisher eventPublisher() {
 		return this.eventPublisher;
 	}
