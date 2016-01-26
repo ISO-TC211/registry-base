@@ -155,7 +155,7 @@
                     <source>1.7</source>
                     <target>1.7</target>
 					<encoding>UTF-8</encoding>
-                    <compilerArgument>-Xlint:all</compilerArgument>
+                    <compilerArgument>-Xlint:-path</compilerArgument>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
