@@ -61,6 +61,10 @@ public class RegistryConfiguration
 	private static final String PROPERTY_MAIL_SMTP_PORT = "mail.smtp.port";
 	private static final String PROPERTY_MAIL_BASE_URL = "mail.baseUrl";
 	private static final String PROPERTY_ADMIN_EMAIL = "admin.email";
+	private static final String PROPERTY_GML_IDENTIFIER_BASE_URL = "gml.identifier.baseurl";
+	private static final String PROPERTY_GML_IDENTIFIER_PATH_PATTERN = "gml.identifier.pathpattern";
+	
+	private static RegistryConfiguration instance = null;
 	
 	private Properties configuration;
 	
@@ -71,6 +75,14 @@ public class RegistryConfiguration
 			configuration = createDefaultProperties();
 			saveProperties(configuration, CONFIG_FILE);
 		}
+	}
+	
+	public static RegistryConfiguration getInstance() {
+		if (instance == null) {
+			instance = new RegistryConfiguration(); 
+		}
+		
+		return instance;
 	}
 
 	/**
@@ -161,5 +173,25 @@ public class RegistryConfiguration
 	public boolean isAdministrator(String emailAddress) {
 		String adminEmail = this.configuration.getProperty(PROPERTY_ADMIN_EMAIL, null);
 		return !StringUtils.isEmpty(emailAddress) && emailAddress.equals(adminEmail);
+	}
+	
+	public String getGmlIdentifierBaseUrl() {
+		String baseUrl = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_BASE_URL);
+		
+		if (StringUtils.isEmpty(baseUrl)) {
+			baseUrl = this.getMailBaseUrl();
+		}
+		
+		if (!baseUrl.endsWith("/")) {
+			baseUrl = baseUrl + "/";
+		}
+		
+		return baseUrl;		
+	}
+	
+	public String getGmlIdentifierPathPattern() {
+		String pathPattern = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_PATH_PATTERN, "def/%d");
+		
+		return pathPattern;
 	}
 }
