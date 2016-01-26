@@ -1102,17 +1102,6 @@ public class IsoXmlFactory
 		target.setUuid(pmi.getUuid().toString());
 	}
 
-	public static XMLGregorianCalendar xmlGregorianCalendar(String date) {
-		if (StringUtils.isEmpty(date)) return null;
-
-		try {
-			return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
-		}
-		catch (DatatypeConfigurationException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
-	}
-	
 	public static XMLGregorianCalendar xmlGregorianCalendar(Date date) {
 		if (date == null) return null;
 		
