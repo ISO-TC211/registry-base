@@ -49,6 +49,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.isotc211.iso19135.AbstractRE_ProposalManagementInformation_Type;
 import org.isotc211.iso19135.RE_AdditionInformation_PropertyType;
 import org.isotc211.iso19135.RE_AdditionInformation_Type;
@@ -74,7 +75,6 @@ import org.isotc211.iso19135.RE_ItemStatus_PropertyType;
 import org.isotc211.iso19135.RE_ItemStatus_Type;
 import org.isotc211.iso19135.RE_Locale_PropertyType;
 import org.isotc211.iso19135.RE_Locale_Type;
-import org.isotc211.iso19135.RE_ProposalManagementInformation_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_Type;
 import org.isotc211.iso19135.RE_Reference_PropertyType;
@@ -120,6 +120,7 @@ import org.isotc211.iso19139.metadata.LanguageCode_PropertyType;
 import org.isotc211.iso19139.metadata.MD_CharacterSetCode_PropertyType;
 import org.isotc211.iso19139.metadata.URL_PropertyType;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1097,13 +1098,23 @@ public class IsoXmlFactory
 		target.setStatus(decisionStatus(pmi.getStatus()));
 		target.setUuid(pmi.getUuid().toString());
 	}
+
+	public static XMLGregorianCalendar xmlGregorianCalendar(String date) {
+		if (StringUtils.isEmpty(date)) return null;
+
+		try {
+			return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 	
 	public static XMLGregorianCalendar xmlGregorianCalendar(Date date) {
 		if (date == null) return null;
 		
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
-		XMLGregorianCalendar xmlDate;
 
 		try {
 			return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
