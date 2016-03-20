@@ -336,15 +336,20 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		logger.debug("Creating new ADDITION proposal '{}'...", proposal.getName());
 
 		RE_ItemClass itemClass;
-		if (!StringUtils.isEmpty(proposal.getItemClassName())) {
-			itemClass = itemClassRepository.findByName(proposal.getItemClassName());
-		}
-		else if (proposal.getItemClassUuid() != null) {
+		if (proposal.getItemClassUuid() != null) {
 			itemClass = itemClassRepository.findOne(proposal.getItemClassUuid());			
+		}
+		else if (!StringUtils.isEmpty(proposal.getItemClassName())) {
+			itemClass = itemClassRepository.findByName(proposal.getItemClassName());
 		}
 		else {
 			throw new InvalidProposalException("Either name or UUID of item class must be provided");
 		}
+		
+		if (itemClass == null) {
+			throw new InvalidProposalException(String.format("Referenced item class does not exists [name: '%s'][UUID: %s]", proposal.getItemClassName(), proposal.getItemClassUuid()));			
+		}
+		
 //		logger.debug(">>> Item class: {}", itemClass.getName());
 
 		// check target register
