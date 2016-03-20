@@ -174,7 +174,7 @@ public class ProposalDtoFactory
 		}
 
 		String proposalDtoClassName = config.getDtoClass();
-		logger.debug("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
+		logger.trace("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
 		Class<?> proposalDtoClass;		
 		try {
 			proposalDtoClass = this.getClass().getClassLoader().loadClass(proposalDtoClassName);
