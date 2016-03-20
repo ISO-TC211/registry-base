@@ -101,10 +101,10 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	Page<Proposal> findBySponsorAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("search") String search, Pageable pageable);
 
 	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false")
-	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, Pageable pageable);
+	Page<Proposal> findByParentAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, Pageable pageable);
 
 	@Query("SELECT p FROM Proposal p WHERE p.parent.uuid = :groupUuid AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
-	Page<Proposal> findByGroupAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, @Param("search") String search, Pageable pageable);
+	Page<Proposal> findByParentAndIsConcludedIsFalse(@Param("groupUuid") UUID groupUuid, @Param("search") String search, Pageable pageable);
 
 	@Query("SELECT p FROM SimpleProposal p WHERE p.sponsor = :sponsor AND p.proposalManagementInformation.item.itemClass = :itemClass AND p.parent IS NULL AND p.isConcluded = false AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<SimpleProposal> findSimpleProposalBySponsorAndItemClassAndParentIsNullAndIsConcludedIsFalse(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("itemClass") RE_ItemClass itemClass, @Param("search") String search, Pageable pageable);
@@ -129,6 +129,12 @@ public interface ProposalRepository extends EntityRepository<Proposal>
 	Page<Proposal> findByStatusIn(Collection<String> status, Pageable pageable);
 	@Query("SELECT p FROM Proposal p WHERE p.isConcluded = false AND p.status IN (:status) AND (LOWER(p.title) LIKE LOWER(:search))")
 	Page<Proposal> findByStatusIn(@Param("status") Collection<String> status, @Param("search") String search, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND p.sponsor = :sponsor AND p.parent IS NULL AND p.dateSubmitted IS NULL")
+	Page<Proposal> findBySponsorAndParentIsNullAndDateSubmittedIsNullAndTypeNotIn(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("classes") List<Class<?>> excludedClasses, Pageable pageable);
+
+	@Query("SELECT p FROM Proposal p WHERE TYPE(p) NOT IN :classes AND p.sponsor = :sponsor AND p.parent IS NULL AND p.dateSubmitted IS NULL AND (LOWER(p.title) LIKE LOWER(:search))")
+	Page<Proposal> findBySponsorAndParentIsNullAndDateSubmittedIsNullAndTypeNotIn(@Param("sponsor") RE_SubmittingOrganization sponsor, @Param("classes") List<Class<?>> excludedClasses, @Param("search") String search, Pageable pageable);
 
 	List<Proposal> findByStatusInAndParentIsNull(Collection<String> status);
 	Page<Proposal> findByStatusInAndParentIsNull(Collection<String> status, Pageable pageable);

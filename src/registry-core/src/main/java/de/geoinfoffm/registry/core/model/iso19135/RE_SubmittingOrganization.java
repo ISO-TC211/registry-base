@@ -81,7 +81,7 @@ public class RE_SubmittingOrganization extends de.geoinfoffm.registry.core.Entit
 	private String name;
 
 	@XmlElement(name = "contact", namespace = "http://www.isotc211.org/2005/grg")
-	@OneToOne(cascade = CascadeType.PERSIST)
+	@OneToOne(cascade = CascadeType.ALL)
 	private CI_ResponsibleParty contact;
 
 	@XmlTransient

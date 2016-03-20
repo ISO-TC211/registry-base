@@ -41,10 +41,9 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
@@ -124,16 +123,12 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	private String registerManagerNotes;
 
 	@XmlElement(name = "sponsor", namespace = "http://www.isotc211.org/2005/grg")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	private RE_SubmittingOrganization sponsor;
 
 	@JsonIgnore
 	@XmlTransient
-	@ManyToOne(cascade = CascadeType.PERSIST)
-//	@JoinTable(name="RE_RegisterItem_ProposalManagementInfos",
-//	 joinColumns=@JoinColumn(name="pmiId"),
-//	 inverseJoinColumns=@JoinColumn(name="itemId")
-//	)
+	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
 	private RE_RegisterItem item;
 	
 	protected RE_ProposalManagementInformation() {
@@ -271,7 +266,7 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	 * @return the item
 	 */
 	public RE_RegisterItem getItem() {
-		return this.item;
+		return (RE_RegisterItem)Entity.unproxify(this.item);
 	}
 
 	/**

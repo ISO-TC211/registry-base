@@ -175,7 +175,7 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 	
 	@XmlElement(name = "owner", namespace = "http://www.isotc211.org/2005/grg", required = true)
 	@XmlPath("owner/grg:RE_RegisterOwner")
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
 	private RE_RegisterOwner owner;
 
 	protected RE_Register() {

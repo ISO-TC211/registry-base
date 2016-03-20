@@ -57,6 +57,7 @@ import de.geoinfoffm.registry.core.model.ProposalGroup;
 import de.geoinfoffm.registry.core.model.SimpleProposal;
 import de.geoinfoffm.registry.core.model.Supersession;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
+import de.geoinfoffm.registry.core.model.iso19135.RE_RegisterItem;
 
 /**
  * A factory for creating ProposalDto objects.
@@ -82,6 +83,12 @@ public class ProposalDtoFactory
 		result.setItemClassUuid(itemClass.getUuid());
 		
 		return result;
+	}
+	
+	public RegisterItemProposalDTO getProposalDto(RE_RegisterItem item) throws ClassNotFoundException {
+		ItemClassConfiguration config = itemClassRegistry.getConfiguration(item.getItemClass().getName());
+		Class<?> dtoClass = Class.forName(config.getDtoClass());
+		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(ConstructorUtils.getMatchingAccessibleConstructor(dtoClass, item.getClass()), item);
 	}
 
 	public RegisterItemProposalDTO getProposalDto(AbstractProposal_Type proposal) {
@@ -118,9 +125,9 @@ public class ProposalDtoFactory
 		}
 		else if (proposal instanceof ProposalGroup) {
 			ProposalGroup group = (ProposalGroup)proposal;
-			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group, this);
+			RegisterItemProposalDTO groupDto = new RegisterItemProposalDTO(group);
 			for (Proposal containedProposal : group.getProposals()) {
-				groupDto.getDependentProposals().add(getProposalDto(containedProposal));
+				groupDto.getDependentProposals().add(containedProposal.getUuid());
 			}
 			
 			return groupDto;
@@ -132,11 +139,11 @@ public class ProposalDtoFactory
 
 	public RegisterItemProposalDTO getProposalDto(SimpleProposal proposal) {
 		RE_ItemClass itemClass = proposal.getItem().getItemClass();
-		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal, Entity.unproxify(this));		
+		return (RegisterItemProposalDTO)BeanUtils.instantiateClass(findConstructor(itemClass, Proposal.class), proposal);		
 	}
 	
 	public RegisterItemProposalDTO getProposalDto(Supersession supersession) {
-		return new RegisterItemProposalDTO(supersession, this);
+		return new RegisterItemProposalDTO(supersession);
 	}
 
 	private Constructor<?> findConstructor(RE_ItemClass itemClass) {
@@ -152,7 +159,7 @@ public class ProposalDtoFactory
 				defaultConstructor = RegisterItemProposalDTO.class.getConstructor();
 			}
 			else {
-				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType, ProposalDtoFactory.class);
+				defaultConstructor = ConstructorUtils.getMatchingAccessibleConstructor(RegisterItemProposalDTO.class, argumentType);
 			}
 		}
 		catch (NoSuchMethodException | SecurityException e) {
@@ -167,7 +174,7 @@ public class ProposalDtoFactory
 		}
 
 		String proposalDtoClassName = config.getDtoClass();
-		logger.debug("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
+		logger.trace("Item class configuration defines class {} as DTO for item class {}", proposalDtoClassName, itemClass.getName());
 		Class<?> proposalDtoClass;		
 		try {
 			proposalDtoClass = this.getClass().getClassLoader().loadClass(proposalDtoClassName);
@@ -186,9 +193,6 @@ public class ProposalDtoFactory
 			}
 			if (ctor == null) {
 				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType);
-			}
-			if (ctor == null) {
-				ctor = ConstructorUtils.getMatchingAccessibleConstructor(proposalDtoClass, argumentType, ProposalDtoFactory.class);
 			}
 		}
 		catch (NoSuchMethodException ex) {

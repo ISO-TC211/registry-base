@@ -104,8 +104,7 @@ public class RegisterItemProposalDTO
 	private final Set<RegisterItemProposalDTO> newSupersedingItems = new HashSet<RegisterItemProposalDTO>();
 	private final Set<UUID> existingSupersedingItems = new HashSet<UUID>();
 	
-//	private final List<RegisterItemProposalDTO> dependentItems = new ArrayList<RegisterItemProposalDTO>();
-	private final Set<RegisterItemProposalDTO> dependentProposals = new HashSet<>();
+	private final Set<UUID> dependentProposals = new HashSet<>();
 	
 	public RegisterItemProposalDTO() {
 		itemUuid = UUID.randomUUID();
@@ -247,11 +246,8 @@ public class RegisterItemProposalDTO
 //		initializeFromItem(retirement.getRetiredItemUuid());
 //	}
 	
-	public RegisterItemProposalDTO(Proposal proposal, ProposalDtoFactory factory) {
+	public RegisterItemProposalDTO(Proposal proposal) {
 		this.proposalUuid = proposal.getUuid();
-		for (Proposal dependentProposal : proposal.getDependentProposals()) {
-			this.getDependentProposals().add(factory.getProposalDto(dependentProposal));
-		}
 		
 		if (proposal instanceof SimpleProposal) {
 			initializeFromSimpleProposal((SimpleProposal)proposal);
@@ -738,7 +734,7 @@ public class RegisterItemProposalDTO
 		newSupersedingItems.remove(itemUuid);
 	}
 
-	public Set<RegisterItemProposalDTO> getDependentProposals() {
+	public Set<UUID> getDependentProposals() {
 		return dependentProposals;
 	}
 
@@ -784,5 +780,10 @@ public class RegisterItemProposalDTO
 
 	public boolean isSupersession() {
 		return this.proposalType.equals(ProposalType.SUPERSESSION);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s [name=%s] [type=%s] [class=%s]", this.getItemClassName(), this.getName(), this.getProposalType(), this.getClass().getCanonicalName());
 	}
 }
