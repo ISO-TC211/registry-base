@@ -26,6 +26,8 @@ public interface ProposalListItem extends ListItem<Proposal>
 
 	String getTechnicalProposalStatus();
 
+	void overrideProposalStatus(String newStatus);
+
 	String getProposalType();
 
 	ProposalChangeRequest getPendingChangeRequest();
@@ -37,6 +39,9 @@ public interface ProposalListItem extends ListItem<Proposal>
 	String getDisposition();
 
 	Map<String, Object> getAdditionalData();
+	
+	boolean isSubmitter();
+	void setSubmitter(boolean submitter);
 
 	boolean isAppealed();
 

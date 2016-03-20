@@ -83,6 +83,7 @@ public class ProposalListItemImpl implements ProposalListItem
 	private String targetRegister;
 	private RE_Disposition disposition;
 	private ProposalWorkflowManager workflowManager;
+	private boolean isSubmitter;
 
 	private Map<String, Object> additionalData;
 	private final MessageSource messages;
@@ -224,6 +225,11 @@ public class ProposalListItemImpl implements ProposalListItem
 	public String getTechnicalProposalStatus() {
 		return this.proposalStatus;
 	}
+	
+	@Override
+	public void overrideProposalStatus(String newStatus) {
+		this.proposalStatus = newStatus;
+	}
 
 	/* (non-Javadoc)
 	 * @see de.geoinfoffm.registry.api.ProposalListItem#getProposalType()
@@ -283,6 +289,17 @@ public class ProposalListItemImpl implements ProposalListItem
 		}
 		
 		return additionalData;
+	}
+	
+	@Override
+	@JsonProperty
+	public boolean isSubmitter() {
+		return this.isSubmitter;
+	}
+	
+	@Override
+	public void setSubmitter(boolean submitter) {
+		this.isSubmitter = submitter;
 	}
 	
 	/* (non-Javadoc)
