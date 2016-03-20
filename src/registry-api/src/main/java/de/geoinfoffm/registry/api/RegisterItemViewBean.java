@@ -338,19 +338,19 @@ public class RegisterItemViewBean
 		
 		this.dateAccepted = item.getDateAccepted();
 		this.dateAmended = item.getDateAmended();
-		
-		if (loadDetails) {
-			for (RE_AdditionInformation ai : item.getAdditionInformation()) {
-				if (ai.isFinal()) {
-					initializeFromProposalManagementInformation(ai);
-					break;
-				}
+
+		for (RE_AdditionInformation ai : item.getAdditionInformation()) {
+			if (ai.isFinal()) {
+				initializeFromProposalManagementInformation(ai);
+				break;
 			}
-		
-			this.additionInformations.addAll(item.getAdditionInformation());
-			this.clarificationInformations.addAll(item.getClarificationInformation());
-			this.amendmentInformations.addAll(item.getAmendmentInformation());
-			
+		}
+	
+		this.additionInformations.addAll(item.getAdditionInformation());
+		this.clarificationInformations.addAll(item.getClarificationInformation());
+		this.amendmentInformations.addAll(item.getAmendmentInformation());
+
+		if (loadDetails) {
 			for (RE_RegisterItem predecessor : item.getPredecessors()) {
 				this.predecessors.put(predecessor.getUuid(), predecessor.getName());
 			}
