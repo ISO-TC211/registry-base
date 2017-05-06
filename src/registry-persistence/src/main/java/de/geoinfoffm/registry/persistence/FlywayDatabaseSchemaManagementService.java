@@ -60,6 +60,11 @@ public class FlywayDatabaseSchemaManagementService implements DatabaseSchemaMang
 	public void migrate() {
 		flyway.migrate(); 
 	}
+	
+	@Override
+	public void repair() {
+		flyway.repair();
+	}
 
 	private void initCallbacks() {
 		flyway.setCallbacks(new FlywayCallback() {
