@@ -38,7 +38,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.internet.AddressException;
@@ -63,6 +65,7 @@ public class RegistryConfiguration
 	private static final String PROPERTY_ADMIN_EMAIL = "admin.email";
 	private static final String PROPERTY_GML_IDENTIFIER_BASE_URL = "gml.identifier.baseurl";
 	private static final String PROPERTY_GML_IDENTIFIER_PATH_PATTERN = "gml.identifier.pathpattern";
+	private static final String PROPERTY_REGISTER_ALIASES = "register.aliases";
 	
 	private static RegistryConfiguration instance = null;
 	
@@ -193,5 +196,32 @@ public class RegistryConfiguration
 		String pathPattern = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_PATH_PATTERN, "def/%d");
 		
 		return pathPattern;
+	}
+	
+	public Map<String, String> getRegisterAliases() {
+		Map<String, String> result = new HashMap<>();
+		
+		String aliases = this.configuration.getProperty(PROPERTY_REGISTER_ALIASES, "");
+		if (StringUtils.isEmpty(aliases)) {
+			return result;
+		}
+		
+		String[] pairs = aliases.split(";");
+		if (pairs == null) {
+			return result;
+		}
+		
+		for (String pair : pairs) {
+			String[] keyValue = pair.split(":");
+			if (keyValue != null && keyValue.length == 2 && !StringUtils.isEmpty(keyValue[0]) && !StringUtils.isEmpty(keyValue[1])) {
+				result.put(keyValue[0], keyValue[1]);
+			}
+		}
+		
+		return result;		
+	}
+	
+	public String getRegisterNameByAlias(String alias) {
+		return getRegisterAliases().get(alias);
 	}
 }
