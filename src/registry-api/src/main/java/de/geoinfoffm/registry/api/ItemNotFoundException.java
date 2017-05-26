@@ -34,7 +34,10 @@
  */
 package de.geoinfoffm.registry.api;
 
+import java.math.BigInteger;
 import java.util.UUID;
+
+import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
  * @author Florian Esser
@@ -52,6 +55,10 @@ public class ItemNotFoundException extends EntityNotFoundException
 	
 	public ItemNotFoundException(UUID itemId) {
 		super(String.format("An item with ID '%s' does not exist.", itemId));
+	}
+
+	public ItemNotFoundException(RE_Register register, BigInteger itemIdentifier) {
+		super(String.format("An item with the identifier '%s' does not exist in register %s.", itemIdentifier, register.getName()));
 	}
 
 	/**
