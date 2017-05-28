@@ -34,12 +34,16 @@
  */
 package de.geoinfoffm.registry.api;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 /**
  * Thrown when an entity is not to be found in the backend.
  * 
  * @author Florian Esser
  *
  */
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class EntityNotFoundException extends RuntimeException
 {
 

@@ -37,12 +37,16 @@ package de.geoinfoffm.registry.api;
 import java.math.BigInteger;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
  * @author Florian Esser
  *
  */
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class ItemNotFoundException extends EntityNotFoundException
 {
 
