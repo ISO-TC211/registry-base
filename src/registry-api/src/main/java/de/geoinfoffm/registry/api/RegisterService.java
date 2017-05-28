@@ -58,7 +58,7 @@ public interface RegisterService extends ApplicationService<RE_Register>
 	
 	public RE_Register findByName(String name);
 	
-	public Map<UUID, String> getCachedRegisterNames();
+	public Map<RegisterName, UUID> getCachedRegisterNames();
 //	public Map<UUID, String> getCachedItemClasses(UUID registerUuid);
 	
 	public Map<UUID, String> getContainedItemClasses(UUID registerUuid);

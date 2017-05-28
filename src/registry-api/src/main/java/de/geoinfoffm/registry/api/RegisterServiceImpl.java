@@ -62,6 +62,7 @@ import org.springframework.util.Assert;
 import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.RegistersChangedEvent;
+import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.core.model.Actor;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
@@ -93,7 +94,7 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	@PersistenceContext
 	private EntityManager entityManager;
 	
-	private Map<UUID, String> registerNamesCache;
+	private Map<RegisterName, UUID> registerNamesCache;
 	
 	/**
 	 * @param repository
@@ -117,23 +118,51 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	}
 
 	@Override
-	public Map<UUID, String> getCachedRegisterNames() {
+	public Map<RegisterName, UUID> getCachedRegisterNames() {
 		if (this.registerNamesCache == null) {
 			this.refreshRegisterNamesCache();
 		} 
-		return Collections.unmodifiableMap(new LinkedHashMap<UUID,String>(this.registerNamesCache));
+		return Collections.unmodifiableMap(new LinkedHashMap<>(this.registerNamesCache));
 	}
 	
 	public void refreshRegisterNamesCache() {
 		if (this.registerNamesCache == null) {
-			this.registerNamesCache = new LinkedHashMap<UUID, String>();
+			this.registerNamesCache = new LinkedHashMap<>();
 		}
 		
-		List<Object[]> objects = repository().getRegisterNames();
-		
-		for (Object[] object : objects) {
-			this.registerNamesCache.put((UUID)object[0], (String)object[1]);
+		List<Object[]> registers = repository().getRegisterNames();
+
+		for (Object[] register : registers) {
+			UUID uuid = (UUID)register[0];
+			String name = (String)register[1];
+			String alias = RegistryConfiguration.getInstance().getRegisterAliasByName(name);
+			if (alias == null) {
+				alias = uuid.toString();
+			}
+			final RegisterName registerName = new RegisterName(uuid, name, alias);
+			this.registerNamesCache.put(registerName, uuid);
 		}
+
+		for (final RegisterName register : this.registerNamesCache.keySet()) {
+			final UUID registerUuid = this.registerNamesCache.get(register);
+			for (final UUID subregisterUuid : repository().getSubregisters(registerUuid)) {
+				final RegisterName subregister = findByUuid(this.registerNamesCache, subregisterUuid);
+				if (subregister == null) continue;
+				register.getSubregisters().put(subregister, subregisterUuid);
+				subregister.setParentRegister(register);
+			}
+		}
+
+	}
+
+	public static RegisterName findByUuid(Map<RegisterName, UUID> registerNames, UUID registerUuid) {
+		for (final RegisterName name : registerNames.keySet()) {
+			if (registerNames.get(name).equals(registerUuid)) {
+				return name;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
