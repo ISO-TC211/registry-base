@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.mail.internet.AddressException;
@@ -199,9 +200,29 @@ public class RegistryConfiguration
 	}
 	
 	public Map<String, String> getRegisterAliases() {
+		return extractAliases(PROPERTY_REGISTER_ALIASES);
+	}
+
+	public String getRegisterNameByAlias(String alias) {
+		return getRegisterAliases().get(alias);
+	}
+	
+	public String getRegisterAliasByName(String name) {
+		if (getRegisterAliases().containsValue(name)) {
+			for (Entry<String, String> entry : getRegisterAliases().entrySet()) {
+				if (entry.getValue().equals(name)) {
+					return entry.getKey();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private Map<String, String> extractAliases(String property) {
 		Map<String, String> result = new HashMap<>();
 		
-		String aliases = this.configuration.getProperty(PROPERTY_REGISTER_ALIASES, "");
+		String aliases = this.configuration.getProperty(property, "");
 		if (StringUtils.isEmpty(aliases)) {
 			return result;
 		}
@@ -219,9 +240,5 @@ public class RegistryConfiguration
 		}
 		
 		return result;		
-	}
-	
-	public String getRegisterNameByAlias(String alias) {
-		return getRegisterAliases().get(alias);
 	}
 }
