@@ -60,7 +60,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +78,7 @@ import de.geoinfoffm.registry.api.soap.Clarification_Type;
 import de.geoinfoffm.registry.api.soap.ProposedChange_PropertyType;
 import de.geoinfoffm.registry.api.soap.Retirement_Type;
 import de.geoinfoffm.registry.api.soap.Supersession_Type;
+import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.ProposalAcceptedEvent;
 import de.geoinfoffm.registry.core.ProposalCreatedEvent;
@@ -760,6 +760,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			if (item == null) {
 				throw new InvalidProposalException(String.format("Referenced item with id '%s' does not exist.", proposalDto.getItemUuid()));
 			}
+			item = (RE_RegisterItem) Entity.unproxify(item);
 			
 			proposal.setTitle(proposalDto.getName());
 
