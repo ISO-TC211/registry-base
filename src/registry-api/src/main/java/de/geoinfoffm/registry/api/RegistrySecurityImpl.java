@@ -112,7 +112,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private DelegationRepository delegationRepository;
 	
 	@Autowired
-	private ControlBodyDiscoveryStrategy cbStrategy;
+	private RoleDiscoveryStrategy cbStrategy;
 
 	@Autowired
 	private ProposalRepository proposalRepository;

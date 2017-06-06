@@ -194,7 +194,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private RegisterItemRepository itemRepository;
 
 	@Autowired
-	private ControlBodyDiscoveryStrategy cbStrategy;
+	private RoleDiscoveryStrategy roleDiscovery;
 
 	@Autowired
 	private AuthorizationRepository authRepository;
@@ -1389,8 +1389,13 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	}
 
 	@Override
+	public List<Authorization> findAuthorizedRegisterManager(Proposal proposal) {
+		return roleDiscovery.findRegisterManagerAuthorizations(proposal);
+	}
+
+	@Override
 	public List<Authorization> findAuthorizedControlBody(Proposal proposal) {
-		return cbStrategy.findControlBodyAuthorizations(proposal);
+		return roleDiscovery.findControlBodyAuthorizations(proposal);
 	}
 	
 }
