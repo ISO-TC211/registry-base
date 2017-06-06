@@ -83,6 +83,7 @@ import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.ProposalAcceptedEvent;
 import de.geoinfoffm.registry.core.ProposalCreatedEvent;
 import de.geoinfoffm.registry.core.ProposalRejectedEvent;
+import de.geoinfoffm.registry.core.ProposalReviewedEvent;
 import de.geoinfoffm.registry.core.ProposalSavedEvent;
 import de.geoinfoffm.registry.core.ProposalSubmittedEvent;
 import de.geoinfoffm.registry.core.UnauthorizedException;
@@ -899,6 +900,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		proposalWorkflowManager.review(proposal, Calendar.getInstance().getTime());
 		this.saveProposal(proposal);
 		
+		eventPublisher().publishEvent(new ProposalReviewedEvent(proposal));
+
 		return proposal;
 	}
 
