@@ -37,13 +37,12 @@ package de.geoinfoffm.registry.core.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
@@ -94,7 +93,7 @@ public abstract class Proposal extends Entity
 	private Boolean isConcluded = false;
 	
 	public abstract List<RE_ProposalManagementInformation> getProposalManagementInformations();
-	public abstract List<RE_Register> getAffectedRegisters();
+	public abstract Set<RE_Register> getAffectedRegisters();
 	
 	public abstract RE_DecisionStatus getDecisionStatus();
 	public abstract RE_Disposition getDisposition();

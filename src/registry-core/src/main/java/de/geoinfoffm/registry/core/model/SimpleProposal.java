@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -227,8 +228,8 @@ public abstract class SimpleProposal extends Proposal
 	}
 
 	@Override
-	public List<RE_Register> getAffectedRegisters() {
-		return Arrays.asList(this.getRegister());
+	public Set<RE_Register> getAffectedRegisters() {
+		return Collections.singleton(this.getRegister());
 	}	
 	
 	
