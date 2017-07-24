@@ -34,17 +34,30 @@
  */
 package de.geoinfoffm.registry.api;
 
-import static de.geoinfoffm.registry.core.security.RegistrySecurity.*;
-import static de.geoinfoffm.registry.core.security.RegistryPermission.*;
-import static org.springframework.security.acls.domain.BasePermission.*;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_CONTROL;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_MANAGE;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_SUBMIT;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.CONTROLBODY_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.MANAGER_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.OWNER_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.SUBMITTER_ROLE_PREFIX;
+import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION;
+import static org.springframework.security.acls.domain.BasePermission.DELETE;
+import static org.springframework.security.acls.domain.BasePermission.READ;
+import static org.springframework.security.acls.domain.BasePermission.WRITE;
 
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -278,5 +291,38 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	@Override
 	public boolean containsItemClass(RE_Register register, String itemClassName) {
 		return this.getContainedItemClasses(register).containsValue(itemClassName);
+	}
+
+	@Override
+	public Date getDateOfLastChange() {
+		Date result = null;
+		for (RE_Register register : repository().findAll()) {
+			Date lastChange = register.getDateOfLastChange();
+			if (result == null || result.before(lastChange)) {
+				result = lastChange;
+			}
+		}
+		
+		return result;
+		
+	}
+
+	@Override
+	public Date getDateOfLastChange(UUID registerUuid) {
+		RE_Register register = repository().findOne(registerUuid);
+		if (register == null) {
+			throw new EntityNotFoundException(MessageFormat.format("No register with UUID {0} exists", registerUuid));
+		}
+		
+		return register.getDateOfLastChange();
+	}
+
+	@Override
+	public String getFormattedDateOfLastChange() {
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+		df.setTimeZone(tz);
+		
+		return df.format(this.getDateOfLastChange());
 	}
 }

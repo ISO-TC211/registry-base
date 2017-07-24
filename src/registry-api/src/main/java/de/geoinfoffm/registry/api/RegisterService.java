@@ -35,15 +35,13 @@
 package de.geoinfoffm.registry.api;
 
 import java.io.Writer;
-import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.model.Actor;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
-import de.geoinfoffm.registry.core.model.RegistryUser;
-import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 import de.geoinfoffm.registry.persistence.xml.exceptions.XmlSerializationException;
 
@@ -63,6 +61,10 @@ public interface RegisterService extends ApplicationService<RE_Register>
 	
 	public Map<UUID, String> getContainedItemClasses(UUID registerUuid);
 	public boolean containsItemClass(RE_Register register, String itemClassName);
+	
+	public Date getDateOfLastChange();
+	public String getFormattedDateOfLastChange();
+	public Date getDateOfLastChange(UUID registerUuid);
 	
 //	public BigInteger nextItemIdentifier();
 	
