@@ -319,10 +319,15 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 
 	@Override
 	public String getFormattedDateOfLastChange() {
+		Date dateOfLastChange = this.getDateOfLastChange();
+		if (dateOfLastChange == null) {
+			return "N/A";
+		}
+		
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
 		df.setTimeZone(tz);
 		
-		return df.format(this.getDateOfLastChange());
+		return df.format(dateOfLastChange);
 	}
 }
