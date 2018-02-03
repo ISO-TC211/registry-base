@@ -34,17 +34,30 @@
  */
 package de.geoinfoffm.registry.api;
 
-import static de.geoinfoffm.registry.core.security.RegistrySecurity.*;
-import static de.geoinfoffm.registry.core.security.RegistryPermission.*;
-import static org.springframework.security.acls.domain.BasePermission.*;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_CONTROL;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_MANAGE;
+import static de.geoinfoffm.registry.core.security.RegistryPermission.REGISTER_SUBMIT;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.CONTROLBODY_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.MANAGER_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.OWNER_ROLE_PREFIX;
+import static de.geoinfoffm.registry.core.security.RegistrySecurity.SUBMITTER_ROLE_PREFIX;
+import static org.springframework.security.acls.domain.BasePermission.ADMINISTRATION;
+import static org.springframework.security.acls.domain.BasePermission.DELETE;
+import static org.springframework.security.acls.domain.BasePermission.READ;
+import static org.springframework.security.acls.domain.BasePermission.WRITE;
 
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
@@ -62,6 +75,7 @@ import org.springframework.util.Assert;
 import de.bespire.LoggerFactory;
 import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.RegistersChangedEvent;
+import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.core.model.Actor;
 import de.geoinfoffm.registry.core.model.RegisterRelatedRole;
 import de.geoinfoffm.registry.core.model.Role;
@@ -93,7 +107,7 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	@PersistenceContext
 	private EntityManager entityManager;
 	
-	private Map<UUID, String> registerNamesCache;
+	private Map<RegisterName, UUID> registerNamesCache;
 	
 	/**
 	 * @param repository
@@ -117,23 +131,51 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	}
 
 	@Override
-	public Map<UUID, String> getCachedRegisterNames() {
+	public Map<RegisterName, UUID> getCachedRegisterNames() {
 		if (this.registerNamesCache == null) {
 			this.refreshRegisterNamesCache();
 		} 
-		return Collections.unmodifiableMap(new LinkedHashMap<UUID,String>(this.registerNamesCache));
+		return Collections.unmodifiableMap(new LinkedHashMap<>(this.registerNamesCache));
 	}
 	
 	public void refreshRegisterNamesCache() {
 		if (this.registerNamesCache == null) {
-			this.registerNamesCache = new LinkedHashMap<UUID, String>();
+			this.registerNamesCache = new LinkedHashMap<>();
 		}
 		
-		List<Object[]> objects = repository().getRegisterNames();
-		
-		for (Object[] object : objects) {
-			this.registerNamesCache.put((UUID)object[0], (String)object[1]);
+		List<Object[]> registers = repository().getRegisterNames();
+
+		for (Object[] register : registers) {
+			UUID uuid = (UUID)register[0];
+			String name = (String)register[1];
+			String alias = RegistryConfiguration.getInstance().getRegisterAliasByName(name);
+			if (alias == null) {
+				alias = uuid.toString();
+			}
+			final RegisterName registerName = new RegisterName(uuid, name, alias);
+			this.registerNamesCache.put(registerName, uuid);
 		}
+
+		for (final RegisterName register : this.registerNamesCache.keySet()) {
+			final UUID registerUuid = this.registerNamesCache.get(register);
+			for (final UUID subregisterUuid : repository().getSubregisters(registerUuid)) {
+				final RegisterName subregister = findByUuid(this.registerNamesCache, subregisterUuid);
+				if (subregister == null) continue;
+				register.getSubregisters().put(subregister, subregisterUuid);
+				subregister.setParentRegister(register);
+			}
+		}
+
+	}
+
+	public static RegisterName findByUuid(Map<RegisterName, UUID> registerNames, UUID registerUuid) {
+		for (final RegisterName name : registerNames.keySet()) {
+			if (registerNames.get(name).equals(registerUuid)) {
+				return name;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -249,5 +291,43 @@ implements RegisterService, ApplicationListener<RegistersChangedEvent>
 	@Override
 	public boolean containsItemClass(RE_Register register, String itemClassName) {
 		return this.getContainedItemClasses(register).containsValue(itemClassName);
+	}
+
+	@Override
+	public Date getDateOfLastChange() {
+		Date result = null;
+		for (RE_Register register : repository().findAll()) {
+			Date lastChange = register.getDateOfLastChange();
+			if (result == null || result.before(lastChange)) {
+				result = lastChange;
+			}
+		}
+		
+		return result;
+		
+	}
+
+	@Override
+	public Date getDateOfLastChange(UUID registerUuid) {
+		RE_Register register = repository().findOne(registerUuid);
+		if (register == null) {
+			throw new EntityNotFoundException(MessageFormat.format("No register with UUID {0} exists", registerUuid));
+		}
+		
+		return register.getDateOfLastChange();
+	}
+
+	@Override
+	public String getFormattedDateOfLastChange() {
+		Date dateOfLastChange = this.getDateOfLastChange();
+		if (dateOfLastChange == null) {
+			return "N/A";
+		}
+		
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+		df.setTimeZone(tz);
+		
+		return df.format(dateOfLastChange);
 	}
 }

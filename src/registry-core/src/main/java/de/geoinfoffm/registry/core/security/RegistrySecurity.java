@@ -119,10 +119,10 @@ public interface RegistrySecurity
 
 	boolean may(Permission permission, Entity entity);
 
-	<E extends Entity> void assertHasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities)
+	<E extends Entity> void assertHasAnyEntityRelatedRoleForAll(List<String> rolePrefices, Collection<E> entities)
 			throws UnauthorizedException;
 
-	<E extends Entity> void assertHasEntityRelatedRoleForAll(String rolePrefix, List<E> entities)
+	<E extends Entity> void assertHasEntityRelatedRoleForAll(String rolePrefix, Collection<E> entities)
 			throws UnauthorizedException;
 
 	void assertHasEntityRelatedRole(String rolePrefix, Entity entity) throws UnauthorizedException;
@@ -149,10 +149,10 @@ public interface RegistrySecurity
 
 	String entityRole(String rolePrefix, UUID entityId);
 
-	<E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities);
+	<E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, Collection<E> entities);
 	<E extends Entity> boolean hasEntityRelatedRoleForAny(String rolePrefix, Collection<E> entities);
 
-	<E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, List<E> entities);
+	<E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, Collection<E> entities);
 
 	boolean hasEntityRelatedRole(String rolePrefix, Entity entity);
 

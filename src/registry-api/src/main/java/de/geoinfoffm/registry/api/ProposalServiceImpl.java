@@ -60,7 +60,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,10 +78,12 @@ import de.geoinfoffm.registry.api.soap.Clarification_Type;
 import de.geoinfoffm.registry.api.soap.ProposedChange_PropertyType;
 import de.geoinfoffm.registry.api.soap.Retirement_Type;
 import de.geoinfoffm.registry.api.soap.Supersession_Type;
+import de.geoinfoffm.registry.core.Entity;
 import de.geoinfoffm.registry.core.IllegalOperationException;
 import de.geoinfoffm.registry.core.ProposalAcceptedEvent;
 import de.geoinfoffm.registry.core.ProposalCreatedEvent;
 import de.geoinfoffm.registry.core.ProposalRejectedEvent;
+import de.geoinfoffm.registry.core.ProposalReviewedEvent;
 import de.geoinfoffm.registry.core.ProposalSavedEvent;
 import de.geoinfoffm.registry.core.ProposalSubmittedEvent;
 import de.geoinfoffm.registry.core.UnauthorizedException;
@@ -194,7 +195,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	private RegisterItemRepository itemRepository;
 
 	@Autowired
-	private ControlBodyDiscoveryStrategy cbStrategy;
+	private RoleDiscoveryStrategy roleDiscovery;
 
 	@Autowired
 	private AuthorizationRepository authRepository;
@@ -759,6 +760,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 			if (item == null) {
 				throw new InvalidProposalException(String.format("Referenced item with id '%s' does not exist.", proposalDto.getItemUuid()));
 			}
+			item = (RE_RegisterItem) Entity.unproxify(item);
 			
 			proposal.setTitle(proposalDto.getName());
 
@@ -899,6 +901,8 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 		proposalWorkflowManager.review(proposal, Calendar.getInstance().getTime());
 		this.saveProposal(proposal);
 		
+		eventPublisher().publishEvent(new ProposalReviewedEvent(proposal));
+
 		return proposal;
 	}
 
@@ -1341,7 +1345,7 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 
 	@Override
 	public void approveProposalChange(Actor actor, ProposalChangeRequest changeRequest) {
-		List<RE_Register> registers = changeRequest.getProposal().getAffectedRegisters();
+		Set<RE_Register> registers = changeRequest.getProposal().getAffectedRegisters();
 		boolean isSubmitter = security.maySubmitToAll(registers);
 		boolean isControlBody = security.hasEntityRelatedRoleForAll(CONTROLBODY_ROLE_PREFIX, registers);
 		
@@ -1389,8 +1393,13 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	}
 
 	@Override
+	public List<Authorization> findAuthorizedRegisterManager(Proposal proposal) {
+		return roleDiscovery.findRegisterManagerAuthorizations(proposal);
+	}
+
+	@Override
 	public List<Authorization> findAuthorizedControlBody(Proposal proposal) {
-		return cbStrategy.findControlBodyAuthorizations(proposal);
+		return roleDiscovery.findControlBodyAuthorizations(proposal);
 	}
 	
 }

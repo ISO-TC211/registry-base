@@ -73,6 +73,9 @@ public interface RegisterItemRepository extends RE_RegisterItemRepository
 	
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatus(RE_Register register, RE_ItemClass itemClass, RE_ItemStatus status, Pageable pageable);
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatusIn(RE_Register register, RE_ItemClass itemClass, Collection<RE_ItemStatus> status, Pageable pageable);
+	
+	public List<RE_RegisterItem> findByRegisterAndItemIdentifierAndStatus(RE_Register register, BigInteger itemIdentifier, RE_ItemStatus status);
+	public List<RE_RegisterItem> findByRegisterAndItemIdentifierAndStatusIn(RE_Register register, BigInteger itemIdentifier, Collection<RE_ItemStatus> status);
 
 	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.itemClass IN :itemClass AND i.status IN :status")
 	public Page<RE_RegisterItem> findByRegisterAndItemClassInAndStatusIn(@Param("register") RE_Register register, @Param("itemClass") Collection<RE_ItemClass> itemClass, @Param("status") Collection<RE_ItemStatus> status, Pageable pageable);

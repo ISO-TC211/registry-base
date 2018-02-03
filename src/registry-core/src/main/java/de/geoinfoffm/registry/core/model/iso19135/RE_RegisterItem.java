@@ -654,7 +654,6 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 	 */
 	public void setRegister(RE_Register register) {
 		this.register = register;
-		register.addContainedItem(this);
 	}
 	
 	public RE_RegisterItem submitAsProposal() {

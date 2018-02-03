@@ -117,4 +117,10 @@ public class ClientConfiguration
 		
 		return confirmationUrl;
 	}
+	
+	public static boolean isDemoMode() {
+		// Use inverted logic to activate demo mode as a fallback for wrong configuration
+		// values
+		return !instance().getProperty("client.demoMode", "true").equals("false");
+	}
 }

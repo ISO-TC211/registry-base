@@ -2,6 +2,7 @@ package de.geoinfoffm.registry.core.workflow;
 
 import static de.geoinfoffm.registry.core.workflow.ProposalWorkflowManager.*;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,9 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformati
 @Transactional
 public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager 
 {		
+	public static final String STATUS_RETURNED_BY_MANAGER = "RETURNED_BY_MANAGER";
+	public static final String STATUS_RETURNED_BY_CONTROLBODY = "RETURNED_BY_CONTROLBODY";
+
 	public Iso19135ProposalWorkflowManager() {
 	}
 	
@@ -106,7 +110,7 @@ public class Iso19135ProposalWorkflowManager implements ProposalWorkflowManager
 
 	@Override
 	public boolean isSubmitted(String status) {
-		return !STATUS_NOT_SUBMITTED.equals(status);
+		return !Arrays.asList(STATUS_NOT_SUBMITTED, STATUS_RETURNED_BY_CONTROLBODY, STATUS_RETURNED_BY_MANAGER).contains(status);
 	}
 	
 	@Override

@@ -104,5 +104,6 @@ public interface ProposalService extends ApplicationService<Proposal>
 	
 	void approveProposalChange(Actor actor, ProposalChangeRequest changeRequest);
 	
+	List<Authorization> findAuthorizedRegisterManager(Proposal proposal);
 	List<Authorization> findAuthorizedControlBody(Proposal proposal);
 }
