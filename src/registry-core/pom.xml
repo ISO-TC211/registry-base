@@ -4,7 +4,7 @@
 	<parent>
         <groupId>de.geoinfoffm.registry</groupId>
         <artifactId>registry-parent</artifactId>
-        <version>2.2</version>
+        <version>2.3</version>
         <relativePath>../..</relativePath>
     </parent>
 	<artifactId>registry-core</artifactId>
@@ -25,12 +25,33 @@
 		</resources>
 		<plugins>
 			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/generated/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

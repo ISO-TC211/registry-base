@@ -35,10 +35,10 @@
 package de.geoinfoffm.registry.core.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -230,8 +230,8 @@ public class Supersession extends ProposalGroup
 	}
 	
 	@Override
-	public List<RE_Register> getAffectedRegisters() {
-		return Arrays.asList(this.targetRegister);
+	public Set<RE_Register> getAffectedRegisters() {
+		return Collections.singleton(this.targetRegister);
 	}
 
 	public static class SupersessionNameBuildingStrategy extends SimpleNameBuildingStrategy {

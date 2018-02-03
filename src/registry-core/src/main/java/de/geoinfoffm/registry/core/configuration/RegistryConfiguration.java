@@ -38,7 +38,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.mail.internet.AddressException;
@@ -61,6 +64,11 @@ public class RegistryConfiguration
 	private static final String PROPERTY_MAIL_SMTP_PORT = "mail.smtp.port";
 	private static final String PROPERTY_MAIL_BASE_URL = "mail.baseUrl";
 	private static final String PROPERTY_ADMIN_EMAIL = "admin.email";
+	private static final String PROPERTY_GML_IDENTIFIER_BASE_URL = "gml.identifier.baseurl";
+	private static final String PROPERTY_GML_IDENTIFIER_PATH_PATTERN = "gml.identifier.pathpattern";
+	private static final String PROPERTY_REGISTER_ALIASES = "register.aliases";
+	
+	private static RegistryConfiguration instance = null;
 	
 	private Properties configuration;
 	
@@ -72,13 +80,21 @@ public class RegistryConfiguration
 			saveProperties(configuration, CONFIG_FILE);
 		}
 	}
+	
+	public static RegistryConfiguration getInstance() {
+		if (instance == null) {
+			instance = new RegistryConfiguration(); 
+		}
+		
+		return instance;
+	}
 
 	/**
 	 * @return a default set of properties.
 	 */
 	private Properties createDefaultProperties() {
 		Properties properties = new Properties();
-		properties.setProperty(PROPERTY_BASE_PACKAGES, "de.geoinfoffm.registry");
+		properties.setProperty(PROPERTY_BASE_PACKAGES, "de.geoinfoffm.registry,de.bespire.registry");
 		properties.setProperty(PROPERTY_MAIL_ENABLED, "false");
 		properties.setProperty(PROPERTY_MAIL_FROM_NAME, "Registry");
 		properties.setProperty(PROPERTY_MAIL_FROM_ADDRESS, "registry@example.org");
@@ -161,5 +177,68 @@ public class RegistryConfiguration
 	public boolean isAdministrator(String emailAddress) {
 		String adminEmail = this.configuration.getProperty(PROPERTY_ADMIN_EMAIL, null);
 		return !StringUtils.isEmpty(emailAddress) && emailAddress.equals(adminEmail);
+	}
+	
+	public String getGmlIdentifierBaseUrl() {
+		String baseUrl = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_BASE_URL);
+		
+		if (StringUtils.isEmpty(baseUrl)) {
+			baseUrl = this.getMailBaseUrl();
+		}
+		
+		if (!baseUrl.endsWith("/")) {
+			baseUrl = baseUrl + "/";
+		}
+		
+		return baseUrl;		
+	}
+	
+	public String getGmlIdentifierPathPattern() {
+		String pathPattern = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_PATH_PATTERN, "def/%d");
+		
+		return pathPattern;
+	}
+	
+	public Map<String, String> getRegisterAliases() {
+		return extractAliases(PROPERTY_REGISTER_ALIASES);
+	}
+
+	public String getRegisterNameByAlias(String alias) {
+		return getRegisterAliases().get(alias);
+	}
+	
+	public String getRegisterAliasByName(String name) {
+		if (getRegisterAliases().containsValue(name)) {
+			for (Entry<String, String> entry : getRegisterAliases().entrySet()) {
+				if (entry.getValue().equals(name)) {
+					return entry.getKey();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private Map<String, String> extractAliases(String property) {
+		Map<String, String> result = new HashMap<>();
+		
+		String aliases = this.configuration.getProperty(property, "");
+		if (StringUtils.isEmpty(aliases)) {
+			return result;
+		}
+		
+		String[] pairs = aliases.split(";");
+		if (pairs == null) {
+			return result;
+		}
+		
+		for (String pair : pairs) {
+			String[] keyValue = pair.split(":");
+			if (keyValue != null && keyValue.length == 2 && !StringUtils.isEmpty(keyValue[0]) && !StringUtils.isEmpty(keyValue[1])) {
+				result.put(keyValue[0], keyValue[1]);
+			}
+		}
+		
+		return result;		
 	}
 }

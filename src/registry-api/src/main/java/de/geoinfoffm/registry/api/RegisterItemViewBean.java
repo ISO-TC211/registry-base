@@ -155,7 +155,7 @@ public class RegisterItemViewBean
 	private final Map<UUID, String> successors = new LinkedHashMap<UUID, String>(); 
 	
 	private UUID parentProposalUuid;
-	private final Set<RegisterItemViewBean> memberProposals = new HashSet<RegisterItemViewBean>();
+	private final Set<UUID> memberProposals = new HashSet<>();
 
 	protected RegisterItemViewBean(RE_RegisterItem item) {
 		this(item, true);
@@ -169,13 +169,6 @@ public class RegisterItemViewBean
 		if (proposal.hasParent()) {
 			this.setParentProposalUuid(proposal.getParent().getUuid());
 			this.hasParent = true;
-		}
-		
-		if (proposal.hasDependentProposals()) {
-			for (Proposal dependentProposal : proposal.getDependentProposals()) {
-				this.getMemberProposals().add(new RegisterItemViewBean(dependentProposal));
-			}
-			this.hasDependentProposals = true;
 		}
 		
 		this.setDateSubmitted(proposal.getDateSubmitted());
@@ -345,19 +338,19 @@ public class RegisterItemViewBean
 		
 		this.dateAccepted = item.getDateAccepted();
 		this.dateAmended = item.getDateAmended();
-		
-		if (loadDetails) {
-			for (RE_AdditionInformation ai : item.getAdditionInformation()) {
-				if (ai.isFinal()) {
-					initializeFromProposalManagementInformation(ai);
-					break;
-				}
+
+		for (RE_AdditionInformation ai : item.getAdditionInformation()) {
+			if (ai.isFinal()) {
+				initializeFromProposalManagementInformation(ai);
+				break;
 			}
-		
-			this.additionInformations.addAll(item.getAdditionInformation());
-			this.clarificationInformations.addAll(item.getClarificationInformation());
-			this.amendmentInformations.addAll(item.getAmendmentInformation());
-			
+		}
+	
+		this.additionInformations.addAll(item.getAdditionInformation());
+		this.clarificationInformations.addAll(item.getClarificationInformation());
+		this.amendmentInformations.addAll(item.getAmendmentInformation());
+
+		if (loadDetails) {
 			for (RE_RegisterItem predecessor : item.getPredecessors()) {
 				this.predecessors.put(predecessor.getUuid(), predecessor.getName());
 			}
@@ -392,6 +385,9 @@ public class RegisterItemViewBean
 		}	
 		else if (proposal instanceof RE_AmendmentInformation && ((RE_AmendmentInformation)proposal).getAmendmentType().equals(RE_AmendmentType.RETIREMENT)) {
 			this.proposalType = ProposalType.RETIREMENT;
+		}
+		else if (proposal instanceof RE_AmendmentInformation && ((RE_AmendmentInformation)proposal).getAmendmentType().equals(RE_AmendmentType.INVALIDATION)) {
+			this.proposalType = ProposalType.INVALIDATION;
 		}
 
 //		this.setProposalStatus(ProposalStatus.UNDER_REVIEW);
@@ -443,8 +439,8 @@ public class RegisterItemViewBean
 		}
 		
 		for (Proposal proposal : group.getProposals()) {
-			RegisterItemViewBean member  = new RegisterItemViewBean(proposal);
-			this.getMemberProposals().add(member);
+//			RegisterItemViewBean member  = new RegisterItemViewBean(proposal);
+			this.getMemberProposals().add(proposal.getUuid());
 		}
 	}
 
@@ -1026,7 +1022,7 @@ public class RegisterItemViewBean
 		this.parentProposalUuid = uuid;
 	}
 
-	public Set<RegisterItemViewBean> getMemberProposals() {
+	public Set<UUID> getMemberProposals() {
 		return memberProposals;
 	}
 

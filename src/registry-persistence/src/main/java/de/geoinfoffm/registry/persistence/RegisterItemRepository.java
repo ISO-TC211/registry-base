@@ -36,6 +36,7 @@ package de.geoinfoffm.registry.persistence;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -72,6 +73,9 @@ public interface RegisterItemRepository extends RE_RegisterItemRepository
 	
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatus(RE_Register register, RE_ItemClass itemClass, RE_ItemStatus status, Pageable pageable);
 	public Page<RE_RegisterItem> findByRegisterAndItemClassAndStatusIn(RE_Register register, RE_ItemClass itemClass, Collection<RE_ItemStatus> status, Pageable pageable);
+	
+	public List<RE_RegisterItem> findByRegisterAndItemIdentifierAndStatus(RE_Register register, BigInteger itemIdentifier, RE_ItemStatus status);
+	public List<RE_RegisterItem> findByRegisterAndItemIdentifierAndStatusIn(RE_Register register, BigInteger itemIdentifier, Collection<RE_ItemStatus> status);
 
 	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.itemClass IN :itemClass AND i.status IN :status")
 	public Page<RE_RegisterItem> findByRegisterAndItemClassInAndStatusIn(@Param("register") RE_Register register, @Param("itemClass") Collection<RE_ItemClass> itemClass, @Param("status") Collection<RE_ItemStatus> status, Pageable pageable);
@@ -82,10 +86,16 @@ public interface RegisterItemRepository extends RE_RegisterItemRepository
 	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.itemClass IN :itemClass AND i.status IN :status AND (LOWER(i.name) LIKE LOWER(:search) OR LOWER(i.status.name) LIKE LOWER(:search) OR CAST(i.itemIdentifier AS text) LIKE :search)")
 	public Page<RE_RegisterItem> findByRegisterAndItemClassInAndStatusInFiltered(@Param("register") RE_Register register, @Param("itemClass") Collection<RE_ItemClass> itemClass, @Param("status") Collection<RE_ItemStatus> status, @Param("search") String search, Pageable pageable);
 
+	public List<RE_RegisterItem> findByRegisterAndStatus(RE_Register register, RE_ItemStatus status);
 	public Page<RE_RegisterItem> findByRegisterAndStatus(RE_Register register, RE_ItemStatus status, Pageable pageable);
 	public Page<RE_RegisterItem> findByRegisterAndStatusIn(RE_Register register, Collection<RE_ItemStatus> status, Pageable pageable);
 	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.status IN :status AND (LOWER(i.name) LIKE LOWER(:search) OR LOWER(i.status.name) LIKE LOWER(:search) OR CAST(i.itemIdentifier AS text) LIKE :search)")
-	public Page<RE_RegisterItem> findByRegisterAndStatusInFiltered(@Param("register") RE_Register register, @Param("status") Collection<RE_ItemStatus> status, @Param("search") String search, Pageable pageable);
+	public Page<RE_RegisterItem> findByRegisterAndStatusIn(@Param("register") RE_Register register, @Param("status") Collection<RE_ItemStatus> status, @Param("search") String search, Pageable pageable);
 	
 	public Page<RE_RegisterItem> findByRegister(RE_Register register, Pageable pageable);
+	
+	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.itemClass.name = :itemClassName AND i.status IN :status")
+	public Page<RE_RegisterItem> findByRegisterAndItemClassNameAndStatusIn(@Param("register") RE_Register register, @Param("itemClassName") String itemClassName,  @Param("status") Collection<RE_ItemStatus> status, Pageable pageable);
+	@Query("SELECT i FROM RE_RegisterItem i WHERE i.register = :register AND i.itemClass.name = :itemClassName AND i.status IN :status AND (LOWER(i.name) LIKE LOWER(:search) OR LOWER(i.status.name) LIKE LOWER(:search) OR CAST(i.itemIdentifier AS text) LIKE :search)")
+	public Page<RE_RegisterItem> findByRegisterAndItemClassNameAndStatusIn(@Param("register") RE_Register register, @Param("itemClassName") String itemClassName, @Param("status") Collection<RE_ItemStatus> status, @Param("search") String search, Pageable pageable);
 }

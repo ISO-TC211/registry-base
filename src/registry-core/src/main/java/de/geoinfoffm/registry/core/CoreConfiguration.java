@@ -55,8 +55,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.ui.velocity.VelocityEngineFactoryBean;
@@ -150,6 +152,11 @@ public class CoreConfiguration
 		}
 		
 		return result;
+	}
+	
+	@Bean
+	public ConversionService conversionService() {
+		return new DefaultFormattingConversionService();
 	}
 	
 	@Bean

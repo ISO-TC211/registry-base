@@ -41,5 +41,6 @@ public enum ProposalType
 	SUPERSESSION,
 	MIGRATION,
 	RETIREMENT,
+	INVALIDATION,
 	GROUP;
 }

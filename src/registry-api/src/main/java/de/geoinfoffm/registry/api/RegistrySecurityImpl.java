@@ -112,7 +112,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	private DelegationRepository delegationRepository;
 	
 	@Autowired
-	private ControlBodyDiscoveryStrategy cbStrategy;
+	private RoleDiscoveryStrategy cbStrategy;
 
 	@Autowired
 	private ProposalRepository proposalRepository;
@@ -285,7 +285,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	}
 	
 	@Override
-	public <E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, List<E> entities) {
+	public <E extends Entity> boolean hasEntityRelatedRoleForAll(String rolePrefix, Collection<E> entities) {
 		if (entities == null || entities.isEmpty()) {
 			return false;
 		}
@@ -310,7 +310,7 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	}
 
 	@Override
-	public <E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities) {
+	public <E extends Entity> boolean hasAnyEntityRelatedRoleForAll(List<String> rolePrefices, Collection<E> entities) {
 		if (rolePrefices == null || rolePrefices.isEmpty() || entities == null || entities.isEmpty()) {
 			return false;
 		}
@@ -406,14 +406,14 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	}
 
 	@Override
-	public <E extends Entity> void assertHasEntityRelatedRoleForAll(String rolePrefix, List<E> entities) throws UnauthorizedException {
+	public <E extends Entity> void assertHasEntityRelatedRoleForAll(String rolePrefix, Collection<E> entities) throws UnauthorizedException {
 		for (E entity : entities) {
 			assertHasEntityRelatedRole(rolePrefix, entity);
 		}
 	}
 	
 	@Override
-	public <E extends Entity> void assertHasAnyEntityRelatedRoleForAll(List<String> rolePrefices, List<E> entities) throws UnauthorizedException {
+	public <E extends Entity> void assertHasAnyEntityRelatedRoleForAll(List<String> rolePrefices, Collection<E> entities) throws UnauthorizedException {
 		for (E entity : entities) {
 			assertHasAnyEntityRelatedRole(rolePrefices, entity);
 		}
@@ -421,14 +421,16 @@ public class RegistrySecurityImpl implements RegistrySecurity
 	
 	@Override
 	public boolean may(Permission permission, Entity entity) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return permissionEvaluator.hasPermission(authentication, entity, permission); 
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		return permissionEvaluator.hasPermission(authentication, entity, permission);
+		return true;
 	}
 	
 	@Override
 	public boolean may(Permission permission, Class<?> entityClass, UUID entityId) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return permissionEvaluator.hasPermission(authentication, entityId, entityClass.getCanonicalName(), permission); 		
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		return permissionEvaluator.hasPermission(authentication, entityId, entityClass.getCanonicalName(), permission);
+		return true;
 	}
 	
 	@Override

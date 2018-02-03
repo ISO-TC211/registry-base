@@ -51,12 +51,12 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
  *
  * @author Florian Esser
  */
-public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStrategy
+public class RoleDiscoveryStrategyImpl implements RoleDiscoveryStrategy
 {
 	private RegisterService registerService;
 	private DelegationRepository delegationRepository;
 	
-	public ControlBodyDiscoveryStrategyImpl(RegisterService registerService, DelegationRepository delegationRepository) {
+	public RoleDiscoveryStrategyImpl(RegisterService registerService, DelegationRepository delegationRepository) {
 		this.registerService = registerService;
 		this.delegationRepository = delegationRepository;
 	}
@@ -76,12 +76,12 @@ public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStr
 		List<Authorization> result = new ArrayList<>();
 		
 		List<Role> roles = this.findControlBodyRoles(proposal);
-		result.addAll(findControlBodyAuthorizations(roles));
+		result.addAll(findAuthorizations(roles));
 			
 		return result;
 	}
 
-	private List<Authorization> findControlBodyAuthorizations(List<Role> roles) {
+	private List<Authorization> findAuthorizations(List<Role> roles) {
 		List<Authorization> result = new ArrayList<Authorization>();
 		
 		for (Role role : roles) {
@@ -111,9 +111,48 @@ public class ControlBodyDiscoveryStrategyImpl implements ControlBodyDiscoveryStr
 		List<Authorization> result = new ArrayList<>();
 		
 		List<Role> roles = this.findControlBodyRoles(register);
-		result.addAll(findControlBodyAuthorizations(roles));
+		result.addAll(findAuthorizations(roles));
 			
 		return result;
 	}
+
+	@Override
+	public List<Role> findRegisterManagerRoles(RE_Register register) {
+		List<Role> result = new ArrayList<Role>();
 		
+		Role registerManagerRole = registerService.getManagerRole(register);
+		result.add(registerManagerRole);
+		
+		return result;
+	}
+
+	@Override
+	public List<Role> findRegisterManagerRoles(Proposal proposal) {
+		List<Role> result = new ArrayList<>();
+		for (RE_Register register : proposal.getAffectedRegisters()) {
+			result.addAll(this.findRegisterManagerRoles(register));
+		}
+
+		return result;
+	}
+
+	@Override
+	public List<Authorization> findRegisterManagerAuthorizations(Proposal proposal) {
+		List<Authorization> result = new ArrayList<>();
+		
+		List<Role> roles = this.findRegisterManagerRoles(proposal);
+		result.addAll(findAuthorizations(roles));
+			
+		return result;
+	}
+
+	@Override
+	public List<Authorization> findRegisterManagerAuthorizations(RE_Register register) {
+		List<Authorization> result = new ArrayList<>();
+		
+		List<Role> roles = this.findRegisterManagerRoles(register);
+		result.addAll(findAuthorizations(roles));
+			
+		return result;
+	}
 }

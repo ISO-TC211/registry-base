@@ -36,21 +36,14 @@ package de.geoinfoffm.registry.core.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import org.hibernate.envers.Audited;
@@ -60,7 +53,6 @@ import de.geoinfoffm.registry.core.model.iso19135.RE_DecisionStatus;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Disposition;
 import de.geoinfoffm.registry.core.model.iso19135.RE_ProposalManagementInformation;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
-import de.geoinfoffm.registry.core.model.iso19135.RE_SubmittingOrganization;
 
 /**
  * @author Florian Esser
@@ -105,7 +97,10 @@ public class ProposalGroup extends Proposal
 		this();
 		
 		this.setProposals(new ArrayList<Proposal>());
-		this.getProposals().addAll(proposals);
+		for (Proposal proposal : proposals) {
+			this.getProposals().add(proposal);
+			proposal.setParent(this);
+		}
 		
 		this.setTitle(name);
 	}
@@ -156,7 +151,7 @@ public class ProposalGroup extends Proposal
 	public RE_DecisionStatus getDecisionStatus() {
 		return getProposals().get(0).getDecisionStatus();
 	}
-	
+
 	public void addProposal(Proposal proposal) throws IllegalOperationException {
 		if (proposal.hasParent() && !proposal.getParent().getUuid().equals(this.getUuid())) {
 			throw new IllegalOperationException(String.format("Proposal %s already belongs to group %s", proposal.getUuid(), proposal.getParent().getUuid()));
@@ -195,8 +190,8 @@ public class ProposalGroup extends Proposal
 	}
 	
 	@Override
-	public List<RE_Register> getAffectedRegisters() {
-		List<RE_Register> result = new ArrayList<RE_Register>();
+	public Set<RE_Register> getAffectedRegisters() {
+		Set<RE_Register> result = new HashSet<RE_Register>();
 		for (Proposal proposal : this.getProposals()) {
 			result.addAll(proposal.getAffectedRegisters());
 		}

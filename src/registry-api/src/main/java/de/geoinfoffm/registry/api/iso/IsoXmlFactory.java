@@ -41,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
@@ -74,7 +75,6 @@ import org.isotc211.iso19135.RE_ItemStatus_PropertyType;
 import org.isotc211.iso19135.RE_ItemStatus_Type;
 import org.isotc211.iso19135.RE_Locale_PropertyType;
 import org.isotc211.iso19135.RE_Locale_Type;
-import org.isotc211.iso19135.RE_ProposalManagementInformation_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_PropertyType;
 import org.isotc211.iso19135.RE_ReferenceSource_Type;
 import org.isotc211.iso19135.RE_Reference_PropertyType;
@@ -96,6 +96,7 @@ import org.isotc211.iso19139.common.CharacterString_PropertyType;
 import org.isotc211.iso19139.common.CodeListValue_Type;
 import org.isotc211.iso19139.common.Date_PropertyType;
 import org.isotc211.iso19139.common.Integer_PropertyType;
+import org.isotc211.iso19139.common.Real_PropertyType;
 import org.isotc211.iso19139.metadata.CI_Address_PropertyType;
 import org.isotc211.iso19139.metadata.CI_Address_Type;
 import org.isotc211.iso19139.metadata.CI_Citation_PropertyType;
@@ -128,7 +129,12 @@ import org.springframework.util.StringUtils;
 
 import de.geoinfoffm.registry.api.ProposalDtoFactory;
 import de.geoinfoffm.registry.api.RegisterItemViewBean;
+import de.geoinfoffm.registry.api.RegisterService;
 import de.geoinfoffm.registry.api.ViewBeanFactory;
+import de.geoinfoffm.registry.core.model.Authorization;
+import de.geoinfoffm.registry.core.model.AuthorizationRepository;
+import de.geoinfoffm.registry.core.model.Organization;
+import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso00639.LanguageCode;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 import de.geoinfoffm.registry.core.model.iso19103.CodeListValue;
@@ -187,6 +193,12 @@ public class IsoXmlFactory
 	
 	@Autowired
 	private ProposalDtoFactory dtoFactory;
+	
+	@Autowired
+	private RegisterService registerService;
+	
+	@Autowired
+	private AuthorizationRepository authRepository;
 
 	public IsoXmlFactory() {
 	}
@@ -205,6 +217,10 @@ public class IsoXmlFactory
 	}
 	
 	public static String characterString(CharacterString_PropertyType cs) {
+		if (cs == null) {
+			return null;
+		}
+		
 		if (cs.isSetCharacterString() && cs.getCharacterString().getValue() != null) {
 			return cs.getCharacterString().getValue().toString();
 		}
@@ -275,6 +291,15 @@ public class IsoXmlFactory
 	
 	public static Integer_PropertyType integer(Long longInt) {
 		return integer(longInt == null ? null : BigInteger.valueOf(longInt));
+	}
+	
+	public static Real_PropertyType real(Double d) {
+		Real_PropertyType result = gcoObjectFactory.createReal_PropertyType();
+		if (d != null) {
+			result.setReal(d);
+		}
+		
+		return result;
 	}
 
 	public static RE_ItemStatus_PropertyType itemStatus(RE_ItemStatus status) {
@@ -759,7 +784,7 @@ public class IsoXmlFactory
 		result.setCI_Series(seriesType);
 		return result;
 	}
-	
+
 	public static CI_Citation_PropertyType citation(CI_Citation citation) {
 		CI_Citation_PropertyType result = gmdObjectFactory.createCI_Citation_PropertyType();
 		
@@ -1036,12 +1061,22 @@ public class IsoXmlFactory
 		result.setVersion(version(register.getVersion()));
 		result.setDateOfLastChange(date(register.getDateOfLastChange()));
 		result.setOwner(owner(register.getOwner()));
-		if (register.getSubmitter().isEmpty()) {
+		
+		Role submitterRole = registerService.getSubmitterRole(register);
+		List<Authorization> submitters = authRepository.findByRole(submitterRole);
+		if (submitters.isEmpty()) {
 			result.getSubmitter().add(submittingOrganization((RE_SubmittingOrganization)null));
 		}
-		for (RE_SubmittingOrganization submitter : register.getSubmitter()) {
-			result.getSubmitter().add(submittingOrganization(submitter));
+		for (Authorization submitterAuth : submitters) {
+			if (submitterAuth.getUser() instanceof Organization) {
+				Organization submitter = (Organization)submitterAuth.getUser();
+				result.getSubmitter().add(submittingOrganization(submitter.getSubmittingOrganization()));
+			}
 		}
+		
+//		for (RE_SubmittingOrganization submitter : register.getSubmitter()) {
+//			result.getSubmitter().add(submittingOrganization(submitter));
+//		}
 		if (register.getContainedItemClasses().isEmpty()) {
 			result.getContainedItemClass().add(itemClass((RE_ItemClass)null));
 		}
@@ -1097,16 +1132,44 @@ public class IsoXmlFactory
 		target.setStatus(decisionStatus(pmi.getStatus()));
 		target.setUuid(pmi.getUuid().toString());
 	}
-	
+
 	public static XMLGregorianCalendar xmlGregorianCalendar(Date date) {
 		if (date == null) return null;
 		
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
-		XMLGregorianCalendar xmlDate;
 
 		try {
 			return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+	
+	public static XMLGregorianCalendar xmlGregorianCalendar(String representation) {
+		if (StringUtils.isEmpty(representation)) return null;
+		
+		XMLGregorianCalendar xmlDate;
+		try {
+			if (StringUtils.countOccurrencesOf(representation, "-") == 1 || StringUtils.countOccurrencesOf(representation, ".") == 1) {
+				// ordinal date
+				String delimiter = (representation.contains("-") ? "-" : ".");
+				
+				String year = StringUtils.split(representation, delimiter)[0];
+				int dayOfYear = Integer.parseInt(StringUtils.split(representation, delimiter)[1]);
+				if (dayOfYear < 1) {
+					dayOfYear = 1;
+				}
+				
+				DateTime isoDate = DateTime.parse(String.format("%s%03d", year, dayOfYear), ISODateTimeFormat.basicOrdinalDate());
+				xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(isoDate.toGregorianCalendar());
+			}
+			else {
+				xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(representation);
+			}
+			
+			return xmlDate;
 		}
 		catch (DatatypeConfigurationException e) {
 			throw new RuntimeException(e.getMessage(), e);

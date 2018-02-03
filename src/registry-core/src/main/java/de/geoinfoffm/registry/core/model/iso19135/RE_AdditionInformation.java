@@ -73,7 +73,6 @@ public class RE_AdditionInformation extends RE_ProposalManagementInformation
 	protected void onDispositionAccepted() {
 		this.getItem().setStatus(RE_ItemStatus.VALID);
 		this.getItem().setDateAccepted(Calendar.getInstance().getTime());
-		this.getItem().getRegister().addContainedItem(this.getItem());
 	}
 	
 }//end RE_AdditionInformation

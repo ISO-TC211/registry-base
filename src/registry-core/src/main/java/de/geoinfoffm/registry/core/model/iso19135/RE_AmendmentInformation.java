@@ -93,6 +93,9 @@ public class RE_AmendmentInformation extends RE_ProposalManagementInformation {
 			case SUPERSESSION:
 				item.setStatus(RE_ItemStatus.SUPERSEDED);
 				break;
+			case INVALIDATION:
+				item.setStatus(RE_ItemStatus.INVALID);
+				break;
 		}
 	}
 }//end RE_AmendmentInformation

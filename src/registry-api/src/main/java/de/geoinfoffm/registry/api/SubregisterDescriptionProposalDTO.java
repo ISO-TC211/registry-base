@@ -90,8 +90,8 @@ public class SubregisterDescriptionProposalDTO extends RegisterItemProposalDTO
 		// TODO Auto-generated constructor stub
 	}
 
-	public SubregisterDescriptionProposalDTO(Proposal proposal, ProposalDtoFactory factory) {
-		super(proposal, factory);
+	public SubregisterDescriptionProposalDTO(Proposal proposal) {
+		super(proposal);
 	}
 
 //	@Override

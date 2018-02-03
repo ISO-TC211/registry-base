@@ -299,6 +299,9 @@ public class CI_Citation extends de.geoinfoffm.registry.core.Entity
 	 * @return the presentationForm
 	 */
 	public Set<CI_PresentationFormCode> getPresentationForm() {
+		if (presentationForm == null) {
+			this.presentationForm = new HashSet<>();
+		}
 		return presentationForm;
 	}
 

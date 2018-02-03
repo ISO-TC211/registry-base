@@ -43,12 +43,17 @@ import de.geoinfoffm.registry.core.model.Role;
 import de.geoinfoffm.registry.core.model.iso19135.RE_Register;
 
 /**
- * The interface ControlBodyDiscoveryStrategy.
+ * The interface RoleDiscoveryStrategy.
  *
  * @author Florian Esser
  */
-public interface ControlBodyDiscoveryStrategy
+public interface RoleDiscoveryStrategy
 {
+	List<Role> findRegisterManagerRoles(RE_Register register);
+	List<Role> findRegisterManagerRoles(Proposal proposal);
+	List<Authorization> findRegisterManagerAuthorizations(Proposal proposal);
+	List<Authorization> findRegisterManagerAuthorizations(RE_Register register);
+
 	List<Role> findControlBodyRoles(RE_Register register);
 	List<Role> findControlBodyRoles(Proposal proposal);
 	List<Authorization> findControlBodyAuthorizations(Proposal proposal);

@@ -55,5 +55,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "RE_AmendmentType", namespace = "http://www.isotc211.org/2005/grg")
 public enum RE_AmendmentType {
 	@XmlEnumValue("supersession") SUPERSESSION,
-	@XmlEnumValue("retirement") RETIREMENT;
+	@XmlEnumValue("retirement") RETIREMENT,
+	@XmlEnumValue("invalidation") INVALIDATION;
 }

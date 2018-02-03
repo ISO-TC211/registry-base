@@ -4,7 +4,7 @@
 	<parent>
         <groupId>de.geoinfoffm.registry</groupId>
         <artifactId>registry-parent</artifactId>
-        <version>2.2</version>
+        <version>2.3</version>
         <relativePath>../..</relativePath>
     </parent>
 	<artifactId>registry-api</artifactId>
@@ -83,6 +83,7 @@
 				<configuration>
 					<source>${java-version}</source>
 					<target>${java-version}</target>
+					<encoding>UTF-8</encoding>
 					<compilerArgument>-Xlint:all</compilerArgument>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>
@@ -110,8 +111,8 @@
 			                <xsdOptions>
 			                    <xsdOption>
 			                    	<extension>true</extension>
- 			                   <!-- <xsd>src/main/resources/schema/service.xsd</xsd> --> 
- 			                   <!-- <bindingFile>src/main/resources/schema/bindings.xjb</bindingFile> --> 
+<!--  			                   	<xsd>src/main/resources/schema/service.xsd</xsd>  -->
+<!--  			                   	<bindingFile>src/main/resources/schema/bindings.xjb</bindingFile> -->
 			                        <xsd>${registry.schema.xsd}</xsd>
 			                        <bindingFile>${registry.schema.bindingFile}</bindingFile>
 			                    </xsdOption>

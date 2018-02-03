@@ -80,6 +80,7 @@ import org.hibernate.envers.Audited;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import de.bespire.registry.core.model.Invalidation;
 import de.geoinfoffm.registry.core.CharacterStringAdapter;
 import de.geoinfoffm.registry.core.PropertyTypeAdapter;
 import de.geoinfoffm.registry.core.XmlAccessor;
@@ -653,7 +654,6 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 	 */
 	public void setRegister(RE_Register register) {
 		this.register = register;
-		register.addContainedItem(this);
 	}
 	
 	public RE_RegisterItem submitAsProposal() {
@@ -680,6 +680,20 @@ public class RE_RegisterItem extends de.geoinfoffm.registry.core.Entity
 		this.addAmendmentInformation(retirementInformation);
 		
 		return new Retirement(retirementInformation);
+	}
+	
+	public Invalidation proposeInvalidation(String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) {
+		RE_AmendmentInformation invalidationInformation = new RE_AmendmentInformation();
+		invalidationInformation.setAmendmentType(RE_AmendmentType.INVALIDATION);
+		invalidationInformation.setItem(this);
+		invalidationInformation.setStatus(RE_DecisionStatus.PENDING);
+		invalidationInformation.setSponsor(sponsor);
+		invalidationInformation.setJustification(justification);
+		invalidationInformation.setRegisterManagerNotes(registerManagerNotes);
+		invalidationInformation.setControlBodyNotes(controlBodyNotes);
+		this.addAmendmentInformation(invalidationInformation);
+		
+		return new Invalidation(invalidationInformation);		
 	}
 	
 	public Clarification proposeClarification(Map<String, List<String>> proposedChanges, String justification, String registerManagerNotes, String controlBodyNotes, RE_SubmittingOrganization sponsor) {
