@@ -81,20 +81,9 @@ public class PersistenceConfiguration
 {
 	private static final Logger logger = LoggerFactory.make();
 	
-	@PersistenceContext
-	private EntityManager em;
-	
 	@Autowired
 	private Environment env;
 
-	/**
-	 * @return the {@link EntityManager}
-	 */
-	@Bean
-	public EntityManager entityManager() {
-		return em;
-	}
-		
 	/**
 	 * Creates a {@link LocalContainerEntityManagerFactoryBean} that will handle the creation
 	 * of {@link EntityManager}s used by the {@link Repository}s of domain object {@link Repository}s.

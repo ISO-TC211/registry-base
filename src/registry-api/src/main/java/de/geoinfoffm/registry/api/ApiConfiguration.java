@@ -35,6 +35,7 @@
 package de.geoinfoffm.registry.api;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,9 @@ public class ApiConfiguration
 {
 	@Autowired
 	private HibernateConfiguration configuration;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	@Bean
 	public EhCacheFactoryBean ehCacheFactoryBean() {
@@ -162,7 +166,7 @@ public class ApiConfiguration
 	
 	@Autowired
 	@Bean
-	public ProposalDtoFactory proposalDtoFactory(ItemClassRegistry registry, EntityManager entityManager) {
+	public ProposalDtoFactory proposalDtoFactory(ItemClassRegistry registry) {
 		return new ProposalDtoFactory(registry, entityManager);
 	}
 }
