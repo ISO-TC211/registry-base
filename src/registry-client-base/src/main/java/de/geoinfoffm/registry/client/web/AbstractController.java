@@ -34,10 +34,20 @@
  */
 package de.geoinfoffm.registry.client.web;
 
+import javax.servlet.ServletRequest;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.stereotype.Controller;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.ServletRequestDataBinder;
+
+import de.geoinfoffm.registry.api.RegisterItemProposalDTO;
+import de.geoinfoffm.registry.core.ItemClassConfiguration;
+import de.geoinfoffm.registry.core.ItemClassRegistry;
+import de.geoinfoffm.registry.core.model.iso19135.RE_ItemClass;
+import de.geoinfoffm.registry.persistence.ItemClassRepository;
 
 public abstract class AbstractController implements ApplicationEventPublisherAware
 {
@@ -51,4 +61,31 @@ public abstract class AbstractController implements ApplicationEventPublisherAwa
 	protected ApplicationEventPublisher eventPublisher() {
 		return this.eventPublisher;
 	}
+	
+	protected RegisterItemProposalDTO bindAdditionalAttributes(RegisterItemProposalDTO proposal, ServletRequest servletRequest, 
+			ItemClassRepository itemClassRepository, ItemClassRegistry itemClassRegistry, ConversionService conversionService) {
+		
+		RE_ItemClass selectedItemClass = itemClassRepository.findOne(proposal.getItemClassUuid());
+		ItemClassConfiguration itemClassConfiguration = itemClassRegistry.getConfiguration(selectedItemClass.getName());
+		
+		if (itemClassConfiguration != null) {
+			try {
+				@SuppressWarnings("unchecked")
+				Class<? extends RegisterItemProposalDTO> dtoClass = 
+						(Class<? extends RegisterItemProposalDTO>)this.getClass().getClassLoader().loadClass(itemClassConfiguration.getDtoClass());
+				proposal = BeanUtils.instantiateClass(dtoClass);
+				ServletRequestDataBinder binder = new ServletRequestDataBinder(proposal); 
+				binder.setConversionService(conversionService);
+				binder.bind(servletRequest);
+				
+				if (StringUtils.isEmpty(proposal.getDefinition())) {
+					proposal.setDefinition(proposal.getName());
+				}
+			}
+			catch (ClassNotFoundException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+		}
+		return proposal;
+	}	
 }
