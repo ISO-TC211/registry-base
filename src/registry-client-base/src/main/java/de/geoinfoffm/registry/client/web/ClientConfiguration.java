@@ -107,6 +107,10 @@ public class ClientConfiguration
 		
 		return basePath;
 	}
+	
+	public static boolean isSignupEnabled() {
+		return instance().getProperty("signup.enabled", "false").equals("true");		
+	}
 		
 	public static boolean isSendConfirmationMails() {
 		return instance().getProperty("signup.sendConfirmationMails", "false").equals("true");
