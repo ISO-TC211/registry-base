@@ -67,6 +67,7 @@ public class RegistryConfiguration
 	private static final String PROPERTY_GML_IDENTIFIER_BASE_URL = "gml.identifier.baseurl";
 	private static final String PROPERTY_GML_IDENTIFIER_PATH_PATTERN = "gml.identifier.pathpattern";
 	private static final String PROPERTY_REGISTER_ALIASES = "register.aliases";
+	private static final String PROPERTY_REGISTRY_DEMOMODE = "registry.demoMode";
 	
 	private static RegistryConfiguration instance = null;
 	
@@ -128,7 +129,13 @@ public class RegistryConfiguration
 			}
 		}
 	}
-	
+
+	public boolean isDemoMode() {
+		// Use inverted logic to activate demo mode as a fallback for wrong configuration
+		// values
+		return this.configuration.getProperty(PROPERTY_REGISTRY_DEMOMODE, "true").equals("false");
+	}
+
 	public boolean isMailEnabled() {
 		return this.configuration.getProperty(PROPERTY_MAIL_ENABLED, "false").equalsIgnoreCase("true");
 	}
