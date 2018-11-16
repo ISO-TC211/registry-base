@@ -38,6 +38,7 @@ import de.geoinfoffm.registry.core.ParameterizedRunnable;
 import de.geoinfoffm.registry.core.RegistersChangedEvent;
 import de.geoinfoffm.registry.core.RegistryInitializer;
 import de.geoinfoffm.registry.core.UnauthorizedException;
+import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 import de.geoinfoffm.registry.core.model.Addition;
 import de.geoinfoffm.registry.core.model.Delegation;
 import de.geoinfoffm.registry.core.model.DelegationRepository;
@@ -128,7 +129,10 @@ public abstract class AbstractRegistryInitializer implements RegistryInitializer
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 
 			initialize();
-			loadExampleData();
+			if (RegistryConfiguration.getInstance().isDemoMode()) {
+				loadExampleData();
+			}
+
 			log("");
 
 			log("Initialization complete.");

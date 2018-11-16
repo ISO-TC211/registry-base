@@ -107,6 +107,10 @@ public class ClientConfiguration
 		
 		return basePath;
 	}
+	
+	public static boolean isSignupEnabled() {
+		return instance().getProperty("signup.enabled", "false").equals("true");		
+	}
 		
 	public static boolean isSendConfirmationMails() {
 		return instance().getProperty("signup.sendConfirmationMails", "false").equals("true");
@@ -116,11 +120,5 @@ public class ClientConfiguration
 		String confirmationUrl = instance().getProperty("signup.confirmationUrl");
 		
 		return confirmationUrl;
-	}
-	
-	public static boolean isDemoMode() {
-		// Use inverted logic to activate demo mode as a fallback for wrong configuration
-		// values
-		return !instance().getProperty("client.demoMode", "true").equals("false");
 	}
 }
