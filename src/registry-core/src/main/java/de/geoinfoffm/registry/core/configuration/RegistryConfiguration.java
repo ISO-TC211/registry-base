@@ -133,7 +133,7 @@ public class RegistryConfiguration
 	public boolean isDemoMode() {
 		// Use inverted logic to activate demo mode as a fallback for wrong configuration
 		// values
-		return this.configuration.getProperty(PROPERTY_REGISTRY_DEMOMODE, "true").equals("false");
+		return !this.configuration.getProperty(PROPERTY_REGISTRY_DEMOMODE, "true").equals("false");
 	}
 
 	public boolean isMailEnabled() {
