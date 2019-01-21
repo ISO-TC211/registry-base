@@ -37,6 +37,7 @@ package de.geoinfoffm.registry.core;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -68,9 +69,9 @@ import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 
 /**
  * Spring configuration for the Registry core.
- * 
+ *
  * @author Florian Esser
- * 
+ *
  */
 //@ComponentScan(basePackages = { "de.geoinfoffm.registry" })
 @ComponentScan
@@ -79,17 +80,17 @@ import de.geoinfoffm.registry.core.configuration.RegistryConfiguration;
 public class CoreConfiguration
 {
 	private static final Logger logger = LoggerFactory.getLogger(CoreConfiguration.class);
-	
+
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
-	
+
 	@Bean
 	public RegistryConfiguration registryConfiguration() {
 		return new RegistryConfiguration();
 	}
-	
+
 	@Autowired
 	@Bean
 	public ItemClassRegistry itemClassRegistry(ApplicationContext context) {
@@ -103,15 +104,15 @@ public class CoreConfiguration
 		if (StringUtils.isEmpty(enable) || !"true".equals(enable)) {
 			logger.debug("{{JavaMailSender}} Mail feature disabled: Parameter 'mail.enabled' != 'true' [is: '{}']", enable);
 			return new NullMailSender();
-			
+
 		}
 		else {
 			logger.debug("{{JavaMailSender}} Mail feature enabled");
 		}
-		
+
 		String host = env.getProperty("mail.smtp.host");
 		String port = env.getProperty("mail.smtp.port");
-		
+
 		if (StringUtils.isEmpty(host) || StringUtils.isEmpty(port)) {
 			logger.debug("{{JavaMailSender}} Mail feature disabled: Parameters 'mail.smtp.host' and 'mail.smtp.port' must be set [mail.smtp.host='{}', mail.smtp.port='{}']", host, port);
 			return new NullMailSender();
@@ -119,7 +120,7 @@ public class CoreConfiguration
 
 		String fromName = env.getProperty("mail.from.name");
 		String fromAddress = env.getProperty("mail.from.address");
-		
+
 		if (StringUtils.isEmpty(fromName) || StringUtils.isEmpty(fromName)) {
 			logger.debug("{{JavaMailSender}} Mail feature disabled: Parameters 'mail.from.name' and 'mail.from.address' must be set [mail.from.name='{}', mail.from.address='{}']", fromName, fromAddress);
 			return new NullMailSender();
@@ -141,7 +142,7 @@ public class CoreConfiguration
 		else {
 			logger.debug("{{JavaMailSender}} SMTP authentication disabled");
 		}
-		
+
 		if ("true".equals(env.getProperty("mail.smtp.starttls.enable"))) {
 			result.getJavaMailProperties().put("mail.smtp.starttls.enable", true);
 			result.getJavaMailProperties().put("mail.smtp.ssl.trust", "*");
@@ -150,27 +151,27 @@ public class CoreConfiguration
 		else {
 			logger.debug("{{JavaMailSender}} TLS not enabled");
 		}
-		
+
 		return result;
 	}
-	
+
 	@Bean
 	public ConversionService conversionService() {
 		return new DefaultFormattingConversionService();
 	}
-	
+
 	@Bean
 	public VelocityEngine velocityEngine() throws VelocityException, IOException {
 		VelocityEngineFactoryBean factory = new VelocityEngineFactoryBean();
-		
+
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put("resource.loader", "class");
 		properties.put("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 		factory.setVelocityPropertiesMap(properties);
-				
+
 		return factory.createVelocityEngine();
 	}
-	
+
 	@Bean
 	public VelocityContext velocityContext() {
 		ToolManager toolMgr = new ToolManager();
@@ -178,7 +179,7 @@ public class CoreConfiguration
 
 		return new VelocityContext(toolMgr.createContext());
 	}
-	
+
 	/**
 	 * Loads properties from the specified file.
 	 */
@@ -218,7 +219,16 @@ public class CoreConfiguration
 			}
 		}
 
-		return properties;
+		//override properties from System-env
+		Enumeration<?> names = properties.propertyNames();
+		Properties result = new Properties();
+		while (names.hasMoreElements()) {
+			String name = names.nextElement().toString();
+			String env = System.getenv(name);
+			result.setProperty(name, StringUtils.isNotBlank(env) ? env : properties.getProperty(name));
+		}
+
+		return result;
 	}
 
 }
