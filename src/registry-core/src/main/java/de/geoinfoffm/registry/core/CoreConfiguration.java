@@ -226,6 +226,10 @@ public class CoreConfiguration
 			String name = names.nextElement().toString();
 			String env = System.getenv(name);
 			result.setProperty(name, StringUtils.isNotBlank(env) ? env : properties.getProperty(name));
+			System.out.println("HUUU " + name);
+			System.out.println("HEEE " + env);
+			System.out.println("HIII " + result.getProperty(name));
+			System.out.println("    ");
 		}
 
 		return result;
