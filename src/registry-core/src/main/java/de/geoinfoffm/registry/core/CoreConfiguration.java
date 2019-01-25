@@ -232,8 +232,8 @@ public class CoreConfiguration
 						"Override property [%s] by ENV with value [%s]",
 						name,
 						env
-						)
-				);
+
+				));
 				result.setProperty(name, env);
 			}
 
