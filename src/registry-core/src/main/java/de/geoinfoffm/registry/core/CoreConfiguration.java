@@ -225,11 +225,18 @@ public class CoreConfiguration
 		while (names.hasMoreElements()) {
 			String name = names.nextElement().toString();
 			String env = System.getenv(name);
-			result.setProperty(name, StringUtils.isNotBlank(env) ? env : properties.getProperty(name));
-			System.out.println("HUUU " + name);
-			System.out.println("HEEE " + env);
-			System.out.println("HIII " + result.getProperty(name));
-			System.out.println("    ");
+
+			result.setProperty(name, properties.getProperty(name));
+			if (StringUtils.isNotBlank(env)) {
+				logger.debug(String.format(
+						"Override property [%s] by ENV with value [%s]",
+						name,
+						env
+						)
+				);
+				result.setProperty(name, env);
+			}
+
 		}
 
 		return result;
