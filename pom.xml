@@ -7,13 +7,13 @@
 	<properties>
 		<java.version>1.7</java.version>
 		<registry.version>2.5.1-SNAPSHOT</registry.version>
-		<org.springframework-version>4.1.6.RELEASE</org.springframework-version>
-		<org.springframework.security-version>3.2.7.RELEASE</org.springframework.security-version>
+		<org.springframework-version>4.3.17.RELEASE</org.springframework-version>
+		<org.springframework.security-version>4.1.1.RELEASE</org.springframework.security-version>
 		<org.springframework.data-version>1.7.2.RELEASE</org.springframework.data-version>
  		<org.springframework.batch-version>3.0.4.RELEASE</org.springframework.batch-version>
 		<org.hibernate-version>4.3.10.Final</org.hibernate-version>
 		<org.hibernate.validator-version>5.0.1.Final</org.hibernate.validator-version>
-		<com.fasterxml.jackson-version>2.3.1</com.fasterxml.jackson-version>		
+		<com.fasterxml.jackson-version>2.9.9</com.fasterxml.jackson-version>
 		<org.aspectj-version>1.8.5</org.aspectj-version>
 		<org.slf4j-version>1.7.12</org.slf4j-version>
 		<net.sf.ehcache-version>2.7.4</net.sf.ehcache-version>
