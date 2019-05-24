@@ -93,12 +93,15 @@ public class PersistenceConfiguration
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(HibernateConfiguration hibernateConfiguration, RegistryConfiguration registryConfiguration, DatabaseSchemaMangementService schemaManagementService) {
 		// Handle schema migration before creating the EntityManagerFactoryBean
 		final String flywayMigration = hibernateConfiguration.additionalParameters().getProperty("flyway.migration", "false").toString().toLowerCase();
-		if ("true".equals(flywayMigration)) {
+		if ("true".equalsIgnoreCase(flywayMigration)) {
 			schemaManagementService.analyze();	
 			schemaManagementService.migrate();
 		}
-		else if ("repair".equals(flywayMigration)) {
+		else if ("repair".equalsIgnoreCase(flywayMigration)) {
 			schemaManagementService.repair();
+		}
+		else if ("repairAndMigrate".equalsIgnoreCase(flywayMigration)) {
+			schemaManagementService.repairAndMigrate();
 		}
 		
 		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
