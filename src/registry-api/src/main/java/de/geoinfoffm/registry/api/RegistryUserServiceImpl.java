@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import de.geoinfoffm.registry.api.ex.EmptyPasswordException;
+import de.geoinfoffm.registry.api.ex.ResetPasswordException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +79,7 @@ import de.geoinfoffm.registry.core.model.iso19135.SubmittingOrganizationReposito
 import de.geoinfoffm.registry.persistence.ItemClassRepository;
 import de.geoinfoffm.registry.persistence.RegisterRepository;
 import de.geoinfoffm.registry.persistence.ResponsiblePartyRepository;
+import org.springframework.util.StringUtils;
 
 /**
  * Service operations for {@link RegistryUser}s in the GDI-DE Registry.
@@ -378,15 +381,15 @@ implements RegistryUserService
 	}
 	
 	@Override
-	public void requestPasswordReset(String emailAddress) {
+	public void requestPasswordReset(String emailAddress) throws ResetPasswordException {
 		RegistryUser user = repository().findByEmailAddressIgnoreCase(emailAddress);
 		
 		if (user == null) {
-			throw new EntityNotFoundException(String.format("User with e-mail address '%s' does not exist", emailAddress));
+			throw new ResetPasswordException(String.format("User with e-mail address '%s' does not exist", emailAddress));
 		}
 		
 		if (!user.isConfirmed()) {
-			throw new IllegalOperationException("Cannot request new password for user who has not confirmed e-mail address");
+			throw new ResetPasswordException("Cannot request new password for user who has not confirmed e-mail address");
 		}
 
 		String token = RandomStringUtils.random(16, true, true);
@@ -405,32 +408,37 @@ implements RegistryUserService
 
 	@Override
 	@Transactional
-	public void resetPassword(String emailAddress, String token, String newPassword) {
+	public void resetPassword(String emailAddress, String token, String newPassword)
+			throws ResetPasswordException, EmptyPasswordException {
 		RegistryUser user = repository().findByEmailAddressIgnoreCase(emailAddress);
 		
 		if (user == null) {
-			throw new EntityNotFoundException(String.format("User with e-mail address '%s' does not exist", emailAddress));
+			throw new ResetPasswordException(String.format("User with e-mail address '%s' does not exist", emailAddress));
 		}
 		
 		if (!user.isConfirmed()) {
-			throw new IllegalOperationException("Cannot reset password for user who has not confirmed e-mail address");
+			throw new ResetPasswordException("Cannot reset password for user who has not confirmed e-mail address");
 		}
 		
 		Date now = Calendar.getInstance().getTime();
 
 		PasswordResetRequest request = resetRepository.findByUser(user);
 		if (request == null || !request.getToken().equals(token)) {
-			throw new IllegalOperationException("Cannot reset password: Invalid token");			
+			throw new ResetPasswordException("Cannot reset password: Invalid token");
 		}
 		
 		if (request.getRequestTimestamp().before(DateUtils.addDays(now, -1))) {
 			resetRepository.delete(request); // Delete old request			
 			resetRepository.flush(); // Prevent following exception from rolling back the delete
-			throw new IllegalOperationException("Cannot reset password: Invalid token");						
+			throw new ResetPasswordException("Cannot reset password: Invalid token");
 		}
-		
+
+		if (!StringUtils.hasText(newPassword)) {
+			throw new EmptyPasswordException("New password is null");
+		}
+
 		user.setPassword(newPassword);
 		repository().save(user);
 		resetRepository.delete(request);
-	}	
+	}
 }

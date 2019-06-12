@@ -39,6 +39,8 @@ import java.util.UUID;
 
 import javax.jws.WebService;
 
+import de.geoinfoffm.registry.api.ex.EmptyPasswordException;
+import de.geoinfoffm.registry.api.ex.ResetPasswordException;
 import org.springframework.stereotype.Service;
 
 import de.geoinfoffm.registry.api.soap.CreateOrganizationRequest;
@@ -67,8 +69,8 @@ public interface RegistryUserService extends ApplicationService<RegistryUser>
 	RegistryUser registerUser(CreateRegistryUserRequest request, CreateOrganizationRequest newOrganizationDetails) throws UserRegistrationException, UnauthorizedException;
 	RegistryUser updateUser(RegistryUserUpdateDTO userData) throws UpdateUserException;
 	boolean confirmUser(String emailAddress, UUID token);
-	public void requestPasswordReset(String emailAddress);
-	public abstract void resetPassword(String emailAddress, String token, String newPassword);
+	void requestPasswordReset(String emailAddress) throws ResetPasswordException;
+	void resetPassword(String emailAddress, String token, String newPassword) throws ResetPasswordException, EmptyPasswordException;
 
 	RegistryUser findByEmailAddress(String emailAddress);
 	boolean isEmailAddressAvailable(String emailAddress);
