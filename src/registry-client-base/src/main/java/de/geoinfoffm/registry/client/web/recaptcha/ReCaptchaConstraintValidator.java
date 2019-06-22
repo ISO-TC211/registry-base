@@ -11,6 +11,9 @@ public class ReCaptchaConstraintValidator implements ConstraintValidator<ValidRe
     @Autowired
     private ReCaptchaService reCaptchaService;
 
+    @Autowired
+    private CaptchaSettings captchaSettings;
+
     @Override
     public void initialize(ValidReCaptcha constraintAnnotation) {
 
@@ -18,9 +21,12 @@ public class ReCaptchaConstraintValidator implements ConstraintValidator<ValidRe
 
     @Override
     public boolean isValid(String reCaptchaResponse, ConstraintValidatorContext context) {
+        if (!this.captchaSettings.isCaptchaEnabled()) {
+            return true;
+        }
 
         if (StringUtils.isBlank(reCaptchaResponse)) {//reCaptchaResponse == null || reCaptchaResponse.isEmpty()){
-            return true;
+            return false;
         }
 
         return reCaptchaService.validate(reCaptchaResponse);

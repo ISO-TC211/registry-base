@@ -68,6 +68,7 @@ public class RegistryConfiguration {
     private static final String PROPERTY_REGISTER_ALIASES = "register.aliases";
     private static final String PROPERTY_REGISTRY_DEMOMODE = "registry.demoMode";
 
+    private static final String PROPERTY_RECAPTCHA_ENABLED = "recaptcha.enabled";
     private static final String PROPERTY_RECAPTCHA_URL = "recaptcha.url";
     private static final String PROPERTY_RECAPTCHA_KEY = "recaptcha.key";
     private static final String PROPERTY_RECAPTCHA_SECRET = "recaptcha.secret";
@@ -204,9 +205,7 @@ public class RegistryConfiguration {
     }
 
     public String getGmlIdentifierPathPattern() {
-        String pathPattern = this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_PATH_PATTERN, "def/%d");
-
-        return pathPattern;
+        return this.configuration.getProperty(PROPERTY_GML_IDENTIFIER_PATH_PATTERN, "def/%d");
     }
 
     public Map<String, String> getRegisterAliases() {
@@ -250,6 +249,10 @@ public class RegistryConfiguration {
         }
 
         return result;
+    }
+
+    public boolean isCaptchaEnabled() {
+        return Boolean.parseBoolean(this.configuration.getProperty(PROPERTY_RECAPTCHA_ENABLED, "false"));
     }
 
     public String getRecaptchaUrl() {
