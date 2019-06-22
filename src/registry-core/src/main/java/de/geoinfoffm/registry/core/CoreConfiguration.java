@@ -35,8 +35,11 @@
 package de.geoinfoffm.registry.core;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,6 +219,17 @@ public class CoreConfiguration
 			}
 			catch (IOException e) {
 				// Ignore
+			}
+		}
+
+		if (org.springframework.util.StringUtils.hasText(System.getenv("SETENV"))) {
+			String envFile = System.getenv("SETENV").trim();
+			if (Files.exists(Paths.get(envFile))) {
+				try {
+					properties.load(new FileReader(envFile));
+				}
+				catch (IOException ignored) {
+				}
 			}
 		}
 

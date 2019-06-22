@@ -1,24 +1,24 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *     * Redistributions of source code must retain the above copyright
- *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
- *       software without specific prior written permission.
- *
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * <p>
+ * * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following
+ * disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ * <p>
+ * * The names "German Federal Agency for Cartography and Geodesy",
+ * "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ * "GDI-DE Registry" and the names of other contributors must not
+ * be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -36,26 +36,29 @@ package de.geoinfoffm.registry.client.web;
 
 import javax.servlet.Filter;
 
+import de.geoinfoffm.registry.client.web.recaptcha.ReCaptchaResponseFilter;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-public abstract class AbstractWebApplicationInitializer extends AbstractAnnotationConfigDispatcherServletInitializer 
-{
-	@Override
-	protected Filter[] getServletFilters() {
-		CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-		characterEncodingFilter.setEncoding("UTF-8");
-		characterEncodingFilter.setForceEncoding(true);
-		
-		HiddenHttpMethodFilter methodFilter = new HiddenHttpMethodFilter();
-		methodFilter.setMethodParam("_method");
-		
-		OpenEntityManagerInViewFilter oemivFilter = new OpenEntityManagerInViewFilter();
-		OpenSessionInViewFilter openSessionFilter = new OpenSessionInViewFilter();
+public abstract class AbstractWebApplicationInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-		return new Filter[] { characterEncodingFilter, methodFilter, oemivFilter, openSessionFilter };
-	}
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+        characterEncodingFilter.setEncoding("UTF-8");
+        characterEncodingFilter.setForceEncoding(true);
+
+        HiddenHttpMethodFilter methodFilter = new HiddenHttpMethodFilter();
+        methodFilter.setMethodParam("_method");
+
+        OpenEntityManagerInViewFilter oemivFilter = new OpenEntityManagerInViewFilter();
+        OpenSessionInViewFilter openSessionFilter = new OpenSessionInViewFilter();
+
+        ReCaptchaResponseFilter capchaFilter = new ReCaptchaResponseFilter();
+
+        return new Filter[]{characterEncodingFilter, methodFilter, oemivFilter, openSessionFilter, capchaFilter};
+    }
 }
