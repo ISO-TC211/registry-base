@@ -46,4 +46,24 @@ public class ReCaptchaServiceImpl implements ReCaptchaService {
 
         return true;
     }
+
+//    public boolean validate(String reCaptchaResponse){
+//        URI verifyUri = URI.create(String.format(
+//                captchaSettings.getUrl() + "?secret=%s&response=%s&remoteip=%s",
+//                captchaSettings.getSecret(),
+//                reCaptchaResponse,
+//                request.getRemoteAddr()
+//        ));
+//
+//        try {
+//            ReCaptchaResponse response = restTemplate.getForObject(verifyUri, ReCaptchaResponse.class);
+//            return response.isSuccess();
+//        } catch (Exception ignored){
+//            log.error("", ignored);
+//            // ignore when google services are not available
+//            // maybe add some sort of logging or trigger that'll alert the administrator
+//        }
+//
+//        return true;
+//    }
 }

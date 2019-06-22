@@ -1,24 +1,24 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *     * Redistributions of source code must retain the above copyright
- *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
- *       software without specific prior written permission.
- *
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * <p>
+ * * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following
+ * disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ * <p>
+ * * The names "German Federal Agency for Cartography and Geodesy",
+ * "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ * "GDI-DE Registry" and the names of other contributors must not
+ * be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -74,185 +74,186 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 import de.geoinfoffm.registry.HibernateAwareObjectMapper;
 import de.geoinfoffm.registry.core.model.iso19103.CharacterString;
 
-public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 
-{
-	@Autowired
-	private SessionFactory sessionFactory;
+public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
+    @Autowired
+    private SessionFactory sessionFactory;
 
-	@Autowired
-	private EntityManagerFactory emFactory;
+    @Autowired
+    private EntityManagerFactory emFactory;
 
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
-	}
+    @Autowired
+    private MappingJackson2HttpMessageConverter jsonMapper;
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(localeChangeInterceptor());
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+    }
 
-		OpenSessionInViewInterceptor sessionIntercepetor = new OpenSessionInViewInterceptor();
-		sessionIntercepetor.setSessionFactory(sessionFactory);
-		registry.addWebRequestInterceptor(sessionIntercepetor);
-		
-		OpenEntityManagerInViewInterceptor emInterceptor = new OpenEntityManagerInViewInterceptor();
-		emInterceptor.setEntityManagerFactory(emFactory);
-		registry.addWebRequestInterceptor(emInterceptor);
-	}
-	
-	@Override
-	public void addFormatters(FormatterRegistry registry) {
-		registry.addConverter(new Converter<CharacterString, String>() {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(localeChangeInterceptor());
 
-			@Override
-			public String convert(CharacterString cs) {
-				return CharacterString.asString(cs);
-			}
-		});
+        OpenSessionInViewInterceptor sessionIntercepetor = new OpenSessionInViewInterceptor();
+        sessionIntercepetor.setSessionFactory(sessionFactory);
+        registry.addWebRequestInterceptor(sessionIntercepetor);
 
-		registry.addConverter(new Converter<String, CharacterString>() {
+        OpenEntityManagerInViewInterceptor emInterceptor = new OpenEntityManagerInViewInterceptor();
+        emInterceptor.setEntityManagerFactory(emFactory);
+        registry.addWebRequestInterceptor(emInterceptor);
+    }
 
-			@Override
-			public CharacterString convert(String s) {
-				return new CharacterString(s);
-			}
-		});
-	}
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new Converter<CharacterString, String>() {
 
-	@Override
-	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-		PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-		resolver.setFallbackPageable(new PageRequest(1, 5));
-		argumentResolvers.add(resolver);
-	}
-	
-	public AbstractHttpMessageConverter<?> jaxbConverter() {
-		return new Jaxb2RootElementHttpMessageConverter();
-	}
+            @Override
+            public String convert(CharacterString cs) {
+                return CharacterString.asString(cs);
+            }
+        });
 
-	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		MappingJackson2HttpMessageConverter jsonMapper = new MappingJackson2HttpMessageConverter();
-		jsonMapper.setObjectMapper(new HibernateAwareObjectMapper());
-		converters.add(jsonMapper);
-		
-		converters.add(jaxbConverter());
-	}
+        registry.addConverter(new Converter<String, CharacterString>() {
 
-	@Bean(name = "localeResolver")
-	public LocaleResolver localeResolver() {
-		CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-		cookieLocaleResolver.setCookieName("siteLanguage");
+            @Override
+            public CharacterString convert(String s) {
+                return new CharacterString(s);
+            }
+        });
+    }
 
-		String basePath = ClientConfiguration.getBasePath();
-		if (!basePath.endsWith("/")) {
-			basePath = basePath + "/";
-		}
-		cookieLocaleResolver.setCookiePath(basePath);
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
+        resolver.setFallbackPageable(new PageRequest(1, 5));
+        argumentResolvers.add(resolver);
+    }
 
-		cookieLocaleResolver.setDefaultLocale(defaultLocale());
-		return cookieLocaleResolver;
-	}
-	
-	protected abstract Locale defaultLocale();
+    public AbstractHttpMessageConverter<?> jaxbConverter() {
+        return new Jaxb2RootElementHttpMessageConverter();
+    }
 
-	@Bean
-	public LocaleChangeInterceptor localeChangeInterceptor() {
-		LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-		localeChangeInterceptor.setParamName("lang");
-		return localeChangeInterceptor;
-	}
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+//		MappingJackson2HttpMessageConverter jsonMapper = new MappingJackson2HttpMessageConverter();
+//		jsonMapper.setObjectMapper(new HibernateAwareObjectMapper());
+        converters.add(this.jsonMapper);
+        converters.add(jaxbConverter());
+    }
 
-	@Bean
-	public BeanNameUrlHandlerMapping beanNameUrlHandlerMapping() {
-		return new BeanNameUrlHandlerMapping();
-	}
+    @Bean(name = "localeResolver")
+    public LocaleResolver localeResolver() {
+        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
+        cookieLocaleResolver.setCookieName("siteLanguage");
 
-	@Bean
-	public ServletContextTemplateResolver templateResolver() {
-		ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
-		resolver.setPrefix("/WEB-INF/views/");
-		resolver.setSuffix(".html");
-		// NB, selecting HTML5 as the template mode.
-		resolver.setTemplateMode("HTML5");
-		resolver.setCharacterEncoding("UTF-8");
-		resolver.setCacheable(false);
+        String basePath = ClientConfiguration.getBasePath();
+        if (!basePath.endsWith("/")) {
+            basePath = basePath + "/";
+        }
+        cookieLocaleResolver.setCookiePath(basePath);
 
-		return resolver;
+        cookieLocaleResolver.setDefaultLocale(defaultLocale());
+        return cookieLocaleResolver;
+    }
 
-	}
+    protected abstract Locale defaultLocale();
 
-	@Bean
-	public SpringSecurityDialect springSecurityDialect() {
-		return new SpringSecurityDialect();
-	}
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor() {
+        LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+        localeChangeInterceptor.setParamName("lang");
+        return localeChangeInterceptor;
+    }
 
-	@Bean
-	public SpringTemplateEngine templateEngine() {
-		SpringTemplateEngine engine = new SpringTemplateEngine();
-		engine.setTemplateResolver(templateResolver());
-		engine.addDialect(springSecurityDialect());
-		return engine;
-	}
+    @Bean
+    public BeanNameUrlHandlerMapping beanNameUrlHandlerMapping() {
+        return new BeanNameUrlHandlerMapping();
+    }
 
-	/**
-	 * Creates the {@link ViewResolver} beans for the application.
-	 */
-	@Bean
-	public ViewResolver viewResolver() {
+    @Bean
+    public ServletContextTemplateResolver templateResolver() {
+        ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
+        resolver.setPrefix("/WEB-INF/views/");
+        resolver.setSuffix(".html");
+        // NB, selecting HTML5 as the template mode.
+        resolver.setTemplateMode("HTML5");
+        resolver.setCharacterEncoding("UTF-8");
+        resolver.setCacheable(false);
 
-		RegistryClientViewResolver viewResolver = new RegistryClientViewResolver();
-		viewResolver.setTemplateEngine(templateEngine());
-		viewResolver.setOrder(1);
-		viewResolver.setViewNames(new String[] { "*" });
-		viewResolver.setCache(false);
-		viewResolver.setCharacterEncoding("UTF-8");
+        return resolver;
 
-		ClientConfiguration clientConfiguration = new ClientConfiguration();
-		Properties properties = clientConfiguration.configuration();
-		for (Object property : properties.keySet()) {
-			if (property instanceof String) {
-				viewResolver.addStaticVariable((String)property, properties.getProperty((String)property));
-			}
-		}
+    }
 
-		return viewResolver;
-	}
+    @Bean
+    public SpringSecurityDialect springSecurityDialect() {
+        return new SpringSecurityDialect();
+    }
 
-	@Override
-	public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-		configurer.enable();
-	}
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine engine = new SpringTemplateEngine();
+        engine.setTemplateResolver(templateResolver());
+        engine.addDialect(springSecurityDialect());
+        return engine;
+    }
 
-	/**
-	 * Creates the {@link MessageSource} beans for the application.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public MessageSource messageSource() {
-		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-		//		messageSource.setBasenames("classpath:messages/messages", "classpath:messages/validation");
-		//		messageSource.setBasename("WEB-INF/i18n/messages");
-		messageSource.setBasename("classpath:i18n/messages");
-		messageSource.setDefaultEncoding("UTF-8");
-		messageSource.setFallbackToSystemLocale(false);
+    /**
+     * Creates the {@link ViewResolver} beans for the application.
+     */
+    @Bean
+    public ViewResolver viewResolver() {
 
-		// if true, the key of the message will be displayed if the key is not
-		// found, instead of throwing a NoSuchMessageException
-		messageSource.setUseCodeAsDefaultMessage(true);
-		messageSource.setDefaultEncoding("UTF-8");
-		// # -1 : never reload, 0 always reload
-		messageSource.setCacheSeconds(0);
-		return messageSource;
-	}
+        RegistryClientViewResolver viewResolver = new RegistryClientViewResolver();
+        viewResolver.setTemplateEngine(templateEngine());
+        viewResolver.setOrder(1);
+        viewResolver.setViewNames(new String[]{"*"});
+        viewResolver.setCache(false);
+        viewResolver.setCharacterEncoding("UTF-8");
 
-	@Bean
-	@Autowired
-	public DomainClassConverter<?> domainClassConverter(FormattingConversionService conversionService) {
-		return new DomainClassConverter<FormattingConversionService>(conversionService);
-	}
-	
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        Properties properties = clientConfiguration.configuration();
+        for (Object property : properties.keySet()) {
+            if (property instanceof String) {
+                viewResolver.addStaticVariable((String) property, properties.getProperty((String) property));
+            }
+        }
+
+        return viewResolver;
+    }
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+
+    /**
+     * Creates the {@link MessageSource} beans for the application.
+     *
+     * @return
+     */
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        //		messageSource.setBasenames("classpath:messages/messages", "classpath:messages/validation");
+        //		messageSource.setBasename("WEB-INF/i18n/messages");
+        messageSource.setBasename("classpath:i18n/messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setFallbackToSystemLocale(false);
+
+        // if true, the key of the message will be displayed if the key is not
+        // found, instead of throwing a NoSuchMessageException
+        messageSource.setUseCodeAsDefaultMessage(true);
+        messageSource.setDefaultEncoding("UTF-8");
+        // # -1 : never reload, 0 always reload
+        messageSource.setCacheSeconds(0);
+        return messageSource;
+    }
+
+    @Bean
+    @Autowired
+    public DomainClassConverter<?> domainClassConverter(FormattingConversionService conversionService) {
+        return new DomainClassConverter<FormattingConversionService>(conversionService);
+    }
+
 //	@Bean
 //	public RegistrySecurity registrySecurity() {
 //		return new RegistrySecurity();

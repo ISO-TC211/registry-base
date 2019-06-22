@@ -20,7 +20,6 @@ public class ReCaptchaResponseFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        System.out.println(124);
     }
 
     @Override

@@ -254,14 +254,7 @@ public class RegistryConfiguration {
 
     public String getRecaptchaUrl() {
         String url = this.configuration.getProperty(PROPERTY_RECAPTCHA_URL);
-        if (StringUtils.isBlank(url)) {
-            throw new UnsupportedOperationException("Admin not config recaptcha");
-        }
-
-        if (!url.endsWith("/")) {
-            url = url + "/";
-        }
-        return url;
+        return url.replaceAll("/*$", "");
     }
 
     public String getRecaptchaKey() {
