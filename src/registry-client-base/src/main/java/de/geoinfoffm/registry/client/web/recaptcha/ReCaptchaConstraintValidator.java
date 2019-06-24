@@ -16,7 +16,6 @@ public class ReCaptchaConstraintValidator implements ConstraintValidator<ValidRe
 
     @Override
     public void initialize(ValidReCaptcha constraintAnnotation) {
-
     }
 
     @Override

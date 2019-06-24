@@ -1,24 +1,24 @@
 /**
  * Copyright (c) 2014, German Federal Agency for Cartography and Geodesy
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *     * Redistributions of source code must retain the above copyright
- *     	 notice, this list of conditions and the following disclaimer.
-
- *     * Redistributions in binary form must reproduce the above
- *     	 copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
-
- *     * The names "German Federal Agency for Cartography and Geodesy",
- *       "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
- *       "GDI-DE Registry" and the names of other contributors must not
- *       be used to endorse or promote products derived from this
- *       software without specific prior written permission.
- *
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * <p>
+ * * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following
+ * disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ * <p>
+ * * The names "German Federal Agency for Cartography and Geodesy",
+ * "Bundesamt für Kartographie und Geodäsie", "BKG", "GDI-DE",
+ * "GDI-DE Registry" and the names of other contributors must not
+ * be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -34,79 +34,95 @@
  */
 package de.geoinfoffm.registry.client.web;
 
+import de.geoinfoffm.registry.api.ann.FieldMatch;
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
+import de.geoinfoffm.registry.client.web.recaptcha.ValidReCaptcha;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public class SignupFormBean
 
-{
-	private String name;
-	private String emailAddress;
-	private String password;
-	private String confirmedPassword;
-	private String preferredLanguage;
-	private String organizationUuid;
-	private boolean organizationNotListed;
+@FieldMatch(first = "password", second = "confirmPassword", message = "The password fields must match")
+public class SignupFormBean {
 
-	public SignupFormBean() {
-		// TODO Auto-generated constructor stub
-	}
+    @NotBlank
+    @Length(min = 2, message = "form.validation.tooShort")
+    private String name;
 
-	public String getName() {
-		return name;
-	}
+    @Email
+    @NotEmpty
+    private String emailAddress;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    private String password;
+    private String confirmedPassword;
+    private String preferredLanguage;
+    private String organizationUuid;
+    private boolean organizationNotListed;
 
-	public String getEmailAddress() {
-		return emailAddress;
-	}
+    @ValidReCaptcha
+    private String reCaptchaResponse;
 
-	public void setEmailAddress(String emailAddress) {
-		this.emailAddress = emailAddress;
-	}
+    public SignupFormBean() {
+        // TODO Auto-generated constructor stub
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getConfirmedPassword() {
-		return confirmedPassword;
-	}
+    public String getEmailAddress() {
+        return emailAddress;
+    }
 
-	public void setConfirmedPassword(String confirmedPassword) {
-		this.confirmedPassword = confirmedPassword;
-	}
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
 
-	public String getPreferredLanguage() {
-		return preferredLanguage;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPreferredLanguage(String preferredLanguage) {
-		this.preferredLanguage = preferredLanguage;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public String getOrganizationUuid() {
-		return organizationUuid;
-	}
+    public String getConfirmedPassword() {
+        return confirmedPassword;
+    }
 
-	public void setOrganizationUuid(String organizationUuid) {
-		this.organizationUuid = organizationUuid;
-	}
+    public void setConfirmedPassword(String confirmedPassword) {
+        this.confirmedPassword = confirmedPassword;
+    }
 
-	public boolean isOrganizationNotListed() {
-		return organizationNotListed;
-	}
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
 
-	public void setOrganizationNotListed(boolean organizationNotListed) {
-		this.organizationNotListed = organizationNotListed;
-	}
-	
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
+    }
+
+    public String getOrganizationUuid() {
+        return organizationUuid;
+    }
+
+    public void setOrganizationUuid(String organizationUuid) {
+        this.organizationUuid = organizationUuid;
+    }
+
+    public boolean isOrganizationNotListed() {
+        return organizationNotListed;
+    }
+
+    public void setOrganizationNotListed(boolean organizationNotListed) {
+        this.organizationNotListed = organizationNotListed;
+    }
+
 //	public CreateGdiRegistryUserRequest toRegistrationDTO() {
 //		CreateGdiRegistryUserRequest result = new CreateGdiRegistryUserRequest();
 //		result.setName(this.name);
@@ -119,15 +135,23 @@ public class SignupFormBean
 //		return result;
 //	}
 
-	public CreateRegistryUserRequest toRegistrationDTO() {
-		CreateRegistryUserRequest result = new CreateRegistryUserRequest();
-		result.setName(this.name);
-		result.setEmailAddress(this.emailAddress);
-		result.setPassword(this.password);
-		result.setOrganizationUuid(this.organizationUuid);
-		result.setPreferredLanguage(this.preferredLanguage);
-		result.setActive(true);
-		
-		return result;
-	}
+    public CreateRegistryUserRequest toRegistrationDTO() {
+        CreateRegistryUserRequest result = new CreateRegistryUserRequest();
+        result.setName(this.name);
+        result.setEmailAddress(this.emailAddress);
+        result.setPassword(this.password);
+        result.setOrganizationUuid(this.organizationUuid);
+        result.setPreferredLanguage(this.preferredLanguage);
+        result.setActive(true);
+
+        return result;
+    }
+
+    public String getReCaptchaResponse() {
+        return reCaptchaResponse;
+    }
+
+    public void setReCaptchaResponse(String reCaptchaResponse) {
+        this.reCaptchaResponse = reCaptchaResponse;
+    }
 }
