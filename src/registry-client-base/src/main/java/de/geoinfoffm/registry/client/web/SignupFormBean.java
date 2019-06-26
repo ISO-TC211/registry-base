@@ -34,9 +34,9 @@
  */
 package de.geoinfoffm.registry.client.web;
 
-import de.geoinfoffm.registry.validators.FieldMatch;
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.client.web.recaptcha.ValidReCaptcha;
+import de.geoinfoffm.registry.validators.FieldMatch;
 import de.geoinfoffm.registry.validators.UniqueUserEmail;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
@@ -48,12 +48,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class SignupFormBean {
 
     @NotBlank
-    @Length(min = 2, message = "form.validation.tooShort")
+    @Length(min = 2, message = "Name too short - minimum length is 2 characters")
     private String name;
 
     @Email
     @NotBlank
-    @UniqueUserEmail
+    @UniqueUserEmail(message = "form.validation.unavailable.user.emailAddress")
     private String emailAddress;
 
     @NotEmpty
@@ -66,7 +66,6 @@ public class SignupFormBean {
     private String organizationUuid;
     private boolean organizationNotListed;
 
-    @NotBlank
     @ValidReCaptcha
     private String reCaptchaResponse;
 

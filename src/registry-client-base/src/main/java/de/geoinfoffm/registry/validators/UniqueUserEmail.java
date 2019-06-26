@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface UniqueUserEmail
 {
-    String message() default "{constraints.unique-email}";
+    String message() default "This email is already in use";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
