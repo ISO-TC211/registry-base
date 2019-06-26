@@ -1,6 +1,6 @@
-package de.geoinfoffm.registry.api.ann.impl;
+package de.geoinfoffm.registry.validators.impl;
 
-import de.geoinfoffm.registry.api.ann.FieldMatch;
+import de.geoinfoffm.registry.validators.FieldMatch;
 import org.apache.commons.beanutils.BeanUtils;
 
 import javax.validation.ConstraintValidator;

@@ -34,9 +34,10 @@
  */
 package de.geoinfoffm.registry.client.web;
 
-import de.geoinfoffm.registry.api.ann.FieldMatch;
+import de.geoinfoffm.registry.validators.FieldMatch;
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.client.web.recaptcha.ValidReCaptcha;
+import de.geoinfoffm.registry.validators.UniqueUserEmail;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
@@ -51,15 +52,21 @@ public class SignupFormBean {
     private String name;
 
     @Email
-    @NotEmpty
+    @NotBlank
+    @UniqueUserEmail
     private String emailAddress;
 
+    @NotEmpty
     private String password;
+
+    @NotEmpty
     private String confirmedPassword;
+
     private String preferredLanguage;
     private String organizationUuid;
     private boolean organizationNotListed;
 
+    @NotBlank
     @ValidReCaptcha
     private String reCaptchaResponse;
 
