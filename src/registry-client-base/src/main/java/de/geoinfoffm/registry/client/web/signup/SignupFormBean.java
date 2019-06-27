@@ -32,7 +32,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.geoinfoffm.registry.client.web;
+package de.geoinfoffm.registry.client.web.signup;
 
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.client.web.recaptcha.ValidReCaptcha;

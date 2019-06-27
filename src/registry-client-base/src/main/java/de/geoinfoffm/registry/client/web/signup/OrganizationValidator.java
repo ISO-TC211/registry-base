@@ -1,6 +1,5 @@
 package de.geoinfoffm.registry.client.web.signup;
 
-import de.geoinfoffm.registry.client.web.SignupFormBean;
 import org.apache.commons.lang.StringUtils;
 
 import javax.validation.ConstraintValidator;
