@@ -36,6 +36,7 @@ package de.geoinfoffm.registry.client.web;
 
 import de.geoinfoffm.registry.api.soap.CreateRegistryUserRequest;
 import de.geoinfoffm.registry.client.web.recaptcha.ValidReCaptcha;
+import de.geoinfoffm.registry.client.web.signup.ValidOrganization;
 import de.geoinfoffm.registry.validators.FieldMatch;
 import de.geoinfoffm.registry.validators.UniqueUserEmail;
 import org.hibernate.validator.constraints.Email;
@@ -44,6 +45,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 
+@ValidOrganization()
 @FieldMatch(first = "password", second = "confirmPassword", message = "The password fields must match")
 public class SignupFormBean {
 
@@ -63,7 +65,10 @@ public class SignupFormBean {
     private String confirmedPassword;
 
     private String preferredLanguage;
+
+//    @NotEquals(rejectValues = {"%%new%%"}, message = "Organization is invalid - please select one value")
     private String organizationUuid;
+
     private boolean organizationNotListed;
 
     @ValidReCaptcha
