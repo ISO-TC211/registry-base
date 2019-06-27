@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -27,12 +28,12 @@ public class GoogleReCaptchaServiceImpl implements ReCaptchaService {
     }
 
     public boolean validate(String reCaptchaResponse) {
-        String url = String.format(this.captchaSettings.getUrl() + "?secret=%s&response=%s&remoteip=%s",
-                this.captchaSettings.getSecret(),
-                reCaptchaResponse,
-                this.request.getRemoteAddr());
+        UriComponentsBuilder verifyUriBuilder = UriComponentsBuilder.fromHttpUrl(this.captchaSettings.getUrl())
+                .queryParam("secret", this.captchaSettings.getSecret())
+                .queryParam("response", reCaptchaResponse)
+                .queryParam("remoteip", this.request.getRemoteAddr());
 
-        URI verifyUri = URI.create(url);
+        URI verifyUri = URI.create(verifyUriBuilder.toUriString());
 
         try {
             ReCaptchaResponse response = restTemplate.getForObject(verifyUri, ReCaptchaResponse.class);
