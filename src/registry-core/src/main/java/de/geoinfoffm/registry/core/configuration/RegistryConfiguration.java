@@ -108,6 +108,11 @@ public class RegistryConfiguration {
         properties.setProperty(PROPERTY_MAIL_SMTP_HOST, "smtp.example.org");
         properties.setProperty(PROPERTY_MAIL_SMTP_PORT, "25");
 
+        properties.setProperty(PROPERTY_RECAPTCHA_ENABLED, "false");
+        properties.setProperty(PROPERTY_RECAPTCHA_SECRET, "");
+        properties.setProperty(PROPERTY_RECAPTCHA_URL, "");
+        properties.setProperty(PROPERTY_RECAPTCHA_KEY, "");
+
         return properties;
     }
 
