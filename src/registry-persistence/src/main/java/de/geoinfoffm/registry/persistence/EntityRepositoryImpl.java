@@ -80,7 +80,7 @@ public class EntityRepositoryImpl<T extends Entity> extends AuditedRepositoryImp
 	}
 
 	@Override
-	public T saveAndFlush(T entity) {
+	public <S extends T> S saveAndFlush(S entity) {
 		entity = super.saveAndFlush(entity);
 		createAcl(entity);
 		return entity;

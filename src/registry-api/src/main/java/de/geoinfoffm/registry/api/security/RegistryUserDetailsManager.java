@@ -53,10 +53,10 @@ import de.geoinfoffm.registry.core.security.RegistrySecurity;
 
 public class RegistryUserDetailsManager implements UserDetailsManager, GroupManager
 {
-	@Autowired
-	private RegistryUserRepository userRepository;
+	private final RegistryUserRepository userRepository;
 	
-	public RegistryUserDetailsManager() {
+	public RegistryUserDetailsManager(RegistryUserRepository userRepository) {
+		this.userRepository = userRepository;
 	}
 
 	@Override

@@ -44,15 +44,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean;
 import org.springframework.data.envers.repository.support.ReflectionRevisionEntityInformation;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.data.repository.history.support.RevisionEntityInformation;
 import org.springframework.security.acls.model.MutableAclService;
-import org.springframework.stereotype.Component;
 
 import de.geoinfoffm.registry.core.AuditedRepository;
 
@@ -134,7 +133,7 @@ public class EntityBackendFactoryBean extends EnversRevisionRepositoryFactoryBea
 		 */
 		@Override
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		protected <T, ID extends Serializable> JpaRepository<?, ?> getTargetRepository(RepositoryMetadata metadata,
+		protected <T, ID extends Serializable> SimpleJpaRepository<?, ?> getTargetRepository(RepositoryMetadata metadata,
 				EntityManager entityManager) {
 
 			JpaEntityInformation<T, Serializable> entityInformation = 
