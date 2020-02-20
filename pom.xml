@@ -5,7 +5,7 @@
 	<version>2.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<properties>
-		<java.version>1.7</java.version>
+		<java-version>1.8</java-version>
 		<registry.version>2.5.1-SNAPSHOT</registry.version>
 		<org.springframework-version>4.3.17.RELEASE</org.springframework-version>
 		<org.springframework.security-version>4.1.1.RELEASE</org.springframework.security-version>
