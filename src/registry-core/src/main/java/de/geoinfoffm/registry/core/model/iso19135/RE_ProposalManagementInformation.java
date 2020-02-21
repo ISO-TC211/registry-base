@@ -289,14 +289,10 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	}
 	
 	public boolean isPending() {
-		return isReviewed() && this.getStatus().equals(RE_DecisionStatus.PENDING);
+		return isReviewed() && RE_DecisionStatus.PENDING.equals(this.getStatus());
 	}
 	
 	public void makeDisposition(RE_Disposition disposition) throws IllegalOperationException {
-//		if (this.getStatus().equals(RE_DecisionStatus.FINAL)) {
-//			throw new IllegalOperationException("Cannot make disposition on finalized proposal.");
-//		}
-		
 		this.setDisposition(disposition);
 		switch (disposition) {
 			case ACCEPTED:
@@ -325,7 +321,7 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	}
 	
 	public boolean isTentative() {
-		return this.getStatus().equals(RE_DecisionStatus.TENTATIVE);
+		return RE_DecisionStatus.TENTATIVE.equals(this.getStatus());
 	}
 	
 	public void finalizeDisposition() throws IllegalOperationException {
@@ -336,19 +332,19 @@ public abstract class RE_ProposalManagementInformation extends Entity
 	}
 
 	public boolean isFinal() {
-		return this.getStatus().equals(RE_DecisionStatus.FINAL);
+		return RE_DecisionStatus.FINAL.equals(this.getStatus());
 	}
 
 	public boolean isAccepted() {
-		return this.getDisposition().equals(RE_Disposition.ACCEPTED);
+		return RE_Disposition.ACCEPTED.equals(this.getDisposition());
 	}
 	
 	public boolean isNotAccepted() {
-		return this.getDisposition().equals(RE_Disposition.NOT_ACCEPTED);
+		return RE_Disposition.NOT_ACCEPTED.equals(this.getDisposition());
 	}
 	
 	public boolean isWithdrawn() {
-		return this.getDisposition().equals(RE_Disposition.WITHDRAWN);
+		return RE_Disposition.WITHDRAWN.equals(this.getDisposition());
 	}
 
 }//end RE_ProposalManagementInformation
