@@ -34,6 +34,7 @@
  */
 package de.geoinfoffm.registry.client.web;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -53,6 +54,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewInterceptor;
@@ -134,10 +136,9 @@ public abstract class AbstractWebMvcConfigurerAdapter extends WebMvcConfigurerAd
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-//		MappingJackson2HttpMessageConverter jsonMapper = new MappingJackson2HttpMessageConverter();
-//		jsonMapper.setObjectMapper(new HibernateAwareObjectMapper());
         converters.add(this.jsonMapper);
         converters.add(jaxbConverter());
+		converters.add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
     }
 
     @Bean(name = "localeResolver")
