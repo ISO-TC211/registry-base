@@ -15,11 +15,11 @@
 		<org.hibernate.validator-version>5.0.1.Final</org.hibernate.validator-version>
 		<com.fasterxml.jackson-version>2.9.9</com.fasterxml.jackson-version>
 		<org.aspectj-version>1.8.5</org.aspectj-version>
-		<org.slf4j-version>1.7.12</org.slf4j-version>
+		<org.slf4j-version>1.7.30</org.slf4j-version>
 		<net.sf.ehcache-version>2.7.4</net.sf.ehcache-version>
 		<javax.servlet-version>3.0.1</javax.servlet-version>
 		<junit-version>4.11</junit-version>
-		<log4j-version>1.2.15</log4j-version>
+		<log4j-version>2.13.1</log4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencyManagement>
