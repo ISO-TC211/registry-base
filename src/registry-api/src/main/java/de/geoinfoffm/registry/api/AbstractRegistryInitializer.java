@@ -210,7 +210,7 @@ public abstract class AbstractRegistryInitializer implements RegistryInitializer
 				ic.setName(name);
 			}
 			log(String.format("> Adding item class '%s' to register '%s'...", name, r.getName()));
-			r.getContainedItemClasses().add(ic);
+			r.addContainedItemClass(ic);
 			ic = itemClassRepository.save(ic);
 			r = registerRepository.save(r);
 
