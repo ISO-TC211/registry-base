@@ -404,6 +404,13 @@ public class RE_Register extends de.geoinfoffm.registry.core.Entity
 		this.containedItemClasses = containedItemClasses;
 	}
 	
+	public void addContainedItemClass(RE_ItemClass containedItemClass) {
+		if (this.containedItemClasses == null) {
+			this.containedItemClasses = new LinkedHashSet<RE_ItemClass>();
+		}
+		this.containedItemClasses.add(containedItemClass);
+	}
+
 	/**
 	 * @return the submitter
 	 */
