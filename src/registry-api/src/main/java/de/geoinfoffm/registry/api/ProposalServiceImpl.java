@@ -355,12 +355,18 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 
 		// check target register
 		final UUID targetRegisterUuid = proposal.getTargetRegisterUuid();
+		if (targetRegisterUuid == null) {
+			throw new InvalidProposalException("The target register must be specified.");
+		}
 		final RE_Register targetRegister = registerRepository.findOne(targetRegisterUuid);
 		if (!targetRegister.getContainedItemClasses().contains(itemClass)) {
 			throw new InvalidProposalException(String.format("Item of item class '%s' is not allowed in target register '%s'.", itemClass.getName(), targetRegister.getName()));
 		}
 //		logger.debug(">>> Target register: {}", targetRegister.getName());
 		
+		if (proposal.getSponsorUuid() == null) {
+			throw new InvalidProposalException("The submitting organisation must be specified.");
+		}
 		RE_SubmittingOrganization sponsor = submittingOrgRepository.findOne(proposal.getSponsorUuid());
 		if (sponsor == null) {
 			// try organization UUID
