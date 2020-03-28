@@ -45,7 +45,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.eclipse.persistence.internal.jpa.EntityManagerFactoryProvider;
 import org.isotc211.iso19135.RE_RegisterItem_Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -225,16 +224,9 @@ public class RegisterItemFactoryImpl<I extends RE_RegisterItem, P extends Regist
 
 		proposal.setAdditionalValues(item, entityManager);
 
-		// The following call to findMaxitemIdentifer() leads to the result
-		// entity being saved prematurely. To prevent a ConstraintException,
-		// set a random negative value here.
+		// Sets a random negative item identifier. The final (positive) identifier has to be
+		// set as part of the proposal workflow.
 		item.setItemIdentifier(BigInteger.valueOf(-RandomUtils.nextInt()));
-
-		BigInteger maxIdentifier = itemService.findMaxItemIdentifier();
-		if (maxIdentifier == null) {
-			maxIdentifier = BigInteger.ZERO;
-		}
-		item.setItemIdentifier(maxIdentifier.add(BigInteger.ONE));
 	}
 
 	// private Map<String, Object> getBeans() {
