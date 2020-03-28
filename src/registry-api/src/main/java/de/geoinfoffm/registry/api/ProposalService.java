@@ -77,7 +77,8 @@ public interface ProposalService extends ApplicationService<Proposal>
 	Proposal updateProposal(RegisterItemProposalDTO proposal) throws InvalidProposalException, UnauthorizedException;
 	Proposal updateProposal(UUID proposalUuid, AbstractProposal_Type proposal) throws InvalidProposalException;
 	Supersession updateSupersession(Supersession supersession, Set<RE_RegisterItem> supersededItems, Set<RE_RegisterItem> existingSuccessors, Set<RegisterItemProposalDTO> newSuccessors, String justification, String registerManagerNotes, String controlBodyNotes) throws InvalidProposalException;
-	
+	ProposalGroup updateProposalGroup(ProposalGroup group, List<Proposal> containedProposals, String title) throws InvalidProposalException;
+
 	Proposal withdrawProposal(Proposal proposal) throws InvalidProposalException, IllegalOperationException;
 	void deleteProposal(Proposal proposal) throws IllegalOperationException, UnauthorizedException;
 

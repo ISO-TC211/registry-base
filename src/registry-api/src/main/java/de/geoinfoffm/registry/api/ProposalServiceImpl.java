@@ -1265,6 +1265,31 @@ public class ProposalServiceImpl extends AbstractApplicationService<Proposal, Pr
 	}
 
 	@Override
+	public ProposalGroup updateProposalGroup(ProposalGroup group, List<Proposal> containedProposals, String title) throws InvalidProposalException {
+		if (StringUtils.isEmpty(title)) {
+			throw new InvalidProposalException("Title must not be empty");
+		}
+
+		for (Proposal proposal : containedProposals) {
+			if (!group.getProposals().contains(proposal)) {
+				group.addProposal(proposal);
+			}
+		}
+
+		for (Proposal proposal : group.getProposals()) {
+			if (!containedProposals.contains(proposal)) {
+				group.removeProposal(proposal);
+			}
+		}
+
+		group.setTitle(title);
+
+		group = proposalRepository.save(group);
+
+		return group;
+	}
+
+	@Override
 	public Appeal findAppeal(UUID uuid) {
 		return appealRepository.findOne(uuid);
 	}
