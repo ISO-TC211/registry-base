@@ -407,7 +407,7 @@ public class ProposalListItemImpl implements ProposalListItem
 	@Override
 	@JsonProperty
 	public boolean isGroup() {
-		return ProposalGroup.class.getName().equals(this.getProposalType());
+		return ProposalGroup.class.getName().equals(proposal.getClass().getName());
 	}
 	
 	/* (non-Javadoc)
