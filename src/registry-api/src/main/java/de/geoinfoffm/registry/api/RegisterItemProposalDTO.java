@@ -317,7 +317,12 @@ public class RegisterItemProposalDTO
 		
 		this.loadAdditionalValues(item);
 	}
-	
+
+	public void copyProperties(RE_RegisterItem source) {
+		initializeFromItem(source);
+		this.setItemUuid(null);
+	}
+
 	/**
 	 * Must be overwritten by extending classes to set additional
 	 * property values.
