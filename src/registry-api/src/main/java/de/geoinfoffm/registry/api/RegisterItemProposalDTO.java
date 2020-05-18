@@ -754,8 +754,10 @@ public class RegisterItemProposalDTO
 	protected List<RegisterItemProposalDTO> findDependentProposals(RegisterItemProposalDTO... dtos) {
 		List<RegisterItemProposalDTO> dependentProposals = new ArrayList<RegisterItemProposalDTO>();
 		for (RegisterItemProposalDTO dto : dtos) {
-//			if (dto != null && dto.getItemUuid() != null && dto.getReferencedItemUuid() == null) {
-			if (dto != null && dto.getReferencedItemUuid() == null) {
+			// Checking for non-empty name to differentiate between a reference
+			// being left intentionally empty and an actual nested proposal. In
+			// both cases, referencedItemUuid will be null.
+			if (dto != null && dto.getReferencedItemUuid() == null && !StringUtils.isEmpty(dto.getName())) {
 				dependentProposals.add(dto);
 			}
 		}
