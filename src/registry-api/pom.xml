@@ -102,10 +102,10 @@
 			<plugin>
 			    <groupId>org.apache.cxf</groupId>
 			    <artifactId>cxf-xjc-plugin</artifactId>
-			    <version>3.0.3</version>
+			    <version>3.3.1</version>
 			    <configuration>
 			        <extensions>
-			            <extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:3.0.3</extension>
+			            <extension>org.apache.cxf.xjcplugins:cxf-xjc-dv:3.3.1</extension>
 			        </extensions>
 			    </configuration>
 			    <executions>
