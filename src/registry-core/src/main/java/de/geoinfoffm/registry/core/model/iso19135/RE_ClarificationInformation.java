@@ -106,6 +106,10 @@ public class RE_ClarificationInformation extends RE_ProposalManagementInformatio
 		String proposedChangesJson = proposedChangesWriter.toString();
 		return proposedChangesJson;
 	}
+
+	public Map<String, List<String>> fromProposedChangeJson() {
+		return RE_ClarificationInformation.fromJson(this.getProposedChange().toString());
+	}
 	
 	public static Map<String, List<String>> fromJson(String json) {
 		ObjectMapper jsonMapper = new ObjectMapper();
