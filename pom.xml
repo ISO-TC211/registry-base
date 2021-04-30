@@ -7,7 +7,7 @@
 	<properties>
 		<java-version>1.8</java-version>
 		<registry.version>2.5.1-SNAPSHOT</registry.version>
-		<org.springframework-version>4.3.17.RELEASE</org.springframework-version>
+		<org.springframework-version>4.3.29.RELEASE</org.springframework-version>
 		<org.springframework.security-version>4.1.1.RELEASE</org.springframework.security-version>
 		<org.springframework.data-version>1.7.4.RELEASE</org.springframework.data-version>
  		<org.springframework.batch-version>4.2.1.RELEASE</org.springframework.batch-version>
